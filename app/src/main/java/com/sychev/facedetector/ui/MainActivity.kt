@@ -9,45 +9,31 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import com.sychev.facedetector.R
 import com.sychev.facedetector.service.FaceDetectorService
+import com.sychev.facedetector.utils.TAG
 
 const val OVERLAY_PERMISSION_REQUEST_CODE = 2001
 const val MEDIA_PROJECTION_REQUEST_CODE = 21
 
 class MainActivity : AppCompatActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        canDrawOverLayout()
-
-    }
-
-    private fun canDrawOverLayout() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            if (!Settings.canDrawOverlays(this)){
-                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-                this.startActivityForResult(intent, OVERLAY_PERMISSION_REQUEST_CODE)
-            } else {
-                askForAudioPermission()
-                askForMediaProjection()
+    private val getDrawOverlays = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {result: ActivityResult ->
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Settings.canDrawOverlays(this)) {
+                launchMediaProjection()
             }
         }
     }
 
-    private fun askForMediaProjection() {
-        val projectionManager = applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        this.startActivityForResult(projectionManager.createScreenCaptureIntent(), MEDIA_PROJECTION_REQUEST_CODE)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == MEDIA_PROJECTION_REQUEST_CODE && resultCode == RESULT_OK && data != null){
+    private val getMediaProjection = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+        if (result.resultCode == RESULT_OK){
             val intent = Intent(applicationContext, FaceDetectorService::class.java)
-            intent.putExtra("data", data)
+            intent.putExtra("data", result.data)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
                 startForegroundService(intent)
             } else {
@@ -57,14 +43,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private  fun askForAudioPermission() {
-        if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.RECORD_AUDIO)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(
-                Manifest.permission.RECORD_AUDIO
-            ),0)
-            return
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if (!Settings.canDrawOverlays(this)){
+                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                getDrawOverlays.launch(intent)
+            } else {
+                launchMediaProjection()
+            }
+        } else {
+            launchMediaProjection()
         }
+
+    }
+
+    private fun launchMediaProjection() {
+        val projectionManager = applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        getMediaProjection.launch(projectionManager.createScreenCaptureIntent())
     }
 
 }

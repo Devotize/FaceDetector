@@ -24,7 +24,7 @@
             />
 
         <Button
-            android:id="@+id/notifiaction_point"
+            android:id="@+id/notifiсation_point"
             android:layout_width="13dp"
             android:layout_height="13dp"
             android:layout_gravity="top|start"
@@ -53,7 +53,7 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/face_detector_recycler_view"
-            android:layout_width="200dp"
+            android:layout_width="170dp"
             android:layout_height="wrap_content"
             android:maxWidth="300dp"
             android:layout_marginTop="16dp"
