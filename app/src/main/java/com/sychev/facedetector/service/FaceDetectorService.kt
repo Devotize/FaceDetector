@@ -10,14 +10,12 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.sychev.facedetector.ui.PhotoFaceDetector
-import com.sychev.facedetector.ui.VideoFaceDetector
 
 const val NOTIFICATION_CHANNEL_ID = "face_detector_service_channel_id"
 const val SERVICE_ID = 1
 const val EXIT_REQUEST_CODE = 2
 
 class FaceDetectorService: Service() {
-
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -49,7 +47,7 @@ class FaceDetectorService: Service() {
             val projectionManager = applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             val mediaProjection = projectionManager.getMediaProjection(RESULT_OK, data)
 //            VideoFaceDetector(applicationContext, mediaProjection)
-            PhotoFaceDetector(applicationContext, mediaProjection)
+            PhotoFaceDetector(applicationContext, mediaProjection, ::stopService)
         }
 
         return START_STICKY

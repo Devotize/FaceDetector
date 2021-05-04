@@ -2,6 +2,7 @@ package com.sychev.facedetector.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
 import android.graphics.Point
@@ -41,7 +42,8 @@ import kotlinx.coroutines.Dispatchers.Main
 
 class PhotoFaceDetector(
     private val context: Context,
-    private val mediaProjection: MediaProjection
+    private val mediaProjection: MediaProjection,
+    private val stopService: (() -> Unit)? = null,
 ) {
     private var isAssistantShown = false
     private var widthPx = 0
@@ -81,6 +83,27 @@ class PhotoFaceDetector(
             findNewFaces(0)
         }
     }
+    private val assistantButtons: ArrayList<ImageButton> = ArrayList()
+    private val openAppButton = rootView.findViewById<ImageButton>(R.id.app_button).apply {
+        assistantButtons.add(this)
+        setOnClickListener {
+            launchApp()
+        }
+    }
+    private val galleryButton = rootView.findViewById<ImageButton>(R.id.gallery_button).apply {
+        assistantButtons.add(this)
+        setOnClickListener {
+            launchApp()
+
+        }
+    }
+    private val closeButton = rootView.findViewById<ImageButton>(R.id.close_button).apply {
+        assistantButtons.add(this)
+        setOnClickListener {
+            close()
+            stopService?.invoke()
+        }
+    }
     private val notificationPointer = rootView.findViewById<Button>(R.id.notifiсation_point).apply {
         visibility = View.GONE
     }
@@ -92,24 +115,6 @@ class PhotoFaceDetector(
             
             false
         }
-    }
-    private val icon = rootView.findViewById<ImageButton>(R.id.icon)
-    private val assistantFrame = rootView.findViewById<ConstraintLayout>(R.id.assistant_frame)
-    private val adapter: GroupieAdapter = GroupieAdapter()
-    private val rv = rootView.findViewById<RecyclerView>(R.id.face_detector_recycler_view).apply {
-        adapter = this@PhotoFaceDetector.adapter
-        layoutManager = LinearLayoutManager(context)
-        addItemDecoration(MessageItemDecoration())
-        val onSwipeCallback = object : SwipeToDeleteCallback(){
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                Log.d(TAG, "onSwiped: swiped")
-                val position = viewHolder.adapterPosition
-                this@PhotoFaceDetector.adapter.remove(this@PhotoFaceDetector.adapter.getGroupAtAdapterPosition(position))
-                this@PhotoFaceDetector.adapter.notifyItemRemoved(position)
-            }
-        }
-        val itemTouchHelper = ItemTouchHelper(onSwipeCallback)
-        itemTouchHelper.attachToRecyclerView(this)
     }
 
     private val frameParams = WindowManager.LayoutParams(
@@ -144,7 +149,6 @@ class PhotoFaceDetector(
     private val detectedFaces = ArrayList<Face>()
     private val boundingBoxes = ArrayList<View>()
     private val faceCircles = ArrayList<Button>()
-    private val saveScreenshotItem = SaveScreenshotItem()
 
 
     private fun addViewToWM(view: View, params: WindowManager.LayoutParams){
@@ -191,16 +195,23 @@ class PhotoFaceDetector(
     fun close() {
         removeViewFromWM(rootView)
         removeViewFromWM(frameTouchListener)
+        boundingBoxes.forEach {
+            removeViewFromWM(it)
+        }
     }
 
     private fun showOrHideAssistant(){
         if (isAssistantShown){
-            assistantFrame.visibility = View.VISIBLE
             sheetArrow.setImageResource(R.drawable.ic_baseline_arrow_forward_24)
             notificationPointer.visibility = View.GONE
+            assistantButtons.forEach {
+                it.visibility = View.GONE
+            }
         } else {
-            assistantFrame.visibility = View.GONE
             sheetArrow.setImageResource(R.drawable.ic_baseline_arrow_back_24)
+            assistantButtons.forEach {
+                it.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -209,7 +220,6 @@ class PhotoFaceDetector(
             boundingBoxes.forEach {
                 removeViewFromWM(it)
             }
-            removeMessage(saveScreenshotItem)
             faceCircles.clear()
             boundingBoxes.clear()
             detectFacesJob.cancel()
@@ -218,9 +228,6 @@ class PhotoFaceDetector(
                 Log.d(TAG, "detectFacesJob: called")
                 isDetecting = true
                 delay(delayMs)
-                withContext(Main){
-                    addMessage(loadingItem)
-                }
                 val screenshotBtm = takeScreenshot()
                 processBitmap(screenshotBtm, loadingItem)
                 isDetecting = false
@@ -255,14 +262,9 @@ class PhotoFaceDetector(
         faceDetection.process(inputImage)
             .addOnSuccessListener { faces ->
                 Log.d(TAG, "processBitmap: success")
-                removeMessage(saveScreenshotItem)
                 detectedFaces.clear()
                 detectedFaces.addAll(faces)
                 if (isAssistantShown){
-                    saveScreenshotItem.onClick = {
-                        showScreenshotAnim(bitmap)
-                    }
-                    addMessage(saveScreenshotItem)
                     for (face in detectedFaces) {
                         addBoundingBox(face.boundingBox)
                         notificationPointer.visibility = View.GONE
@@ -277,23 +279,8 @@ class PhotoFaceDetector(
             }
             .addOnCompleteListener {
                 isDetecting = false
-                removeMessage(loadingItem)
                 Log.d(TAG, "processBitmap: completed")
             }
-    }
-
-    private fun addMessage(messageItem: Item<GroupieViewHolder>) {
-        adapter.add(messageItem)
-        val position = adapter.getAdapterPosition(messageItem)
-        adapter.notifyItemInserted(position)
-    }
-
-    private fun removeMessage(messageItem: Item<GroupieViewHolder>) {
-        val position = adapter.getAdapterPosition(messageItem)
-        if (position >= 0) {
-            adapter.remove(messageItem)
-            adapter.notifyItemRemoved(position)
-        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -377,43 +364,8 @@ class PhotoFaceDetector(
         )
     }
 
-    private fun showScreenshotAnim(bitmap: Bitmap) {
-        val frameLayout = FrameLayout(context)
-        val imageView = ImageView(context)
-        imageView.setImageBitmap(bitmap)
-        frameLayout.addView(
-            imageView,
-            FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT,
-            )
-        )
-        addViewToWM(frameLayout, getWmLayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,)
-        )
-        val screenshotAnim = AnimationUtils.loadAnimation(context, R.anim.saving_screenshot_anim)
-        screenshotAnim.setAnimationListener(object : Animation.AnimationListener{
-            override fun onAnimationStart(animation: Animation?) {
-
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                Log.d(TAG, "onAnimationEnd: AnimationEnded")
-                removeViewFromWM(frameLayout)
-            }
-
-            override fun onAnimationRepeat(animation: Animation?) {
-
-            }
-        })
-        imageView.animation = screenshotAnim
-        screenshotAnim.start()
-    }
-
     private suspend fun findCelebrity() {
         val item = MessageItem(message = "I think this is...")
-        adapter.add(item)
         delay(2500)
         val person = Person(
             name = "Brad Pitt",
@@ -424,7 +376,12 @@ class PhotoFaceDetector(
         )
         item.setPerson(person)
         item.setMessage("I think this is")
-        adapter.notifyDataSetChanged()
+    }
+
+    private fun launchApp() {
+        val intent = Intent(context, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        context.startActivity(intent)
     }
 
 }
