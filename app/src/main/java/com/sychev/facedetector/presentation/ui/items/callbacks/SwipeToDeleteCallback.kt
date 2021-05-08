@@ -1,4 +1,4 @@
-package com.sychev.facedetector.ui.items.callbacks
+package com.sychev.facedetector.presentation.ui.items.callbacks
 
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView

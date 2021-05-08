@@ -1,4 +1,4 @@
-package com.sychev.facedetector.ui.items
+package com.sychev.facedetector.presentation.ui.items
 
 import android.graphics.Bitmap
 import android.view.View

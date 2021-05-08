@@ -1,4 +1,4 @@
-package com.sychev.facedetector.ui.decorators
+package com.sychev.facedetector.presentation.ui.decorators
 
 import android.graphics.Rect
 import android.view.View

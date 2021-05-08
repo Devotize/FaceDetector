@@ -1,4 +1,4 @@
-package com.sychev.facedetector.ui
+package com.sychev.facedetector.presentation
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -11,40 +11,50 @@ import android.hardware.display.DisplayManager
 import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.util.TimeUtils
 import android.view.*
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.ImageButton
-import android.widget.ImageView
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import android.widget.*
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Person
-import com.sychev.facedetector.ui.decorators.MessageItemDecoration
-import com.sychev.facedetector.ui.items.MessageItem
-import com.sychev.facedetector.ui.items.SaveScreenshotItem
-import com.sychev.facedetector.ui.items.callbacks.SwipeToDeleteCallback
+import com.sychev.facedetector.domain.SavedScreenshot
+import com.sychev.facedetector.presentation.ui.items.MessageItem
+import com.sychev.facedetector.repository.SavedScreenshotRepo
 import com.sychev.facedetector.utils.TAG
-import com.xwray.groupie.GroupieAdapter
-import com.xwray.groupie.GroupieViewHolder
-import com.xwray.groupie.Item
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
+import java.util.*
+import javax.inject.Inject
+import kotlin.collections.ArrayList
 
-class PhotoFaceDetector(
+
+class PhotoFaceDetector
+    (
     private val context: Context,
     private val mediaProjection: MediaProjection,
     private val stopService: (() -> Unit)? = null,
 ) {
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface PhotoFaceDetectorEntryPoint{
+        fun provideRepository(): SavedScreenshotRepo
+    }
+
+    private val entryPoint = EntryPointAccessors.fromApplication(context, PhotoFaceDetectorEntryPoint::class.java)
+    private val repository = entryPoint.provideRepository()
+
     private var isAssistantShown = false
     private var widthPx = 0
     private var heightPx = 0
@@ -149,6 +159,7 @@ class PhotoFaceDetector(
     private val detectedFaces = ArrayList<Face>()
     private val boundingBoxes = ArrayList<View>()
     private val faceCircles = ArrayList<Button>()
+    private var screenshot: Bitmap? = null
 
 
     private fun addViewToWM(view: View, params: WindowManager.LayoutParams){
@@ -205,12 +216,12 @@ class PhotoFaceDetector(
             sheetArrow.setImageResource(R.drawable.ic_baseline_arrow_forward_24)
             notificationPointer.visibility = View.GONE
             assistantButtons.forEach {
-                it.visibility = View.GONE
+                it.visibility = View.VISIBLE
             }
         } else {
             sheetArrow.setImageResource(R.drawable.ic_baseline_arrow_back_24)
             assistantButtons.forEach {
-                it.visibility = View.VISIBLE
+                it.visibility = View.GONE
             }
         }
     }
@@ -220,16 +231,13 @@ class PhotoFaceDetector(
             boundingBoxes.forEach {
                 removeViewFromWM(it)
             }
-            faceCircles.clear()
-            boundingBoxes.clear()
             detectFacesJob.cancel()
-            val loadingItem = MessageItem(message = "Looking for faces...", )
             detectFacesJob = CoroutineScope(IO).launch {
                 Log.d(TAG, "detectFacesJob: called")
                 isDetecting = true
                 delay(delayMs)
                 val screenshotBtm = takeScreenshot()
-                processBitmap(screenshotBtm, loadingItem)
+                processBitmap(screenshotBtm)
                 isDetecting = false
             }
             detectFacesJob.invokeOnCompletion {
@@ -253,16 +261,17 @@ class PhotoFaceDetector(
         bmp.copyPixelsFromBuffer(buffer)
         val newBitmap = Bitmap.createBitmap(bmp, 0, 0, image.width, image.height)
         image.close()
+        screenshot = newBitmap
         return newBitmap
     }
 
-    private fun processBitmap(bitmap: Bitmap, loadingItem: MessageItem){
+    private fun processBitmap(bitmap: Bitmap){
         Log.d(TAG, "processBitmap: called, bitmap: $bitmap")
         val inputImage = InputImage.fromBitmap(bitmap, 0)
         faceDetection.process(inputImage)
             .addOnSuccessListener { faces ->
                 Log.d(TAG, "processBitmap: success")
-                detectedFaces.clear()
+                clearBoundingBoxes()
                 detectedFaces.addAll(faces)
                 if (isAssistantShown){
                     for (face in detectedFaces) {
@@ -287,19 +296,31 @@ class PhotoFaceDetector(
     private fun addBoundingBox(rect: Rect) {
         val boundingBoxLayout = layoutInflater.inflate(R.layout.bounding_box_layout, null)
         val frame = boundingBoxLayout.findViewById<FrameLayout>(R.id.bounding_box)
+        val celebName = frame.findViewById<TextView>(R.id.celeb_name_text_view)
         val circle = Button(context)
-        circle.setBackgroundResource(R.drawable.blue_circle_shape)
+        circle.setBackgroundResource(R.drawable.red_circle_shape)
         val circleParams = FrameLayout.LayoutParams(
-            rect.height() / 2,
-            rect.height() / 2
+            rect.height(),
+            rect.height()
         ).apply {
             gravity = Gravity.CENTER
         }
         frame.addView(circle, circleParams)
-        circle.setOnClickListener {
+        circle.setOnClickListener { circle: View ->
             Log.d(TAG, "addBoundingBox: clicked!")
-            CoroutineScope(Dispatchers.Main).launch {
-                findCelebrity()
+            screenshot?.let {
+                animateCircle(circle ,true)
+                insertBitmapToCache(it.cropByBoundingBox(rect))
+                CoroutineScope(Dispatchers.Main).launch {
+                    findCelebrity(){ person ->
+                        animateCircle(circle, false)
+                        celebName.text = person.name
+                        celebName.visibility = View.VISIBLE
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            celebName.visibility = View.GONE
+                        },3000)
+                    }
+                }
             }
         }
         val params = WindowManager.LayoutParams(
@@ -321,28 +342,49 @@ class PhotoFaceDetector(
         boundingBoxes.add(boundingBoxLayout)
         faceCircles.add(circle)
         addViewToWM(boundingBoxLayout, params)
-        animateCircle()
+//        animateCircle()
     }
 
-    private fun animateCircle() {
-        if (faceCircles.isNotEmpty()){
-            val rand = (0 until faceCircles.size).random()
-            val anim = AnimationUtils.loadAnimation(context, R.anim.expand_anim)
-            anim.setAnimationListener(object : Animation.AnimationListener{
-                override fun onAnimationStart(animation: Animation?) {
+//    private fun animateCircle() {
+//        if (faceCircles.isNotEmpty()){
+//            val rand = (0 until faceCircles.size).random()
+//            val anim = AnimationUtils.loadAnimation(context, R.anim.expand_anim)
+//            anim.setAnimationListener(object : Animation.AnimationListener{
+//                override fun onAnimationStart(animation: Animation?) {
+//
+//                }
+//
+//                override fun onAnimationEnd(animation: Animation?) {
+//                    animateCircle()
+//                }
+//
+//                override fun onAnimationRepeat(animation: Animation?) {
+//
+//                }
+//            })
+//            faceCircles[rand].startAnimation(anim)
+//        }
+//    }
 
+    private fun animateCircle(circle: View, repeatable: Boolean) {
+        val anim = AnimationUtils.loadAnimation(context, R.anim.shrink_anim)
+        anim.setAnimationListener(object : Animation.AnimationListener{
+            override fun onAnimationStart(animation: Animation?) {
+
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                if (repeatable){
+                    circle.startAnimation(animation)
                 }
+            }
 
-                override fun onAnimationEnd(animation: Animation?) {
-                    animateCircle()
-                }
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
 
-                override fun onAnimationRepeat(animation: Animation?) {
 
-                }
-            })
-            faceCircles[rand].startAnimation(anim)
-        }
+        })
+        circle.startAnimation(anim)
     }
 
     private fun getWmLayoutParams(width: Int, height: Int): WindowManager.LayoutParams {
@@ -364,9 +406,9 @@ class PhotoFaceDetector(
         )
     }
 
-    private suspend fun findCelebrity() {
+    private suspend fun findCelebrity(person: (Person) -> Unit) {
         val item = MessageItem(message = "I think this is...")
-        delay(2500)
+        delay(3500)
         val person = Person(
             name = "Brad Pitt",
             googleSearch = "https://www.google.com/search?q=brad+pitt",
@@ -376,12 +418,42 @@ class PhotoFaceDetector(
         )
         item.setPerson(person)
         item.setMessage("I think this is")
+        person(person)
     }
 
     private fun launchApp() {
         val intent = Intent(context, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         context.startActivity(intent)
+    }
+
+    private fun clearBoundingBoxes() {
+        boundingBoxes.forEach {
+            removeViewFromWM(it)
+        }
+        boundingBoxes.clear()
+        detectedFaces.clear()
+        faceCircles.clear()
+    }
+
+    private fun Bitmap.cropByBoundingBox(boundingBox: Rect): Bitmap {
+        val x = boundingBox.exactCenterX().toInt() - boundingBox.width()/2
+        val y = boundingBox.exactCenterY().toInt() - boundingBox.height()/2
+        val height = boundingBox.height() * 1.25
+        val width = boundingBox.width() * 1.2
+
+        return Bitmap.createBitmap(this, x, y, width.toInt(), height.toInt())
+    }
+
+    private fun insertBitmapToCache(bitmap: Bitmap) {
+        CoroutineScope(IO).launch {
+            repository.addScreenshotToDb(
+                SavedScreenshot(
+                    id = UUID.randomUUID().variant(),
+                    image = bitmap
+                )
+            )
+        }
     }
 
 }

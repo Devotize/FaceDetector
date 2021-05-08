@@ -9,7 +9,7 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.sychev.facedetector.ui.PhotoFaceDetector
+import com.sychev.facedetector.presentation.PhotoFaceDetector
 
 const val NOTIFICATION_CHANNEL_ID = "face_detector_service_channel_id"
 const val SERVICE_ID = 1
