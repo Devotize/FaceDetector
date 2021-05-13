@@ -5,20 +5,20 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.sychev.facedetector.domain.SavedScreenshot
@@ -31,6 +31,7 @@ class MainFragment : Fragment() {
 
     private val viewModel: MainFragmentViewModel by viewModels()
 
+    @ExperimentalFoundationApi
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -43,22 +44,42 @@ class MainFragment : Fragment() {
 
                 Column(
                     modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
+//                    horizontalAlignment = Alignment.CenterHorizontally,
+//                    verticalArrangement = Arrangement.Center,
                 ) {
+
+                    Text(
+                        text = "Library",
+                        modifier = Modifier.padding(16.dp, 8.dp, 8.dp, 4.dp),
+                        style = MaterialTheme.typography.h5
+                    )
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(10.dp)
+                            .padding(16.dp, 0.dp, 16.dp, 8.dp),
+                        elevation = 2.dp,
+                        shape = RoundedCornerShape(16.dp),
+                        color = Color.LightGray
+                    ){
+
+                    }
+
                     screenshotList?.let {screenshotList ->
-                        LazyRow(
-                            content = {
+                        LazyVerticalGrid(cells = GridCells.Adaptive(200.dp)) {
                             itemsIndexed(screenshotList.reversed()){index: Int, savedScreenshot: SavedScreenshot ->
                                 ScreenshotItem(savedScreenshot = savedScreenshot)
                             }
-                        }) 
+                        }
+                        }
+                            
                     }
                 }
             }
         }
     }
-}
+
 
 
 

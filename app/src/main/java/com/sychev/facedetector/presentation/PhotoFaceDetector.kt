@@ -313,12 +313,29 @@ class PhotoFaceDetector
                 insertBitmapToCache(it.cropByBoundingBox(rect))
                 CoroutineScope(Dispatchers.Main).launch {
                     findCelebrity(){ person ->
-                        animateCircle(circle, false)
-                        celebName.text = person.name
-                        celebName.visibility = View.VISIBLE
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            celebName.visibility = View.GONE
-                        },3000)
+//                        animateCircle(circle, false)
+                        circle.animation.setAnimationListener(object : Animation.AnimationListener{
+                            override fun onAnimationStart(animation: Animation?) {
+
+                            }
+
+                            override fun onAnimationEnd(animation: Animation?) {
+
+                            }
+
+                            override fun onAnimationRepeat(animation: Animation?) {
+                            }
+
+                        })
+                        circle.animation.cancel()
+                        circle.animation = null
+                        rect.showNameOfCeleb(person.name)
+//                        celebName.text = person.name
+//                        celebName.visibility = View.VISIBLE
+//                        Handler(Looper.getMainLooper()).postDelayed({
+//                            celebName.visibility = View.GONE
+//                        },3000)
+
                     }
                 }
             }
@@ -410,7 +427,7 @@ class PhotoFaceDetector
         val item = MessageItem(message = "I think this is...")
         delay(3500)
         val person = Person(
-            name = "Brad Pitt",
+            name = "Celeb Name",
             googleSearch = "https://www.google.com/search?q=brad+pitt",
             instUrl = "https://www.instagram.com/bradpittofflcial/?hl=en",
             facebookUrl = "https://www.facebook.com/Brad-Pitt-165952813475830/",
@@ -454,6 +471,42 @@ class PhotoFaceDetector
                 )
             )
         }
+    }
+
+    private fun Rect.showNameOfCeleb(name: String) {
+        val nameLayout = layoutInflater.inflate(R.layout.celeb_name_layout, null)
+        val celebNameTextView = nameLayout.findViewById<TextView>(R.id.celeb_name_text_view)
+        celebNameTextView.text = name
+
+        val anim = AnimationUtils.loadAnimation(context, R.anim.fade_in_fade_out_anim)
+        anim.setAnimationListener(object : Animation.AnimationListener{
+            override fun onAnimationStart(animation: Animation?) {
+
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                if (nameLayout.parent != null) {
+                    (frameTouchListener as FrameLayout).removeView(nameLayout)
+                }
+            }
+
+            override fun onAnimationRepeat(animation: Animation?) {
+
+            }
+
+        })
+        val params = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+        )
+
+        params.topMargin = bottom + 30
+        params.marginStart = left
+
+        (frameTouchListener as FrameLayout).addView(nameLayout, params)
+
+        nameLayout.startAnimation(anim)
+
     }
 
 }

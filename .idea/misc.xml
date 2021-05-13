@@ -5,8 +5,13 @@
       <map>
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/blue_circle_shape.xml" value="0.18055555555555555" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/red_circle_shape.xml" value="0.17592592592592593" />
+        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/red_circle_shape_filled.xml" value="0.17592592592592593" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/activity_main.xml" value="0.12182971014492754" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/bounding_box_layout.xml" value="0.16" />
+        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/celeb_name_layout.xml" value="0.1" />
+        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/face_detector_layout.xml" value="0.1" />
+        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/frame_touch_listener.xml" value="0.1" />
+        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/save_screenshot_item.xml" value="0.1" />
       </map>
     </option>
   </component>
