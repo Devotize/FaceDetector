@@ -12,6 +12,8 @@ class ScreenshotEntity(
     val id: Int = 0,
     @ColumnInfo(name = "image", typeAffinity = ColumnInfo.BLOB)
     val image: ByteArray,
+    @ColumnInfo(name = "celeb_name")
+    val celebName: String
 ){
     companion object{
         const val TABLE_NAME = "screenshot_table"

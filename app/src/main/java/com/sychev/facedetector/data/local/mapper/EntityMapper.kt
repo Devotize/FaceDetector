@@ -12,14 +12,16 @@ import java.io.ByteArrayOutputStream
 class EntityMapper: DomainMapper<SavedScreenshot, ScreenshotEntity> {
     override fun fromDomainModel(model: SavedScreenshot): ScreenshotEntity {
         return ScreenshotEntity(
-            image = model.image.toByteArray()
+            image = model.image.toByteArray(),
+            celebName = model.celebName
         )
     }
 
     override fun toDomainModel(model: ScreenshotEntity): SavedScreenshot {
         return SavedScreenshot(
             model.id,
-            model.image.toBitmap()
+            model.image.toBitmap(),
+            model.celebName
         )
     }
 
@@ -27,7 +29,8 @@ class EntityMapper: DomainMapper<SavedScreenshot, ScreenshotEntity> {
         return list.map{
             SavedScreenshot(
                 it.id,
-                it.image.toBitmap()
+                it.image.toBitmap(),
+                it.celebName
             )
         }
     }

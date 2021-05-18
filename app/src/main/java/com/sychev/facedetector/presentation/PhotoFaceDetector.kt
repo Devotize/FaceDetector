@@ -11,10 +11,7 @@ import android.hardware.display.DisplayManager
 import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
-import android.util.TimeUtils
 import android.view.*
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -35,7 +32,6 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import java.util.*
-import javax.inject.Inject
 import kotlin.collections.ArrayList
 
 
@@ -98,13 +94,14 @@ class PhotoFaceDetector
         assistantButtons.add(this)
         setOnClickListener {
             launchApp()
+            clearBoundingBoxes()
         }
     }
     private val galleryButton = rootView.findViewById<ImageButton>(R.id.gallery_button).apply {
         assistantButtons.add(this)
         setOnClickListener {
             launchApp()
-
+            clearBoundingBoxes()
         }
     }
     private val closeButton = rootView.findViewById<ImageButton>(R.id.close_button).apply {
@@ -237,7 +234,9 @@ class PhotoFaceDetector
                 isDetecting = true
                 delay(delayMs)
                 val screenshotBtm = takeScreenshot()
-                processBitmap(screenshotBtm)
+                if (screenshotBtm != null) {
+                    processBitmap(screenshotBtm)
+                }
                 isDetecting = false
             }
             detectFacesJob.invokeOnCompletion {
@@ -246,8 +245,9 @@ class PhotoFaceDetector
         }
     }
 
-    private fun takeScreenshot(): Bitmap {
+    private fun takeScreenshot(): Bitmap? {
         val image = imageReader.acquireNextImage()
+        if (image == null) return null
         val planes = image.planes
         val buffer = planes[0].buffer
         val pixelStride = planes[0].pixelStride
@@ -310,25 +310,26 @@ class PhotoFaceDetector
             Log.d(TAG, "addBoundingBox: clicked!")
             screenshot?.let {
 //                animateCircle()
-                insertBitmapToCache(it.cropByBoundingBox(rect))
                 CoroutineScope(Dispatchers.Main).launch {
                     findCelebrity(){ person ->
+                        insertCelebToCache(person.name, it.cropByBoundingBox(rect))
+
 //                        animateCircle(circle, false)
-                        circle.animation.setAnimationListener(object : Animation.AnimationListener{
-                            override fun onAnimationStart(animation: Animation?) {
-
-                            }
-
-                            override fun onAnimationEnd(animation: Animation?) {
-
-                            }
-
-                            override fun onAnimationRepeat(animation: Animation?) {
-                            }
-
-                        })
-                        circle.animation.cancel()
-                        circle.animation = null
+//                        circle.animation.setAnimationListener(object : Animation.AnimationListener{
+//                            override fun onAnimationStart(animation: Animation?) {
+//
+//                            }
+//
+//                            override fun onAnimationEnd(animation: Animation?) {
+//
+//                            }
+//
+//                            override fun onAnimationRepeat(animation: Animation?) {
+//                            }
+//
+//                        })
+//                        circle.animation.cancel()
+//                        circle.animation = null
                         rect.showNameOfCeleb(person.name)
 //                        celebName.text = person.name
 //                        celebName.visibility = View.VISIBLE
@@ -465,12 +466,13 @@ class PhotoFaceDetector
         return Bitmap.createBitmap(this, x, y, width.toInt(), height.toInt())
     }
 
-    private fun insertBitmapToCache(bitmap: Bitmap) {
+    private fun insertCelebToCache(name: String, bitmap: Bitmap) {
         CoroutineScope(IO).launch {
             repository.addScreenshotToDb(
                 SavedScreenshot(
                     id = UUID.randomUUID().variant(),
-                    image = bitmap
+                    image = bitmap,
+                    celebName = name
                 )
             )
         }

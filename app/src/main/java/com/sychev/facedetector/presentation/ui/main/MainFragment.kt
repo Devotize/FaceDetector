@@ -47,7 +47,6 @@ class MainFragment : Fragment() {
 //                    horizontalAlignment = Alignment.CenterHorizontally,
 //                    verticalArrangement = Arrangement.Center,
                 ) {
-
                     Text(
                         text = "Library",
                         modifier = Modifier.padding(16.dp, 8.dp, 8.dp, 4.dp),
@@ -69,7 +68,12 @@ class MainFragment : Fragment() {
                     screenshotList?.let {screenshotList ->
                         LazyVerticalGrid(cells = GridCells.Adaptive(200.dp)) {
                             itemsIndexed(screenshotList.reversed()){index: Int, savedScreenshot: SavedScreenshot ->
-                                ScreenshotItem(savedScreenshot = savedScreenshot)
+                                ScreenshotItem(
+                                    savedScreenshot = savedScreenshot,
+                                    onClick = {
+                                        viewModel.onTriggerEvent(MainEvent.PerformGoogleSearch(context, savedScreenshot.celebName))
+                                    }
+                                )
                             }
                         }
                         }

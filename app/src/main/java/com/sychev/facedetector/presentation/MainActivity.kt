@@ -6,6 +6,7 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.provider.Settings
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
@@ -48,14 +49,16 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     startService(intent)
                 }
-                finish()
+//                finish()
             }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-//        startAssistantService()
+        if (savedInstanceState == null) {
+            startAssistantService()
+        }
     }
 
 
@@ -78,10 +81,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    override fun onStop() {
-        super.onStop()
-        startAssistantService()
-    }
 }
 
 
