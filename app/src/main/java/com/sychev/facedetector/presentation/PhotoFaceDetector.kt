@@ -299,9 +299,10 @@ class PhotoFaceDetector
         val celebName = frame.findViewById<TextView>(R.id.celeb_name_text_view)
         val circle = Button(context)
         circle.setBackgroundResource(R.drawable.red_circle_shape_filled)
+        circle.alpha = 0.4f
         val circleParams = FrameLayout.LayoutParams(
-            rect.height() / 4,
-            rect.height() / 4
+            rect.height() / 6,
+            rect.height() / 6
         ).apply {
             gravity = Gravity.CENTER
         }
@@ -309,12 +310,20 @@ class PhotoFaceDetector
         circle.setOnClickListener { circle: View ->
             Log.d(TAG, "addBoundingBox: clicked!")
             screenshot?.let {
+                circleParams.width = rect.height() / 2
+                circleParams.height = rect.height() / 2
+                circle.setBackgroundResource(R.drawable.red_circle_shape)
+                frame.requestLayout()
+                animateCircle(circle)
 //                animateCircle()
                 CoroutineScope(Dispatchers.Main).launch {
                     findCelebrity(){ person ->
                         insertCelebToCache(person.name, it.cropByBoundingBox(rect))
-
-                        animateCircle(circle, false)
+//                        animateCircle(circle, false)
+                        circleParams.width = rect.height() / 6
+                        circleParams.height = rect.height() / 6
+                        circle.setBackgroundResource(R.drawable.red_circle_shape_filled)
+                        frame.requestLayout()
                         circle.animation.setAnimationListener(object : Animation.AnimationListener{
                             override fun onAnimationStart(animation: Animation?) {
 
@@ -387,17 +396,15 @@ class PhotoFaceDetector
 //        }
 //    }
 
-    private fun animateCircle(circle: View, repeatable: Boolean) {
-        val anim = AnimationUtils.loadAnimation(context, R.anim.shrink_anim)
+    private fun animateCircle(circle: View) {
+        val anim = AnimationUtils.loadAnimation(context, R.anim.expand_anim)
         anim.setAnimationListener(object : Animation.AnimationListener{
             override fun onAnimationStart(animation: Animation?) {
 
             }
 
             override fun onAnimationEnd(animation: Animation?) {
-                if (repeatable){
                     circle.startAnimation(animation)
-                }
             }
 
             override fun onAnimationRepeat(animation: Animation?) {
@@ -460,8 +467,27 @@ class PhotoFaceDetector
     private fun Bitmap.cropByBoundingBox(boundingBox: Rect): Bitmap {
         val x = boundingBox.exactCenterX().toInt() - boundingBox.width()/2
         val y = boundingBox.exactCenterY().toInt() - boundingBox.height()/2
-        val height = boundingBox.height() * 1.25
-        val width = boundingBox.width() * 1.2
+        var height = boundingBox.height() * 1.25
+        var width = boundingBox.width() * 1.2
+//        Log.d(TAG, "cropByBoundingBox: y + height = ${y + height}, bitmap.height = ${this.height}")
+
+        if (y + height >= this.height){
+            height = 0.0
+            var i = y
+            while (i < this.height){
+                height++
+                i++
+            }
+        }
+
+        if (x + width >= this.width) {
+            width = 0.0
+            var i = x
+            while (i < this.width) {
+                width++
+                i++
+            }
+        }
 
         return Bitmap.createBitmap(this, x, y, width.toInt(), height.toInt())
     }

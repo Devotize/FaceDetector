@@ -3,23 +3,23 @@
     >
 
     <scale
-        android:duration="2000"
-        android:fromXScale="0.58"
-        android:fromYScale="0.58"
+        android:duration="1000"
+        android:fromXScale="0.28"
+        android:fromYScale="0.28"
         android:pivotX="50%"
         android:pivotY="50%"
-        android:toXScale="1.8"
-        android:toYScale="1.8"
+        android:toXScale="1.0"
+        android:toYScale="1.0"
         />
 
     <scale
-        android:startOffset="2000"
-        android:duration="2000"
-        android:fromXScale="1.8"
-        android:fromYScale="1.8"
+        android:startOffset="1000"
+        android:duration="1000"
+        android:fromXScale="1.0"
+        android:fromYScale="1.0"
         android:pivotX="50%"
         android:pivotY="50%"
-        android:toXScale="0.58"
-        android:toYScale="0.58"/>
+        android:toXScale="0.28"
+        android:toYScale="0.28"/>
 
 </set>
