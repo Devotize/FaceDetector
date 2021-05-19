@@ -314,22 +314,22 @@ class PhotoFaceDetector
                     findCelebrity(){ person ->
                         insertCelebToCache(person.name, it.cropByBoundingBox(rect))
 
-//                        animateCircle(circle, false)
-//                        circle.animation.setAnimationListener(object : Animation.AnimationListener{
-//                            override fun onAnimationStart(animation: Animation?) {
-//
-//                            }
-//
-//                            override fun onAnimationEnd(animation: Animation?) {
-//
-//                            }
-//
-//                            override fun onAnimationRepeat(animation: Animation?) {
-//                            }
-//
-//                        })
-//                        circle.animation.cancel()
-//                        circle.animation = null
+                        animateCircle(circle, false)
+                        circle.animation.setAnimationListener(object : Animation.AnimationListener{
+                            override fun onAnimationStart(animation: Animation?) {
+
+                            }
+
+                            override fun onAnimationEnd(animation: Animation?) {
+
+                            }
+
+                            override fun onAnimationRepeat(animation: Animation?) {
+                            }
+
+                        })
+                        circle.animation.cancel()
+                        circle.animation = null
                         rect.showNameOfCeleb(person.name)
 //                        celebName.text = person.name
 //                        celebName.visibility = View.VISIBLE
@@ -360,53 +360,53 @@ class PhotoFaceDetector
         boundingBoxes.add(boundingBoxLayout)
         faceCircles.add(circle)
         addViewToWM(boundingBoxLayout, params)
-        animateCircles()
+//        animateCircles()
     }
-
-    private fun animateCircles() {
-        if (faceCircles.isNotEmpty()){
-            val rand = (0 until faceCircles.size).random()
-            val anim = AnimationUtils.loadAnimation(context, R.anim.expand_anim)
-            val faceCircle = faceCircles[rand]
-            anim.setAnimationListener(object : Animation.AnimationListener{
-                override fun onAnimationStart(animation: Animation?) {
-                    faceCircle.setBackgroundResource(R.drawable.red_circle_shape)
-                }
-
-                override fun onAnimationEnd(animation: Animation?) {
-                    faceCircle.setBackgroundResource(R.drawable.red_circle_shape_filled)
-                    animateCircles()
-                }
-
-                override fun onAnimationRepeat(animation: Animation?) {
-
-                }
-            })
-//            faceCircles[rand].startAnimation(anim)
-            faceCircle.startAnimation(anim)
-        }
-    }
-
-//    private fun animateCircle(circle: View, repeatable: Boolean) {
-//        val anim = AnimationUtils.loadAnimation(context, R.anim.shrink_anim)
-//        anim.setAnimationListener(object : Animation.AnimationListener{
-//            override fun onAnimationStart(animation: Animation?) {
 //
-//            }
-//
-//            override fun onAnimationEnd(animation: Animation?) {
-//                if (repeatable){
-//                    circle.startAnimation(animation)
+//    private fun animateCircles() {
+//        if (faceCircles.isNotEmpty()){
+//            val rand = (0 until faceCircles.size).random()
+//            val anim = AnimationUtils.loadAnimation(context, R.anim.expand_anim)
+//            val faceCircle = faceCircles[rand]
+//            anim.setAnimationListener(object : Animation.AnimationListener{
+//                override fun onAnimationStart(animation: Animation?) {
+//                    faceCircle.setBackgroundResource(R.drawable.red_circle_shape)
 //                }
-//            }
 //
-//            override fun onAnimationRepeat(animation: Animation?) {
-//            }
+//                override fun onAnimationEnd(animation: Animation?) {
+//                    faceCircle.setBackgroundResource(R.drawable.red_circle_shape_filled)
+//                    animateCircles()
+//                }
 //
+//                override fun onAnimationRepeat(animation: Animation?) {
 //
-//        })
-//        circle.startAnimation(anim)
+//                }
+//            })
+////            faceCircles[rand].startAnimation(anim)
+//            faceCircle.startAnimation(anim)
+//        }
 //    }
+
+    private fun animateCircle(circle: View, repeatable: Boolean) {
+        val anim = AnimationUtils.loadAnimation(context, R.anim.shrink_anim)
+        anim.setAnimationListener(object : Animation.AnimationListener{
+            override fun onAnimationStart(animation: Animation?) {
+
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                if (repeatable){
+                    circle.startAnimation(animation)
+                }
+            }
+
+            override fun onAnimationRepeat(animation: Animation?) {
+            }
+
+
+        })
+        circle.startAnimation(anim)
+    }
 
     private fun getWmLayoutParams(width: Int, height: Int): WindowManager.LayoutParams {
         return WindowManager.LayoutParams(
