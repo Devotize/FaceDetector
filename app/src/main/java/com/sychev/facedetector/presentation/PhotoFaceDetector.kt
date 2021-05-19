@@ -404,7 +404,7 @@ class PhotoFaceDetector
             }
 
             override fun onAnimationEnd(animation: Animation?) {
-                    circle.startAnimation(animation)
+                circle.startAnimation(animation)
             }
 
             override fun onAnimationRepeat(animation: Animation?) {
