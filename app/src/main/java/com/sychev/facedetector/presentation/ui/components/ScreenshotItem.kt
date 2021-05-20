@@ -26,8 +26,8 @@ fun ScreenshotItem(
     Card(
         modifier = Modifier
             .padding(2.dp)
-            .width(200.dp)
-            .height(250.dp)
+//            .width(200.dp)
+            .height(150.dp)
             .clickable {
                 onClick()
             },
@@ -49,7 +49,7 @@ fun ScreenshotItem(
         ) {
             Text(
                 text = savedScreenshot.celebName,
-                style = MaterialTheme.typography.h5,
+                style = MaterialTheme.typography.subtitle1,
                 color = Color.White,
                 modifier = Modifier.padding(16.dp)
                     .wrapContentSize()

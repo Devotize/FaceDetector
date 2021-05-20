@@ -1,10 +1,15 @@
 package com.sychev.facedetector.presentation.ui.main
 
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,7 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.sychev.facedetector.domain.SavedScreenshot
+import com.sychev.facedetector.presentation.MainActivity
 import com.sychev.facedetector.presentation.ui.components.ScreenshotItem
+import com.sychev.facedetector.service.FaceDetectorService
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -47,11 +54,25 @@ class MainFragment : Fragment() {
 //                    horizontalAlignment = Alignment.CenterHorizontally,
 //                    verticalArrangement = Arrangement.Center,
                 ) {
-                    Text(
-                        text = "Library",
-                        modifier = Modifier.padding(16.dp, 8.dp, 8.dp, 4.dp),
-                        style = MaterialTheme.typography.h5
-                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "Library",
+                            modifier = Modifier.padding(16.dp, 8.dp, 8.dp, 4.dp),
+                            style = MaterialTheme.typography.h5
+                        )
+
+                        Button(
+                            modifier = Modifier.padding(16.dp, 8.dp, 8.dp, 4.dp),
+                            onClick = {
+                            viewModel.onTriggerEvent(MainEvent.LaunchDetector(activity as MainActivity))
+                        }) {
+                            Text(text = "Launch Assistant")
+                        }
+                    }
 
                     Surface(
                         modifier = Modifier
@@ -66,7 +87,7 @@ class MainFragment : Fragment() {
                     }
 
                     screenshotList?.let {screenshotList ->
-                        LazyVerticalGrid(cells = GridCells.Adaptive(200.dp)) {
+                        LazyVerticalGrid(cells = GridCells.Adaptive(130.dp)) {
                             itemsIndexed(screenshotList.reversed()){index: Int, savedScreenshot: SavedScreenshot ->
                                 ScreenshotItem(
                                     savedScreenshot = savedScreenshot,

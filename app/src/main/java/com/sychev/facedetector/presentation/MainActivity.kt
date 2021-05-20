@@ -49,16 +49,25 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     startService(intent)
                 }
-//                finish()
+                finish()
             }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (savedInstanceState == null) {
-            startAssistantService()
-        }
+
+        val intent = Intent(applicationContext, FaceDetectorService::class.java)
+//        intent.putExtra(FaceDetectorService.EXIT_NAME, FaceDetectorService.EXIT_VALUE)
+
+        stopService(intent)
+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            startForegroundService(intent)
+//        } else {
+//            startService(intent)
+//        }
+
     }
 
 
@@ -68,7 +77,7 @@ class MainActivity : AppCompatActivity() {
             getMediaProjection.launch(projectionManager.createScreenCaptureIntent())
         }
 
-        private fun startAssistantService() {
+        fun startAssistantService() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (!Settings.canDrawOverlays(this)) {
                     val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)

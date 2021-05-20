@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import com.sychev.facedetector.data.local.dao.ScreenshotDao
 import com.sychev.facedetector.data.local.entity.ScreenshotEntity
 
-@Database(entities = [ScreenshotEntity::class], version = 6)
+@Database(entities = [ScreenshotEntity::class], version = 7)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun screenshotDao(): ScreenshotDao
 }

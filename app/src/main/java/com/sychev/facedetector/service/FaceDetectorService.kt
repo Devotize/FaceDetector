@@ -8,14 +8,24 @@ import android.content.pm.ServiceInfo
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.sychev.facedetector.presentation.PhotoFaceDetector
+import com.sychev.facedetector.utils.TAG
 
-const val NOTIFICATION_CHANNEL_ID = "face_detector_service_channel_id"
-const val SERVICE_ID = 1
-const val EXIT_REQUEST_CODE = 2
+
 
 class FaceDetectorService: Service() {
+
+    companion object {
+        const val NOTIFICATION_CHANNEL_ID = "face_detector_service_channel_id"
+        const val SERVICE_ID = 1
+        const val EXIT_REQUEST_CODE = 2
+        const val EXIT_NAME = "exit_intent"
+        const val EXIT_VALUE = "command_exit"
+    }
+
+    private var faceDetector: PhotoFaceDetector? = null
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -24,14 +34,24 @@ class FaceDetectorService: Service() {
     private fun stopService() {
         stopForeground(true)
         stopSelf()
+        faceDetector?.close()
+        faceDetector = null
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val command = intent?.getStringExtra("exit_intent")
-        if (command == "command_exit") stopService().also { return START_NOT_STICKY }
+        val command = intent?.getStringExtra(EXIT_NAME)
+        if (command == EXIT_VALUE){
+            Log.d(TAG, "onStartCommand: trying to stop service")
+            faceDetector?.let{
+                stopService().also { return START_NOT_STICKY }
+            }
+            return START_NOT_STICKY
+        }
+        Log.d(TAG, "onStartCommand: starting face detector")
 
         val data = intent?.getParcelableExtra<Intent>("data")
         if (data != null){
+            Log.d(TAG, "onStartCommand: starting foreground")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
                 startForeground(
                     SERVICE_ID,
@@ -47,10 +67,16 @@ class FaceDetectorService: Service() {
             val projectionManager = applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             val mediaProjection = projectionManager.getMediaProjection(RESULT_OK, data)
 //            VideoFaceDetector(applicationContext, mediaProjection)
-            PhotoFaceDetector(applicationContext, mediaProjection, ::stopService)
+            faceDetector = PhotoFaceDetector(applicationContext, mediaProjection, ::stopService)
         }
 
         return START_STICKY
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        faceDetector?.close()
+        faceDetector = null
     }
 
     private fun createNotification(): Notification {

@@ -33,7 +33,7 @@ import javax.inject.Inject
 class MainFragmentViewModel
 @Inject
     constructor(
-    val repository: SavedScreenshotRepo,
+    private val repository: SavedScreenshotRepo,
 ): ViewModel() {
 
     val screenshotList: MutableState<List<SavedScreenshot>?> = mutableStateOf(null);
@@ -51,7 +51,7 @@ class MainFragmentViewModel
                 event.context.startActivity(browserIntent)
             }
             is MainEvent.LaunchDetector -> {
-
+                launchDetector(event.launcher)
             }
         }
     }
@@ -60,6 +60,10 @@ class MainFragmentViewModel
         isLoading.value = true
         screenshotList.value = repository.getAllScreenshots()
         Log.d(TAG, "getScreenshotsFromCache: screenshotList.value = ${screenshotList.value}")
+    }
+
+    private fun launchDetector(launcher: MainActivity){
+        launcher.startAssistantService()
     }
 
 }

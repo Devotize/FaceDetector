@@ -4,22 +4,22 @@
 
     <scale
         android:duration="1000"
-        android:fromXScale="0.28"
-        android:fromYScale="0.28"
+        android:fromXScale="0.68"
+        android:fromYScale="0.68"
         android:pivotX="50%"
         android:pivotY="50%"
-        android:toXScale="1.0"
-        android:toYScale="1.0"
+        android:toXScale="1.8"
+        android:toYScale="1.8"
         />
 
     <scale
         android:startOffset="1000"
         android:duration="1000"
-        android:fromXScale="1.0"
-        android:fromYScale="1.0"
+        android:fromXScale="1.8"
+        android:fromYScale="1.8"
         android:pivotX="50%"
         android:pivotY="50%"
-        android:toXScale="0.28"
-        android:toYScale="0.28"/>
+        android:toXScale="0.68"
+        android:toYScale="0.68"/>
 
 </set>

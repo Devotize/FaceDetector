@@ -16,6 +16,7 @@ import android.view.*
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
+import androidx.core.content.ContextCompat.startForegroundService
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
@@ -24,6 +25,7 @@ import com.sychev.facedetector.domain.Person
 import com.sychev.facedetector.domain.SavedScreenshot
 import com.sychev.facedetector.presentation.ui.items.MessageItem
 import com.sychev.facedetector.repository.SavedScreenshotRepo
+import com.sychev.facedetector.service.FaceDetectorService
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -107,8 +109,16 @@ class PhotoFaceDetector
     private val closeButton = rootView.findViewById<ImageButton>(R.id.close_button).apply {
         assistantButtons.add(this)
         setOnClickListener {
-            close()
-            stopService?.invoke()
+            removeViewFromWM(frameTouchListener)
+
+            val intent = Intent(context, FaceDetectorService::class.java)
+//            intent.putExtra(FaceDetectorService.EXIT_NAME, FaceDetectorService.EXIT_VALUE)
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                context.startForegroundService(intent)
+//            } else {
+//                context.startService(intent)
+//            }
+            context.stopService(intent)
         }
     }
     private val notificationPointer = rootView.findViewById<Button>(R.id.notifiсation_point).apply {
@@ -310,8 +320,8 @@ class PhotoFaceDetector
         circle.setOnClickListener { circle: View ->
             Log.d(TAG, "addBoundingBox: clicked!")
             screenshot?.let {
-                circleParams.width = rect.height() / 2
-                circleParams.height = rect.height() / 2
+                circleParams.width = rect.height() / 6
+                circleParams.height = rect.height() / 6
                 circle.setBackgroundResource(R.drawable.red_circle_shape)
                 frame.requestLayout()
                 animateCircle(circle)
