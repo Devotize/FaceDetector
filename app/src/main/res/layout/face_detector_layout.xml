@@ -30,7 +30,7 @@
             android:layout_width="13dp"
             android:layout_height="13dp"
             android:layout_gravity="top|start"
-            android:background="@drawable/red_circle_shape_filled"/>
+            android:background="@drawable/gray_circle_shape_filled"/>
 
     </FrameLayout>
 

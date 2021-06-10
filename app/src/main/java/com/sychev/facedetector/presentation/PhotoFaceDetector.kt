@@ -3,27 +3,20 @@ package com.sychev.facedetector.presentation
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.PixelFormat
-import android.graphics.Point
-import android.graphics.Rect
+import android.graphics.*
 import android.hardware.display.DisplayManager
 import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.os.Build
 import android.util.Log
 import android.view.*
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.widget.*
-import androidx.core.content.ContextCompat.startForegroundService
+import androidx.annotation.RequiresApi
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.sychev.facedetector.R
-import com.sychev.facedetector.domain.Person
 import com.sychev.facedetector.domain.SavedScreenshot
-import com.sychev.facedetector.presentation.ui.items.MessageItem
 import com.sychev.facedetector.repository.SavedScreenshotRepo
 import com.sychev.facedetector.service.FaceDetectorService
 import com.sychev.facedetector.utils.TAG
@@ -33,8 +26,20 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.support.common.FileUtil
+import org.tensorflow.lite.support.image.ImageProcessor
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.image.ops.ResizeOp
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.util.*
 import kotlin.collections.ArrayList
+import java.util.Arrays
+import kotlin.math.exp
+import android.R.array
+import com.google.android.material.progressindicator.CircularProgressIndicator
 
 
 class PhotoFaceDetector
@@ -88,6 +93,7 @@ class PhotoFaceDetector
             boundingBoxes.forEach {
                 removeViewFromWM(it)
             }
+            (frameTouchListener as FrameLayout).removeAllViews()
             findNewFaces(0)
         }
     }
@@ -128,7 +134,9 @@ class PhotoFaceDetector
     @SuppressLint("ClickableViewAccessibility")
     private val frameTouchListener = layoutInflater.inflate(R.layout.frame_touch_listener, null).apply {
         setOnTouchListener { v, event ->
+            (this as FrameLayout).removeAllViews()
             findNewFaces(2000)
+            
             
             false
         }
@@ -246,6 +254,34 @@ class PhotoFaceDetector
                 val screenshotBtm = takeScreenshot()
                 if (screenshotBtm != null) {
                     processBitmap(screenshotBtm)
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+//                        val detectedClothes = detectClothes(screenshotBtm)
+//                        withContext(Main) {
+//                            detectedClothes.forEach { rectF ->
+//                                val boundingBoxLayout = FrameLayout(context)
+//                                boundingBoxLayout.setBackgroundResource(R.drawable.bounding_box_drawable);
+//                                val params = WindowManager.LayoutParams(
+//                                    rectF.width().toInt(),
+//                                    rectF.height().toInt(),
+//                                    rectF.centerX().toInt(),
+//                                    rectF.centerY().toInt(),
+//                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+//                                    } else {
+//                                        WindowManager.LayoutParams.TYPE_PHONE
+//                                    },
+//                                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+//                                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+//                                            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+//                                            WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH ,
+//                                    PixelFormat.TRANSLUCENT
+//                                )
+////                addViewToWM(boundingBoxLayout, params)
+//                    }
+//
+//
+//                        }
+//                    }
                 }
                 isDetecting = false
             }
@@ -280,14 +316,19 @@ class PhotoFaceDetector
         val inputImage = InputImage.fromBitmap(bitmap, 0)
         faceDetection.process(inputImage)
             .addOnSuccessListener { faces ->
-                Log.d(TAG, "processBitmap: success")
+                Log.d(TAG, "processBitmap: success, calling celebrity service api")
                 clearBoundingBoxes()
                 detectedFaces.addAll(faces)
                 if (isAssistantShown){
-                    for (face in detectedFaces) {
-                        addBoundingBox(face.boundingBox)
-                        notificationPointer.visibility = View.GONE
+                    notificationPointer.visibility = View.GONE
+                    val facesBitmapList = ArrayList<Bitmap>()
+                    detectedFaces.forEach {
+                        addBoundingBox(it.boundingBox)
+                        facesBitmapList.add(bitmap.cropByBoundingBox(it.boundingBox))
                     }
+//                    CoroutineScope(IO).launch {
+//                        repository.findCelebrity(facesBitmapList)
+//                    }
                 } else {
                     if (faces.isNotEmpty()){
                         notificationPointer.visibility = View.VISIBLE
@@ -308,8 +349,9 @@ class PhotoFaceDetector
         val frame = boundingBoxLayout.findViewById<FrameLayout>(R.id.bounding_box)
         val celebName = frame.findViewById<TextView>(R.id.celeb_name_text_view)
         val circle = Button(context)
-        circle.setBackgroundResource(R.drawable.red_circle_shape_filled)
-        circle.alpha = 0.4f
+        circle.setBackgroundResource(R.drawable.gray_circle_shape_filled)
+        circle.alpha = 0.6f
+        val progressBar = ProgressBar(context)
         val circleParams = FrameLayout.LayoutParams(
             rect.height() / 6,
             rect.height() / 6
@@ -320,43 +362,24 @@ class PhotoFaceDetector
         circle.setOnClickListener { circle: View ->
             Log.d(TAG, "addBoundingBox: clicked!")
             screenshot?.let {
-                circleParams.width = rect.height() / 6
-                circleParams.height = rect.height() / 6
-                circle.setBackgroundResource(R.drawable.red_circle_shape)
-                frame.requestLayout()
-                animateCircle(circle)
-//                animateCircle()
-                CoroutineScope(Dispatchers.Main).launch {
-                    findCelebrity(){ person ->
-                        insertCelebToCache(person.name, it.cropByBoundingBox(rect))
-//                        animateCircle(circle, false)
-                        circleParams.width = rect.height() / 6
-                        circleParams.height = rect.height() / 6
-                        circle.setBackgroundResource(R.drawable.red_circle_shape_filled)
-                        frame.requestLayout()
-                        circle.animation.setAnimationListener(object : Animation.AnimationListener{
-                            override fun onAnimationStart(animation: Animation?) {
-
-                            }
-
-                            override fun onAnimationEnd(animation: Animation?) {
-
-                            }
-
-                            override fun onAnimationRepeat(animation: Animation?) {
-                            }
-
-                        })
-                        circle.animation.cancel()
-                        circle.animation = null
-                        rect.showNameOfCeleb(person.name)
-//                        celebName.text = person.name
-//                        celebName.visibility = View.VISIBLE
-//                        Handler(Looper.getMainLooper()).postDelayed({
-//                            celebName.visibility = View.GONE
-//                        },3000)
-
+                CoroutineScope(Main).launch {
+                    frame.removeView(circle)
+                    frame.addView(progressBar, circleParams)
+                    Log.d(TAG, "addBoundingBox: searching for celeb")
+                    withContext(IO) {
+                        delay(2000)
+                        withContext(Main) {
+                            rect.showNameOfCeleb("Random Name")
+                            frame.removeView(progressBar)
+                            frame.addView(circle)
+                        }
+//                        repository.findCelebrity(listOf(it))[0]?.let{ name ->
+//                            withContext(Main) {
+//                                rect.showNameOfCeleb(name)
+//                            }
+//                        }
                     }
+                    Log.d(TAG, "addBoundingBox: search ended")
                 }
             }
         }
@@ -379,52 +402,7 @@ class PhotoFaceDetector
         boundingBoxes.add(boundingBoxLayout)
         faceCircles.add(circle)
         addViewToWM(boundingBoxLayout, params)
-//        animateCircles()
     }
-//
-//    private fun animateCircles() {
-//        if (faceCircles.isNotEmpty()){
-//            val rand = (0 until faceCircles.size).random()
-//            val anim = AnimationUtils.loadAnimation(context, R.anim.expand_anim)
-//            val faceCircle = faceCircles[rand]
-//            anim.setAnimationListener(object : Animation.AnimationListener{
-//                override fun onAnimationStart(animation: Animation?) {
-//                    faceCircle.setBackgroundResource(R.drawable.red_circle_shape)
-//                }
-//
-//                override fun onAnimationEnd(animation: Animation?) {
-//                    faceCircle.setBackgroundResource(R.drawable.red_circle_shape_filled)
-//                    animateCircles()
-//                }
-//
-//                override fun onAnimationRepeat(animation: Animation?) {
-//
-//                }
-//            })
-////            faceCircles[rand].startAnimation(anim)
-//            faceCircle.startAnimation(anim)
-//        }
-//    }
-
-    private fun animateCircle(circle: View) {
-        val anim = AnimationUtils.loadAnimation(context, R.anim.expand_anim)
-        anim.setAnimationListener(object : Animation.AnimationListener{
-            override fun onAnimationStart(animation: Animation?) {
-
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                circle.startAnimation(animation)
-            }
-
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
-
-
-        })
-        circle.startAnimation(anim)
-    }
-
     private fun getWmLayoutParams(width: Int, height: Int): WindowManager.LayoutParams {
         return WindowManager.LayoutParams(
             width,
@@ -443,22 +421,6 @@ class PhotoFaceDetector
             PixelFormat.TRANSLUCENT
         )
     }
-
-    private suspend fun findCelebrity(person: (Person) -> Unit) {
-        val item = MessageItem(message = "I think this is...")
-        delay(3500)
-        val person = Person(
-            name = "Celeb Name",
-            googleSearch = "https://www.google.com/search?q=brad+pitt",
-            instUrl = "https://www.instagram.com/bradpittofflcial/?hl=en",
-            facebookUrl = "https://www.facebook.com/Brad-Pitt-165952813475830/",
-            kinopoiskUrl = "https://www.kinopoisk.ru/name/25584/"
-        )
-        item.setPerson(person)
-        item.setMessage("I think this is")
-        person(person)
-    }
-
     private fun launchApp() {
         val intent = Intent(context, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -475,8 +437,16 @@ class PhotoFaceDetector
     }
 
     private fun Bitmap.cropByBoundingBox(boundingBox: Rect): Bitmap {
-        val x = boundingBox.exactCenterX().toInt() - boundingBox.width()/2
-        val y = boundingBox.exactCenterY().toInt() - boundingBox.height()/2
+        val x = if (boundingBox.exactCenterX().toInt() - boundingBox.width()/2 >= 0)  {
+            boundingBox.exactCenterX().toInt() - boundingBox.width()/2
+        } else {
+            0
+        }
+        val y = if (boundingBox.exactCenterY().toInt() - boundingBox.height()/2 >= 0) {
+            boundingBox.exactCenterY().toInt() - boundingBox.height()/2
+        } else {
+            0
+        }
         var height = boundingBox.height() * 1.25
         var width = boundingBox.width() * 1.2
 //        Log.d(TAG, "cropByBoundingBox: y + height = ${y + height}, bitmap.height = ${this.height}")
@@ -498,7 +468,8 @@ class PhotoFaceDetector
                 i++
             }
         }
-
+        Log.d(TAG, "cropByBoundingBox: x: $x")
+        Log.d(TAG, "cropByBoundingBox: y: $y")
         return Bitmap.createBitmap(this, x, y, width.toInt(), height.toInt())
     }
 
@@ -519,35 +490,201 @@ class PhotoFaceDetector
         val celebNameTextView = nameLayout.findViewById<TextView>(R.id.celeb_name_text_view)
         celebNameTextView.text = name
 
-        val anim = AnimationUtils.loadAnimation(context, R.anim.fade_in_fade_out_anim)
-        anim.setAnimationListener(object : Animation.AnimationListener{
-            override fun onAnimationStart(animation: Animation?) {
-
-            }
-
-            override fun onAnimationEnd(animation: Animation?) {
-                if (nameLayout.parent != null) {
-                    (frameTouchListener as FrameLayout).removeView(nameLayout)
-                }
-            }
-
-            override fun onAnimationRepeat(animation: Animation?) {
-
-            }
-
-        })
+//        val anim = AnimationUtils.loadAnimation(context, R.anim.fade_in_fade_out_anim)
+//        anim.setAnimationListener(object : Animation.AnimationListener{
+//            override fun onAnimationStart(animation: Animation?) {
+//
+//            }
+//
+//            override fun onAnimationEnd(animation: Animation?) {
+//                if (nameLayout.parent != null) {
+//                    (frameTouchListener as FrameLayout).removeView(nameLayout)
+//                }
+//            }
+//
+//            override fun onAnimationRepeat(animation: Animation?) {
+//
+//            }
+//
+//        })
         val params = FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.WRAP_CONTENT,
             FrameLayout.LayoutParams.WRAP_CONTENT,
         )
 
-        params.topMargin = bottom + 30
+        params.topMargin = top + height() / 2 + 35
         params.marginStart = left
 
         (frameTouchListener as FrameLayout).addView(nameLayout, params)
 
-        nameLayout.startAnimation(anim)
+//        nameLayout.startAnimation(anim)
 
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun detectClothes(bitmap: Bitmap): List<RectF> {
+        Log.d(TAG, "detectClothes: called")
+        //        ClothesTestModel model = ClothesTestModel.newInstance(context);
+        val ip = ImageProcessor.Builder()
+            .add(ResizeOp(416, 416, ResizeOp.ResizeMethod.BILINEAR))
+            .build()
+        val ti = TensorImage(DataType.FLOAT32)
+        ti.load(bitmap)
+        val resizedImage = ip.process(ti)
+        val inputBuffer = TensorBuffer.createFixedSize(intArrayOf(1, 416, 416, 3), DataType.FLOAT32)
+        inputBuffer.loadBuffer(resizedImage.buffer)
+        val OUTPUT_WIDTH = 2535
+        val labelSize = 13
+        val outputMap: MutableMap<Int, Any> = java.util.HashMap()
+        outputMap[0] = Array(1) {
+            Array(OUTPUT_WIDTH) {
+                FloatArray(
+                    4
+                )
+            }
+        }
+        outputMap[1] = Array(1) {
+            Array(OUTPUT_WIDTH) {
+                FloatArray(
+                    labelSize
+                )
+            }
+        }
+        val tfliteModel = FileUtil.loadMappedFile(context, "ClothesTestModel.tflite")
+        val tfliteInterpreter = Interpreter(tfliteModel, Interpreter.Options())
+        tfliteInterpreter.runForMultipleInputsOutputs(arrayOf(inputBuffer.buffer), outputMap)
+        Log.d(TAG, "detectClothes: outputs: $outputMap")
+        val bboxes = outputMap[0] as Array<Array<FloatArray>>?
+        val outScores = outputMap[1] as Array<Array<FloatArray>>?
+        val rects = ArrayList<RectF>()
+        for (i in 0 until OUTPUT_WIDTH) {
+            var maxClass = 0.0f
+            var detectedClass = -1
+            val classes = FloatArray(labelSize)
+//            Log.d(TAG, "detectClothes: ${outScores!![0][i].toList()}")
+            for (c in 0 until labelSize) {
+//                Log.d(TAG, "detectClothes: ${activation(outScores!![0][i]).toList()}")
+//                val activatedScores = activation(outScores!![0][i])
+                val softmax = softmax(outScores!![0][i])
+//                Log.d(TAG, "detectClothes: softmax = ${softmax.toList()}")
+                classes[c] = softmax[c].toFloat()
+//                classes[c] = outScores!![0][i][c]
+            }
+            for (c in 0 until labelSize) {
+                if (classes[c] > maxClass) {
+                    detectedClass = c
+                    maxClass = classes[c]
+                }
+            }
+            val score = maxClass
+//            val score = softmax(maxClass.toDouble(), outScores!![0][i])
+
+
+            if (score > 0.0) {
+                Log.d(TAG, "detectClothes: score = $score")
+                val xPos = bboxes!![0][i][0]
+                val yPos = bboxes[0][i][1]
+                val w = bboxes[0][i][2]
+                val h = bboxes[0][i][3]
+                val rectF = RectF(
+                    Math.max(0f, xPos - w / 2),
+                    Math.max(0f, yPos - h / 2),
+                    Math.min((bitmap.width - 1).toFloat(), xPos + w / 2),
+                    Math.min((bitmap.height - 1).toFloat(), yPos + h / 2)
+                )
+                if (rectF.left > 200 && rectF.left < 350 && rectF.top > 500) {
+                    Log.d(TAG, "detectClothes: rectF: ${rectF}")
+                }
+//                Log.d(TAG, "detectClothes: rectF: $rectF")
+                rects.add(rectF)
+            }
+//            rects.forEach {rectF ->
+//                addBoundingBox(rectF.toRect())
+//                val boundingBoxLayout = FrameLayout(context)
+//                boundingBoxLayout.setBackgroundResource(R.drawable.bounding_box_drawable);
+//                val params = WindowManager.LayoutParams(
+//                    rectF.width().toInt(),
+//                    rectF.height().toInt(),
+//                    rectF.centerX().toInt(),
+//                    rectF.centerY().toInt(),
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+//                    } else {
+//                        WindowManager.LayoutParams.TYPE_PHONE
+//                    },
+//                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+//                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+//                            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+//                            WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH ,
+//                    PixelFormat.TRANSLUCENT
+//                )
+//                addViewToWM(boundingBoxLayout, params)
+//            }
+        }
+        return rects
+    }
+
+    fun activation(input: FloatArray): FloatArray {
+        val exp = FloatArray(input.size)
+        var sum = 0.0f
+        for (neuron in exp.indices) {
+            exp[neuron] = exp(input[neuron].toDouble()).toFloat()
+            sum += exp[neuron]
+        }
+        val output = FloatArray(input.size)
+        for (neuron in output.indices) {
+            output[neuron] = (exp[neuron] / sum)
+        }
+        return output
+    }
+
+//    fun derivative(input: FloatArray): FloatArray {
+//        val softmax: FloatArray = activation(input)
+//        val output = FloatArray(input.size)
+//        for (neuron in output.indices) {
+//            output[neuron] = (softmax[neuron] * (1.0 - softmax[neuron])).toFloat()
+//        }
+//        return output
+//    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun softmax(input: Double, neuronValues: FloatArray): Double {
+        val doubleNeurons = neuronValues.map {
+            it.toDouble()
+        }.toDoubleArray()
+        val total = Arrays.stream(doubleNeurons).map { a: Double ->
+            Math.exp(
+                a
+            )
+        }.sum()
+        return Math.exp(input) / total
+    }
+
+    private fun softmax(array: FloatArray): DoubleArray {
+        val doubleArray = array.map {
+            it.toDouble()
+        }.toDoubleArray()
+        val max = max(doubleArray)
+        for (i in doubleArray.indices) {
+            doubleArray[i] = doubleArray[i] - max
+        }
+        var sum: Double = 0.0
+        val result = DoubleArray(doubleArray.size)
+        for (i in 0 until doubleArray.size) {
+            sum += Math.exp(array[i].toDouble())
+        }
+        for (i in result.indices) {
+            result[i] = Math.exp(array[i].toDouble()) / sum
+        }
+        return result
+    }
+
+    private fun max(array: DoubleArray): Double {
+        var result = Double.MIN_VALUE
+        for (i in array.indices) {
+            if (array[i] > result) result = array[i]
+        }
+        return result
     }
 
 }

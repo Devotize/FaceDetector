@@ -2,6 +2,7 @@ package com.sychev.facedetector.di
 
 import com.sychev.facedetector.data.local.dao.ScreenshotDao
 import com.sychev.facedetector.data.local.mapper.EntityMapper
+import com.sychev.facedetector.data.remote.CelebDetectionApi
 import com.sychev.facedetector.repository.SavedScreenshotRepo
 import com.sychev.facedetector.repository.SavedScreenshotRepo_Impl
 import dagger.Module
@@ -19,9 +20,12 @@ object RepoModule {
     fun provideRepository(
         entityMapper: EntityMapper,
         screenshotDao: ScreenshotDao,
+        celebDetectionApi: CelebDetectionApi,
     ): SavedScreenshotRepo {
         return SavedScreenshotRepo_Impl(
-            screenshotDao, entityMapper
+            screenshotDao,
+            entityMapper,
+            celebDetectionApi,
         )
     }
 

@@ -54,6 +54,7 @@ android {
 
     buildFeatures {
         compose true
+        mlModelBinding true
     }
     composeOptions {
         kotlinCompilerVersion "1.4.32"
@@ -87,6 +88,8 @@ dependencies {
     implementation 'com.google.mlkit:face-detection:16.0.5'
     //groupie recycler view
     implementation "com.xwray:groupie:2.9.0"
+    implementation 'org.tensorflow:tensorflow-lite-support:0.1.0'
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
     //room
     def room_version = "2.3.0"
     implementation "androidx.room:room-runtime:$room_version"
@@ -96,6 +99,14 @@ dependencies {
     //hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
+    //retrofit
+    def retrofit_version = "2.9.0"
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
+    //tf lite model deployment
+    implementation 'org.tensorflow:tensorflow-lite:2.3.0'
+
 
     //compose
     def compose_version = "1.0.0-beta05"
