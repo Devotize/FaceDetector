@@ -10,7 +10,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.sychev.facedetector.presentation.PhotoFaceDetector
+import com.sychev.facedetector.presentation.ui.detectorAssitant.PhotoDetector
 import com.sychev.facedetector.utils.TAG
 
 
@@ -25,7 +25,7 @@ class FaceDetectorService: Service() {
         const val EXIT_VALUE = "command_exit"
     }
 
-    private var faceDetector: PhotoFaceDetector? = null
+    private var photoDetector: PhotoDetector? = null
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -34,15 +34,15 @@ class FaceDetectorService: Service() {
     private fun stopService() {
         stopForeground(true)
         stopSelf()
-        faceDetector?.close()
-        faceDetector = null
+        photoDetector?.close()
+        photoDetector = null
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val command = intent?.getStringExtra(EXIT_NAME)
         if (command == EXIT_VALUE){
             Log.d(TAG, "onStartCommand: trying to stop service")
-            faceDetector?.let{
+            photoDetector?.let{
                 stopService().also { return START_NOT_STICKY }
             }
             return START_NOT_STICKY
@@ -67,7 +67,7 @@ class FaceDetectorService: Service() {
             val projectionManager = applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             val mediaProjection = projectionManager.getMediaProjection(RESULT_OK, data)
 //            VideoFaceDetector(applicationContext, mediaProjection)
-            faceDetector = PhotoFaceDetector(applicationContext, mediaProjection, ::stopService)
+            photoDetector = PhotoDetector(applicationContext, mediaProjection, ::stopService)
         }
 
         return START_STICKY
@@ -75,8 +75,8 @@ class FaceDetectorService: Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        faceDetector?.close()
-        faceDetector = null
+        photoDetector?.close()
+        photoDetector = null
     }
 
     private fun createNotification(): Notification {

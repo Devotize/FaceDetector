@@ -1,4 +1,4 @@
-package com.sychev.facedetector.presentation
+package com.sychev.facedetector.presentation.ui.detectorAssitant
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -38,11 +38,14 @@ import java.util.*
 import kotlin.collections.ArrayList
 import java.util.Arrays
 import kotlin.math.exp
-import android.R.array
-import com.google.android.material.progressindicator.CircularProgressIndicator
+import android.content.res.ColorStateList
+import android.graphics.Bitmap
+
+import com.sychev.facedetector.presentation.MainActivity
+import com.sychev.facedetector.presentation.ui.items.DetectedClothesList
 
 
-class PhotoFaceDetector
+class PhotoDetector
     (
     private val context: Context,
     private val mediaProjection: MediaProjection,
@@ -57,6 +60,7 @@ class PhotoFaceDetector
 
     private val entryPoint = EntryPointAccessors.fromApplication(context, PhotoFaceDetectorEntryPoint::class.java)
     private val repository = entryPoint.provideRepository()
+    private val detectedClothesList = DetectedClothesList(context)
 
     private var isAssistantShown = false
     private var widthPx = 0
@@ -94,15 +98,32 @@ class PhotoFaceDetector
                 removeViewFromWM(it)
             }
             (frameTouchListener as FrameLayout).removeAllViews()
-            findNewFaces(0)
+//            findNewFaces(0)
         }
     }
     private val assistantButtons: ArrayList<ImageButton> = ArrayList()
     private val openAppButton = rootView.findViewById<ImageButton>(R.id.app_button).apply {
         assistantButtons.add(this)
         setOnClickListener {
-            launchApp()
-            clearBoundingBoxes()
+//            launchApp()
+//            clearBoundingBoxes()
+
+            takeScreenshot()?.let {
+                CoroutineScope(IO).launch {
+                    val detectedClothes = repository.detectClothes(compressInputImage(it), context)
+                    Log.d(TAG, "detectedClothes: $detectedClothes")
+                    withContext(Main) {
+                        detectedClothesList.myAdapter.apply {
+                            val startPosition = list.size
+                            val itemCount = detectedClothes.size
+                            list.addAll(detectedClothes)
+                            notifyItemRangeInserted(startPosition, itemCount)
+                        }
+                        detectedClothesList.open()
+                    }
+                }
+            }
+
         }
     }
     private val galleryButton = rootView.findViewById<ImageButton>(R.id.gallery_button).apply {
@@ -135,7 +156,7 @@ class PhotoFaceDetector
     private val frameTouchListener = layoutInflater.inflate(R.layout.frame_touch_listener, null).apply {
         setOnTouchListener { v, event ->
             (this as FrameLayout).removeAllViews()
-            findNewFaces(2000)
+//            findNewFaces(2000)
             
             
             false
@@ -352,6 +373,7 @@ class PhotoFaceDetector
         circle.setBackgroundResource(R.drawable.gray_circle_shape_filled)
         circle.alpha = 0.6f
         val progressBar = ProgressBar(context)
+        progressBar.indeterminateTintList = ColorStateList.valueOf(Color.GRAY)
         val circleParams = FrameLayout.LayoutParams(
             rect.height() / 6,
             rect.height() / 6
@@ -367,17 +389,11 @@ class PhotoFaceDetector
                     frame.addView(progressBar, circleParams)
                     Log.d(TAG, "addBoundingBox: searching for celeb")
                     withContext(IO) {
-                        delay(2000)
-                        withContext(Main) {
-                            rect.showNameOfCeleb("Random Name")
-                            frame.removeView(progressBar)
-                            frame.addView(circle)
+                        repository.findCelebrity(listOf(compressInputImage(it.cropByBoundingBox(rect))))[0]?.let{ name ->
+                            withContext(Main) {
+                                rect.showNameOfCeleb(name)
+                            }
                         }
-//                        repository.findCelebrity(listOf(it))[0]?.let{ name ->
-//                            withContext(Main) {
-//                                rect.showNameOfCeleb(name)
-//                            }
-//                        }
                     }
                     Log.d(TAG, "addBoundingBox: search ended")
                 }
@@ -403,6 +419,31 @@ class PhotoFaceDetector
         faceCircles.add(circle)
         addViewToWM(boundingBoxLayout, params)
     }
+
+    fun compressInputImage(bitmap: Bitmap): Bitmap {
+        var dpBitmap = Bitmap.createBitmap(10,10,Bitmap.Config.ARGB_8888)
+        val bitmapInputImage = bitmap
+        try {
+            if (bitmapInputImage.getWidth() > 2048 && bitmapInputImage.getHeight() > 2048) {
+                 dpBitmap = Bitmap.createScaledBitmap(bitmapInputImage, 1024, 1280, true)
+            } else if (bitmapInputImage.getWidth() > 2048 && bitmapInputImage.getHeight() < 2048) {
+                  dpBitmap = Bitmap.createScaledBitmap(bitmapInputImage, 1920, 1200, true)
+            } else if (bitmapInputImage.getWidth() < 2048 && bitmapInputImage.getHeight() > 2048) {
+                 dpBitmap = Bitmap.createScaledBitmap(bitmapInputImage, 1024, 1280, true)
+            } else if (bitmapInputImage.getWidth() < 2048 && bitmapInputImage.getHeight() < 2048) {
+                 dpBitmap = Bitmap.createScaledBitmap(
+                    bitmapInputImage,
+                    bitmapInputImage.getWidth(),
+                    bitmapInputImage.getHeight(),
+                    true
+                )
+            }
+        } catch (e: Exception) {
+            dpBitmap = bitmapInputImage
+        }
+        return dpBitmap
+    }
+
     private fun getWmLayoutParams(width: Int, height: Int): WindowManager.LayoutParams {
         return WindowManager.LayoutParams(
             width,
