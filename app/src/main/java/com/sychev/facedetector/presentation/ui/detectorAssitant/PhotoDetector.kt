@@ -18,7 +18,6 @@ import com.google.mlkit.vision.face.FaceDetection
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.SavedScreenshot
 import com.sychev.facedetector.repository.SavedScreenshotRepo
-import com.sychev.facedetector.service.FaceDetectorService
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -40,9 +39,14 @@ import java.util.Arrays
 import kotlin.math.exp
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
+import androidx.constraintlayout.widget.ConstraintLayout
 
 import com.sychev.facedetector.presentation.MainActivity
-import com.sychev.facedetector.presentation.ui.items.DetectedClothesList
+import com.sychev.facedetector.presentation.ui.items.BottomFavoriteSheet
+import com.sychev.facedetector.presentation.ui.items.BottomGallerySheet
+import com.sychev.facedetector.presentation.ui.items.DetectedClothesListItem
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 
 class PhotoDetector
@@ -54,13 +58,19 @@ class PhotoDetector
 
     @EntryPoint
     @InstallIn(SingletonComponent::class)
-    interface PhotoFaceDetectorEntryPoint{
+    interface PhotoDetectorEntryPoint{
         fun provideRepository(): SavedScreenshotRepo
+        fun provideViewModel(): DetectorViewModel
     }
 
-    private val entryPoint = EntryPointAccessors.fromApplication(context, PhotoFaceDetectorEntryPoint::class.java)
+
+
+    private val entryPoint = EntryPointAccessors.fromApplication(context, PhotoDetectorEntryPoint::class.java)
+    private val viewModel = entryPoint.provideViewModel()
     private val repository = entryPoint.provideRepository()
-    private val detectedClothesList = DetectedClothesList(context)
+    private val detectedClothesList = DetectedClothesListItem(context)
+    private val bottomGallerySheet = BottomGallerySheet(context)
+    private val bottomFavoriteSheet = BottomFavoriteSheet(context)
 
     private var isAssistantShown = false
     private var widthPx = 0
@@ -89,8 +99,9 @@ class PhotoDetector
 
     private val layoutInflater =
         context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-    private val rootView = layoutInflater.inflate(R.layout.face_detector_layout, null)
-    private val sheetButton = rootView.findViewById<FrameLayout>(R.id.sheet_button).apply {
+    private val rootView = layoutInflater.inflate(R.layout.detector_assistant_layout, null)
+    private val detectorButtonsLayout = rootView.findViewById<ConstraintLayout>(R.id.detector_buttons_layout)
+    private val showButton = rootView.findViewById<FrameLayout>(R.id.detector_show_button).apply {
         setOnClickListener {
             isAssistantShown = !isAssistantShown
             showOrHideAssistant()
@@ -101,53 +112,36 @@ class PhotoDetector
 //            findNewFaces(0)
         }
     }
-    private val assistantButtons: ArrayList<ImageButton> = ArrayList()
-    private val openAppButton = rootView.findViewById<ImageButton>(R.id.app_button).apply {
-        assistantButtons.add(this)
+    private val cameraButton = rootView.findViewById<ImageButton>(R.id.detector_camera_button).apply {
         setOnClickListener {
-//            launchApp()
-//            clearBoundingBoxes()
 
             takeScreenshot()?.let {
-                CoroutineScope(IO).launch {
-                    val detectedClothes = repository.detectClothes(compressInputImage(it), context)
-                    Log.d(TAG, "detectedClothes: $detectedClothes")
-                    withContext(Main) {
-                        detectedClothesList.myAdapter.apply {
-                            val startPosition = list.size
-                            val itemCount = detectedClothes.size
-                            list.addAll(detectedClothes)
-                            notifyItemRangeInserted(startPosition, itemCount)
-                        }
-                        detectedClothesList.open()
-                    }
-                }
+                viewModel.onTriggerEvent(DetectorEvent.SearchClothesEvent(it))
             }
 
         }
     }
-    private val galleryButton = rootView.findViewById<ImageButton>(R.id.gallery_button).apply {
-        assistantButtons.add(this)
-        setOnClickListener {
-            launchApp()
-            clearBoundingBoxes()
-        }
-    }
-    private val closeButton = rootView.findViewById<ImageButton>(R.id.close_button).apply {
-        assistantButtons.add(this)
-        setOnClickListener {
-            removeViewFromWM(frameTouchListener)
+    private val progressBarCenter = ProgressBar(context)
 
-            val intent = Intent(context, FaceDetectorService::class.java)
-//            intent.putExtra(FaceDetectorService.EXIT_NAME, FaceDetectorService.EXIT_VALUE)
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                context.startForegroundService(intent)
-//            } else {
-//                context.startService(intent)
-//            }
-            context.stopService(intent)
+    private val galleryButton = rootView.findViewById<ImageButton>(R.id.detector_gallery_button).apply {
+        setOnClickListener {
+            clearBoundingBoxes()
+            bottomGallerySheet.open()
         }
     }
+    private val closeButton = rootView.findViewById<ImageButton>(R.id.detector_close_button).apply {
+        setOnClickListener {
+            (frameTouchListener as FrameLayout).removeAllViews()
+            isAssistantShown = !isAssistantShown
+            showOrHideAssistant()
+        }
+    }
+    private val favoriteButton = rootView.findViewById<ImageButton>(R.id.detector_favorite_button).apply {
+        setOnClickListener {
+            bottomFavoriteSheet.open()
+        }
+    }
+
     private val notificationPointer = rootView.findViewById<Button>(R.id.notifiсation_point).apply {
         visibility = View.GONE
     }
@@ -157,11 +151,12 @@ class PhotoDetector
         setOnTouchListener { v, event ->
             (this as FrameLayout).removeAllViews()
 //            findNewFaces(2000)
-            
-            
+
             false
         }
     }
+
+
 
     private val frameParams = WindowManager.LayoutParams(
         WindowManager.LayoutParams.MATCH_PARENT,
@@ -227,6 +222,7 @@ class PhotoDetector
     init {
         open()
         showOrHideAssistant()
+        onDetectorCreated()
     }
 
     fun open() {
@@ -250,15 +246,13 @@ class PhotoDetector
     private fun showOrHideAssistant(){
         if (isAssistantShown){
             sheetArrow.setImageResource(R.drawable.ic_baseline_arrow_forward_24)
+            showButton.visibility = View.INVISIBLE
             notificationPointer.visibility = View.GONE
-            assistantButtons.forEach {
-                it.visibility = View.VISIBLE
-            }
+            detectorButtonsLayout.visibility = View.VISIBLE
         } else {
             sheetArrow.setImageResource(R.drawable.ic_baseline_arrow_back_24)
-            assistantButtons.forEach {
-                it.visibility = View.GONE
-            }
+            showButton.visibility = View.VISIBLE
+            detectorButtonsLayout.visibility = View.GONE
         }
     }
 
@@ -467,6 +461,21 @@ class PhotoDetector
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         context.startActivity(intent)
     }
+
+    private fun showProgressBar() {
+        if (progressBarCenter.parent == null) {
+            (frameTouchListener as FrameLayout).addView(
+                progressBarCenter,
+                FrameLayout.LayoutParams(110, 110).apply { gravity = Gravity.CENTER })
+        }
+    }
+
+    private fun hideProgressBar() {
+        if (progressBarCenter.parent != null){
+            (frameTouchListener as FrameLayout).removeView(progressBarCenter)
+        }
+    }
+
 
     private fun clearBoundingBoxes() {
         boundingBoxes.forEach {
@@ -726,6 +735,21 @@ class PhotoDetector
             if (array[i] > result) result = array[i]
         }
         return result
+    }
+
+    private fun onDetectorCreated() {
+        viewModel.loading.onEach { loading ->
+            if (loading) {
+                showProgressBar()
+            } else {
+                hideProgressBar()
+            }
+        }.launchIn(CoroutineScope(Main))
+
+        viewModel.detectedClothesList.onEach {
+            Log.d(TAG, "onDetectorCreated: detectedClothes: $it")
+        }.launchIn(CoroutineScope(Main))
+
     }
 
 }

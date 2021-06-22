@@ -5,11 +5,13 @@ import android.graphics.BitmapFactory
 import com.sychev.facedetector.data.local.entity.ScreenshotEntity
 import com.sychev.facedetector.domain.DomainMapper
 import com.sychev.facedetector.domain.SavedScreenshot
+import com.sychev.facedetector.utils.toBitmap
+import com.sychev.facedetector.utils.toByteArray
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
 
-class EntityMapper: DomainMapper<SavedScreenshot, ScreenshotEntity> {
+class SavedScreenshotConverter: DomainMapper<SavedScreenshot, ScreenshotEntity> {
     override fun fromDomainModel(model: SavedScreenshot): ScreenshotEntity {
         return ScreenshotEntity(
             image = model.image.toByteArray(),
@@ -33,16 +35,6 @@ class EntityMapper: DomainMapper<SavedScreenshot, ScreenshotEntity> {
                 it.celebName
             )
         }
-    }
-
-    private fun Bitmap.toByteArray(): ByteArray {
-        val stream = ByteArrayOutputStream()
-        this.compress(Bitmap.CompressFormat.PNG, 90, stream)
-        return stream.toByteArray()
-    }
-
-    private fun ByteArray.toBitmap(): Bitmap {
-        return BitmapFactory.decodeByteArray(this, 0, this.size)
     }
 
 }

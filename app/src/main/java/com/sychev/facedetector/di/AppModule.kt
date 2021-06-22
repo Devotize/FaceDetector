@@ -2,6 +2,7 @@ package com.sychev.facedetector.di
 
 import android.content.Context
 import com.sychev.facedetector.presentation.BaseApplication
+import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorViewModel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,4 +20,10 @@ object AppModule {
         return context as BaseApplication
     }
 
+    @Singleton
+    @Provides
+    fun provideViewModel(@ApplicationContext context: Context): DetectorViewModel
+    {
+        return DetectorViewModel(context)
+    }
 }

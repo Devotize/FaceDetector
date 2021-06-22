@@ -72,6 +72,8 @@
             android:layout_marginBottom="8dp"
             />
 
+
+
         <ImageButton
             android:id="@+id/close_button"
             android:layout_width="25dp"

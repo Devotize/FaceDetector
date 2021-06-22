@@ -1,25 +1,20 @@
 package com.sychev.facedetector.di
 
-import android.content.Context
 import com.google.gson.GsonBuilder
 import com.sychev.facedetector.data.remote.CelebDetectionApi
 import com.sychev.facedetector.data.remote.ClothesDetectionApi
-import com.sychev.facedetector.data.remote.converter.DetectedClothesConverter
-import com.sychev.facedetector.data.remote.converter.DetectedClothesConverterImpl
+import com.sychev.facedetector.data.remote.converter.DetectedClothesDtoConverter
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.create
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.inject.Singleton
-import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
@@ -87,7 +82,7 @@ object NetworkModule {
 
     @Singleton
     @Provides
-    fun provideDetectedClothesConverter(): DetectedClothesConverter = DetectedClothesConverterImpl()
+    fun provideDetectedClothesConverter(): DetectedClothesDtoConverter = DetectedClothesDtoConverter()
 
 }
 

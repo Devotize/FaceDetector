@@ -17,6 +17,4 @@ interface SavedScreenshotRepo {
 
     suspend fun findCelebrity(croppedFaces: List<Bitmap>): HashMap<Int, String>
 
-    suspend fun detectClothes(bitmap: Bitmap, context: Context): List<DetectedClothes>
-
 }

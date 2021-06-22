@@ -2,9 +2,9 @@ package com.sychev.facedetector.di
 
 import android.content.Context
 import androidx.room.Room
-import androidx.room.RoomDatabase
 import com.sychev.facedetector.data.local.AppDatabase
-import com.sychev.facedetector.data.local.mapper.EntityMapper
+import com.sychev.facedetector.data.local.mapper.DetectedClothesEntityConverter
+import com.sychev.facedetector.data.local.mapper.SavedScreenshotConverter
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,9 +32,17 @@ object CacheModule {
     @Singleton
     fun provideScreenshotDao(appDb: AppDatabase) = appDb.screenshotDao()
 
+    @Provides
+    @Singleton
+    fun provideDetectedClothesDao(appDb: AppDatabase) = appDb.detectedClothesDao()
+
     @Singleton
     @Provides
-    fun provideEntityMapper() = EntityMapper()
+    fun provideEntityMapper() = SavedScreenshotConverter()
+
+    @Singleton
+    @Provides
+    fun provideDetectedClothesConverter() = DetectedClothesEntityConverter()
 
 }
 

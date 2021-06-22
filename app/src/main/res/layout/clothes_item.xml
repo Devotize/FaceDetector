@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="125dp"
-    android:layout_height="125dp"
+    android:layout_width="108dp"
+    android:layout_height="159dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_margin="8dp"
@@ -11,8 +11,27 @@
         android:id="@+id/clothes_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="10dp"
-        tools:src="@drawable/red_circle_shape"
+        android:layout_margin="15dp"
+        tools:src="@drawable/common_google_signin_btn_icon_dark"
         />
+
+    <Button
+        android:id="@+id/clothes_item_favorite_button"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:background="@drawable/empty_heart"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="4dp"
+        />
+
+    <Button
+        android:id="@+id/clothes_item_close_button"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:background="@drawable/ic_baseline_close_24_black"
+        android:layout_gravity="top|end"
+        android:layout_margin="4dp"
+        />
+
 
 </androidx.cardview.widget.CardView>

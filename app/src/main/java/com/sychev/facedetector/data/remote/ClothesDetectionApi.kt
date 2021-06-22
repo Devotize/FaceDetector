@@ -8,15 +8,16 @@ import okhttp3.ResponseBody
 import retrofit2.http.*
 import java.io.File
 
+
+//https://searcher-ml02.rgsbank.ru:8083/docs
+//https://rgsb-searcher-segment-ml02.rgsbank.ru:8083/docs
+
 interface ClothesDetectionApi {
 
-//    @FormUrlEncoded
-//    @Multipart
+
     @POST("search")
     suspend fun detectClothes(
-//    @Part file: MultipartBody.Part,
     @Body requestBody: RequestBody,
-//    @Field("img", encoded = true) file: RequestBody
     ): DetectedClothesDto
 
 }
