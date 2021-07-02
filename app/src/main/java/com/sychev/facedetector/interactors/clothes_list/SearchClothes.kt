@@ -36,7 +36,7 @@ class SearchClothes(
             emit(DataState.success(result))
 
         }catch (e: Exception) {
-            emit(DataState.error("unknown error ${e.message}"))
+            emit(DataState.error("${e.message}"))
             e.printStackTrace()
         }
 

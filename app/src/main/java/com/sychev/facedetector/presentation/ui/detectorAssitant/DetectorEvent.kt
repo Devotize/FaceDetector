@@ -17,4 +17,8 @@ sealed class DetectorEvent {
 
     class GetNumDetectedClothes(val numOfElements: Int): DetectorEvent()
 
+    class ShareMultiplyUrls(val urls: ArrayList<String>): DetectorEvent()
+
+    class DetectClothesLocalEvent(val screenshot: Bitmap): DetectorEvent()
+
 }

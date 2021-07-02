@@ -8,6 +8,7 @@ import com.sychev.facedetector.interactors.clothes.DeleteClothes
 import com.sychev.facedetector.interactors.clothes.GetClothesList
 import com.sychev.facedetector.interactors.clothes.GetFavoriteClothes
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
+import com.sychev.facedetector.interactors.clothes_list.DetectClothesLocal
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
 import com.sychev.facedetector.repository.DetectedClothesRepository
 import dagger.Module
@@ -57,6 +58,11 @@ object InteractorModule {
         detectedClothesRepository: DetectedClothesRepository
     ): GetClothesList {
         return GetClothesList(detectedClothesRepository)
+    }
+
+    @Provides
+    fun provideDetectClothesLocal(): DetectClothesLocal {
+        return DetectClothesLocal()
     }
 
 

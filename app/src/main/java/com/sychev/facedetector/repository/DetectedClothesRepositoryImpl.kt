@@ -78,6 +78,7 @@ class DetectedClothesRepositoryImpl(
     }
 
     override suspend fun deleteDetectedClothesFromCache(detectedClothes: DetectedClothes) {
+        Log.d(TAG, "deleteDetectedClothesFromCache: called")
         detectedClothesDao.deleteDetectedClothes(detectedClothesEntityConverter.fromDomainModel(detectedClothes))
     }
 }

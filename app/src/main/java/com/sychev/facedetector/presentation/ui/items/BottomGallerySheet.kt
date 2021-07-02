@@ -14,6 +14,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.sychev.facedetector.R
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorEvent
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorViewModel
+import com.sychev.facedetector.presentation.ui.items.adapter.BottomGalleryListAdapter
 import com.sychev.facedetector.presentation.ui.items.adapter.DetectedClothesListAdapter
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -47,7 +48,7 @@ class BottomGallerySheet(
     } as CoordinatorLayout
     private val bottomSheet = mainLayout.findViewById<CardView>(R.id.bottom_gallery_sheet)
     private val sheetBehavior = BottomSheetBehavior.from(bottomSheet)
-    private val myAdapter = DetectedClothesListAdapter(ArrayList(), viewModel)
+    private val myAdapter = BottomGalleryListAdapter(ArrayList(), viewModel)
     private val recyclerView = mainLayout.findViewById<RecyclerView>(R.id.bottom_gallery_recycler_view).apply {
         adapter = myAdapter
         layoutManager = GridLayoutManager(context, 3)
@@ -81,11 +82,11 @@ class BottomGallerySheet(
             sheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
 
-        viewModel.onTriggerEvent(DetectorEvent.GetNumDetectedClothes(16))
-        viewModel.lastTenDetectedClothes
+        viewModel.onTriggerEvent(DetectorEvent.GetAllDetectedClothes)
+        viewModel.allDetectedClothesInCache
             .onEach { detectedClothesList ->
                 myAdapter.list.clear()
-                myAdapter.list.addAll(detectedClothesList)
+                myAdapter.list.addAll(detectedClothesList.takeLast(15).reversed())
                 myAdapter.notifyDataSetChanged()
             }.launchIn(CoroutineScope(Main))
     }
@@ -93,6 +94,7 @@ class BottomGallerySheet(
     fun close() {
         if (mainLayout.parent != null) {
             windowManager.removeView(mainLayout)
+            viewModel.onSelectorModeChanged(false)
         }
     }
 

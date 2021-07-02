@@ -47,7 +47,7 @@ class DetectedClothesListAdapter(val list: ArrayList<DetectedClothes>, private v
             favoriteButton.background = if (detectedClothes.isFavorite) {
                 ContextCompat.getDrawable(itemView.context, R.drawable.filled_heart)
             } else {
-                ContextCompat.getDrawable(itemView.context, R.drawable.empty_heart)
+                ContextCompat.getDrawable(itemView.context, R.drawable.empty_heart_grey)
             }
 
             itemView.setOnClickListener {
@@ -79,7 +79,7 @@ class DetectedClothesListAdapter(val list: ArrayList<DetectedClothes>, private v
                             "bind: favoriteButton clicked, isFavorite = ${detectedClothes.isFavorite}"
                         )
                         it.background =
-                            ContextCompat.getDrawable(itemView.context, R.drawable.empty_heart)
+                            ContextCompat.getDrawable(itemView.context, R.drawable.empty_heart_grey)
                         viewModel.onTriggerEvent(
                             DetectorEvent.DeleteDetectedClothesEvent(
                                 detectedClothes
