@@ -54,6 +54,7 @@ class DetectorViewModel(
     private val _selectedButton: MutableStateFlow<SelectedButton?> = MutableStateFlow(null)
     private val _isSelectorMod: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val _errorMessage: MutableStateFlow<String?> = MutableStateFlow(null)
+    private val _isActive: MutableStateFlow<Boolean?> = MutableStateFlow(null)
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
     val detectedClothesList: StateFlow<List<DetectedClothes>> = _detectedClothesList.asStateFlow()
     val favoriteClothesList = _favoriteClothesList.asStateFlow()
@@ -61,6 +62,7 @@ class DetectorViewModel(
     val selectedButton = _selectedButton.asStateFlow()
     val isSelectorMod = _isSelectorMod.asStateFlow()
     val errorMessage = _errorMessage.asStateFlow()
+    val isActive = _isActive.asStateFlow()
 
     fun onTriggerEvent(event: DetectorEvent) {
         when (event) {
@@ -196,6 +198,10 @@ class DetectorViewModel(
         intent.putExtra(Intent.EXTRA_SUBJECT, "Sharing Url")
         intent.putExtra(Intent.EXTRA_TEXT, stringToShare)
         context.startActivity(Intent.createChooser(intent, "Share Url").apply{flags = Intent.FLAG_ACTIVITY_NEW_TASK})
+    }
+
+    fun setIsActive(isActive: Boolean) {
+        _isActive.value = isActive
     }
 
 }

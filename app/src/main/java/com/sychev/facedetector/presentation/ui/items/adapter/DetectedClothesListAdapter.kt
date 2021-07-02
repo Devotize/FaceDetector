@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorEvent
@@ -39,11 +40,16 @@ class DetectedClothesListAdapter(val list: ArrayList<DetectedClothes>, private v
         itemView: View
     ): RecyclerView.ViewHolder(itemView) {
         val clothesImageView = itemView.findViewById<ImageView>(R.id.clothes_image)
-        val closeButton = itemView.findViewById<Button>(R.id.clothes_item_close_button)
+//        val closeButton = itemView.findViewById<Button>(R.id.clothes_item_close_button)
         val favoriteButton = itemView.findViewById<Button>(R.id.clothes_item_favorite_button)
 
         fun bind(detectedClothes: DetectedClothes, position: Int) {
-            clothesImageView.setImageBitmap(detectedClothes.sourceImage)
+            Glide.with(itemView)
+                .load(detectedClothes.picUrl)
+                .placeholder(R.drawable.clothes_default_icon)
+                .into(clothesImageView)
+
+
             favoriteButton.background = if (detectedClothes.isFavorite) {
                 ContextCompat.getDrawable(itemView.context, R.drawable.filled_heart)
             } else {
@@ -96,11 +102,11 @@ class DetectedClothesListAdapter(val list: ArrayList<DetectedClothes>, private v
 //                }
             }
 
-            closeButton.setOnClickListener {
-                list.removeAt(position)
-                this@DetectedClothesListAdapter.notifyItemRemoved(position)
-                this@DetectedClothesListAdapter.notifyItemRangeChanged(position, list.size)
-            }
+//            closeButton.setOnClickListener {
+//                list.removeAt(position)
+//                this@DetectedClothesListAdapter.notifyItemRemoved(position)
+//                this@DetectedClothesListAdapter.notifyItemRangeChanged(position, list.size)
+//            }
 
         }
 

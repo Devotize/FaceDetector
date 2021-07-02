@@ -10,21 +10,23 @@ class DetectedClothesEntityConverter: DomainMapper<DetectedClothes, DetectedClot
 
     override fun fromDomainModel(model: DetectedClothes): DetectedClothesEntity {
         return DetectedClothesEntity(
-            model.url,
-            model.sourceImage.toByteArray(),
-            model.gender,
-            model.itemCategory,
-            model.isFavorite
+            url = model.url,
+            image = model.picUrl,
+            gender = model.gender,
+            itemCategory = model.itemCategory,
+            isFavorite = model.isFavorite,
+            brand = model.brand
         )
     }
 
     override fun toDomainModel(model: DetectedClothesEntity): DetectedClothes {
         return DetectedClothes(
-            model.url,
-            model.image.toBitmap(),
-            model.gender,
-            model.itemCategory,
-            model.isFavorite
+            url = model.url,
+            picUrl = model.image,
+            gender = model.gender,
+            itemCategory = model.itemCategory,
+            isFavorite = model.isFavorite,
+            brand = model.brand
         )
     }
 

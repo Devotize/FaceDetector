@@ -14,26 +14,10 @@ class DetectedClothesDtoConverter: DomainMapper<DetectedClothes, DetectedClothes
         val domainList = ArrayList<DetectedClothes>()
         dtoModel.forEach {
             domainList.add(
-                DetectedClothes(
-                    it.searchResult[0].url,
-                    it.sourceImg.decodeToBitmap(),
-                    it.searchResult[0].gender,
-                    it.searchResult[0].itemCategory,
-                )
+                toDomainModel(it)
             )
         }
         return domainList
-    }
-
-    fun dummyConvert(): List<DetectedClothes> {
-       return listOf(
-            DetectedClothes(
-                "sdf",
-                Bitmap.createBitmap(10,10,Bitmap.Config.ARGB_8888),
-                "gender",
-                "sdf"
-            )
-        )
     }
 
     override fun fromDomainModel(model: DetectedClothes): DetectedClothesDto.DetectedClothesDtoItem {
@@ -44,6 +28,8 @@ class DetectedClothesDtoConverter: DomainMapper<DetectedClothes, DetectedClothes
                 "",
                 "",
                 "",
+                "",
+                ""
             )),
             "",
             ""
@@ -52,10 +38,11 @@ class DetectedClothesDtoConverter: DomainMapper<DetectedClothes, DetectedClothes
 
     override fun toDomainModel(model: DetectedClothesDto.DetectedClothesDtoItem): DetectedClothes {
         return DetectedClothes(
-            model.searchResult[0].url,
-            model.sourceImg.decodeToBitmap(),
-            model.searchResult[0].gender,
-            model.searchResult[0].itemCategory,
+            url = model.searchResult[0].url,
+            picUrl = model.searchResult[0].pictureUrl,
+            gender = model.searchResult[0].gender,
+            itemCategory = model.searchResult[0].itemCategory,
+            brand = model.searchResult[0].brand
         )
     }
 

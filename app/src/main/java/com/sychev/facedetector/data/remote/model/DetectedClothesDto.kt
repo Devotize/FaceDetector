@@ -22,7 +22,11 @@ class DetectedClothesDto : ArrayList<DetectedClothesDto.DetectedClothesDtoItem>(
             @SerializedName("item_category")
             val itemCategory: String,
             @SerializedName("url")
-            val url: String
+            val url: String,
+            @SerializedName("brand")
+            val brand: String,
+            @SerializedName("pic_url")
+            val pictureUrl: String
         )
     }
 }

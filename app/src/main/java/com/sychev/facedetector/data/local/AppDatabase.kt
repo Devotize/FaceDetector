@@ -7,7 +7,7 @@ import com.sychev.facedetector.data.local.dao.ScreenshotDao
 import com.sychev.facedetector.data.local.entity.DetectedClothesEntity
 import com.sychev.facedetector.data.local.entity.ScreenshotEntity
 
-@Database(entities = [ScreenshotEntity::class, DetectedClothesEntity::class], version = 9)
+@Database(entities = [ScreenshotEntity::class, DetectedClothesEntity::class], version = 10)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun screenshotDao(): ScreenshotDao
     abstract fun detectedClothesDao(): DetectedClothesDao

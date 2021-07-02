@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.DetectedClothes
@@ -47,7 +48,10 @@ class BottomGalleryListAdapter(val list: ArrayList<DetectedClothes>, private val
         private val checkBox = itemView.findViewById<CheckBox>(R.id.clothes_item_bottom_sheet_check_box)
         private val closeButton = itemView.findViewById<Button>(R.id.clothes_item_bottom_sheet_close_button)
         fun bind(detectedClothes: DetectedClothes, position: Int) {
-            clothesImageView.setImageBitmap(detectedClothes.sourceImage)
+            Glide.with(itemView)
+                .load(detectedClothes.picUrl)
+                .placeholder(R.drawable.clothes_default_icon)
+                .into(clothesImageView)
 
             viewModel.isSelectorMod
                 .onEach { isSelectorMode ->

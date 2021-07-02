@@ -3,6 +3,8 @@ package com.sychev.facedetector.presentation.ui.items
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PixelFormat
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.Log
 import android.view.Gravity
@@ -11,6 +13,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import androidx.core.content.ContextCompat
+import androidx.core.view.marginTop
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sychev.facedetector.R
@@ -44,12 +47,11 @@ class DetectedClothesListItem(
 
     private val myAdapter = DetectedClothesListAdapter(ArrayList(), viewModel)
     private val recyclerView = RecyclerView(context).apply {
-        layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         adapter = myAdapter
     }
-    private val closeButton = ImageButton(context).apply {
-        setImageResource(R.drawable.close_icon_small)
-        background = ContextCompat.getDrawable(context, R.drawable.blue_circle_shape_filled)
+    private val closeButton = Button(context).apply {
+        background = ContextCompat.getDrawable(context, R.drawable.ic_baseline_close_24_black)
         setOnClickListener {
             close()
         }
@@ -58,8 +60,8 @@ class DetectedClothesListItem(
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
     private val layoutParams = WindowManager.LayoutParams(
-        WindowManager.LayoutParams.WRAP_CONTENT,
         WindowManager.LayoutParams.MATCH_PARENT,
+        WindowManager.LayoutParams.WRAP_CONTENT,
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
@@ -71,19 +73,25 @@ class DetectedClothesListItem(
                 WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
         PixelFormat.TRANSLUCENT
     ).apply {
-        gravity = Gravity.TOP or Gravity.START
+        gravity = Gravity.BOTTOM or Gravity.START
     }
 
 
     init {
+        this.background = ContextCompat.getDrawable(context, R.drawable.detected_clothes_list_shape)
         this.addView(
             recyclerView,
-            LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+            LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+                setMargins(0, 45, 0 ,0)
+            }
         )
-//        this.addView(
-//            closeButton,
-//            LayoutParams(55, 55).apply { gravity = Gravity.TOP or Gravity.END }
-//        )
+        this.addView(
+            closeButton,
+            LayoutParams(45, 45).apply {
+                gravity = Gravity.TOP or Gravity.END
+                setMargins(6,6,6,6)
+            }
+        )
         onInitialize()
     }
 

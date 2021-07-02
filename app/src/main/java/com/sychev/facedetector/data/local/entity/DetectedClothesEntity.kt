@@ -10,12 +10,14 @@ data class DetectedClothesEntity (
     @PrimaryKey(autoGenerate = false)
     @ColumnInfo(name = "url")
     val url: String,
-    @ColumnInfo(name = "image", typeAffinity = ColumnInfo.BLOB)
-    val image: ByteArray,
+    @ColumnInfo(name = "image")
+    val image:String,
     @ColumnInfo(name = "gender")
     val gender: String,
     @ColumnInfo(name = "item_category")
     val itemCategory: String,
+    @ColumnInfo(name = "brand")
+    val brand: String,
     @ColumnInfo(name = "is_favorite")
     var isFavorite: Boolean
     ){
