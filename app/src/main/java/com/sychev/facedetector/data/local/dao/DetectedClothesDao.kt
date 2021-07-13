@@ -16,8 +16,8 @@ interface DetectedClothesDao {
     @Query("SELECT * FROM ${DetectedClothesEntity.TABLE_NAME} WHERE is_favorite = 1")
     suspend fun getAllFavoriteClothes():List<DetectedClothesEntity>
 
-    @Insert(entity = DetectedClothesEntity::class, onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertClothesList(clothesList: List<DetectedClothesEntity>)
+    @Update(entity = DetectedClothesEntity::class, onConflict = OnConflictStrategy.REPLACE)
+    suspend fun updateDetectedClothes(detectedClothes: DetectedClothesEntity)
 
     @Insert(entity = DetectedClothesEntity::class, onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDetectedClothes(detectedClothes: DetectedClothesEntity)

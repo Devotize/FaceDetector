@@ -11,16 +11,20 @@ import android.provider.Settings
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.sychev.facedetector.R
+import com.sychev.facedetector.presentation.ui.components.BottomNavigationBar
+import com.sychev.facedetector.presentation.ui.main.MainFragmentViewModel
+import com.sychev.facedetector.presentation.ui.screen.ClothesListScreen
+import com.sychev.facedetector.presentation.ui.screen.Screen
+import com.sychev.facedetector.presentation.ui.theme.AppTheme
 import com.sychev.facedetector.service.FaceDetectorService
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -29,6 +33,8 @@ const val MEDIA_PROJECTION_REQUEST_CODE = 21
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    val viewModel: MainFragmentViewModel by viewModels()
 
     private val getDrawOverlays =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -55,18 +61,32 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
         val intent = Intent(applicationContext, FaceDetectorService::class.java)
-//        intent.putExtra(FaceDetectorService.EXIT_NAME, FaceDetectorService.EXIT_VALUE)
-
         stopService(intent)
 
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            startForegroundService(intent)
-//        } else {
-//            startService(intent)
-//        }
+        setContent {
+            val navController = rememberNavController()
+            AppTheme {
+                Scaffold(
+                    bottomBar = {BottomNavigationBar(navController = navController)},
+                ) {
+                    NavHost(navController, startDestination = Screen.ClothesList.route, Modifier.padding(it)) {
+                        composable(Screen.ClothesList.route){
+                            ClothesListScreen(viewModel = viewModel, launcher = this@MainActivity)
+                        }
+                        composable(Screen.FavoriteClothesList.route){
+                            Text(text = "favorite clothes list")
+                        }
+                        composable(Screen.Shop.route){
+                            Text(text = "Shop")
+                        }
+                        composable(Screen.Profile.route){
+                            Text(text = "Profile")
+                        }
+                    }
+                }
+            }
+        }
 
     }
 

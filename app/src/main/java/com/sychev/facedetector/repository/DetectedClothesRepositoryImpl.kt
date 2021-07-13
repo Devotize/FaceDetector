@@ -56,6 +56,10 @@ class DetectedClothesRepositoryImpl(
         }
     }
 
+    override suspend fun updateDetectedClothes(detectedClothes: DetectedClothes) {
+        detectedClothesDao.updateDetectedClothes(detectedClothesEntityConverter.fromDomainModel(detectedClothes))
+    }
+
     override suspend fun getDetectedClothesList(detectedClothesList: List<DetectedClothes>): List<DetectedClothes> {
         return detectedClothesEntityConverter.toDomainModelList(detectedClothesDao.getClothesListByUrl(detectedClothesEntityConverter.fromDomainList(detectedClothesList)))
 

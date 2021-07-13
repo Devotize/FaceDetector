@@ -1,21 +1,14 @@
 package com.sychev.facedetector.di
 
-import com.sychev.facedetector.data.local.dao.DetectedClothesDao
-import com.sychev.facedetector.data.local.mapper.DetectedClothesEntityConverter
-import com.sychev.facedetector.data.remote.ClothesDetectionApi
-import com.sychev.facedetector.data.remote.converter.DetectedClothesDtoConverter
-import com.sychev.facedetector.interactors.clothes.DeleteClothes
-import com.sychev.facedetector.interactors.clothes.GetClothesList
-import com.sychev.facedetector.interactors.clothes.GetFavoriteClothes
-import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
+import com.sychev.facedetector.interactors.clothes.*
 import com.sychev.facedetector.interactors.clothes_list.DetectClothesLocal
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
+import com.sychev.facedetector.presentation.ui.main.MainEvent
 import com.sychev.facedetector.repository.DetectedClothesRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -64,6 +57,11 @@ object InteractorModule {
     fun provideDetectClothesLocal(): DetectClothesLocal {
         return DetectClothesLocal()
     }
+
+    @Provides
+    fun provideRemoveFromFavoriteClothes(
+        detectedClothesRepository: DetectedClothesRepository
+    ) = RemoveFromFavoriteClothes(detectedClothesRepository)
 
 
 }

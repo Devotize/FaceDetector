@@ -10,6 +10,8 @@ interface DetectedClothesRepository {
 
     suspend fun insertDetectedClothesToCache(detectedClothesList: List<DetectedClothes>)
 
+    suspend fun updateDetectedClothes(detectedClothes: DetectedClothes)
+
     suspend fun getDetectedClothesList(detectedClothesList: List<DetectedClothes>): List<DetectedClothes>
 
     suspend fun getDetectedClothesList(): List<DetectedClothes>

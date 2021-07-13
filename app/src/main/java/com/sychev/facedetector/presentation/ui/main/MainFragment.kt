@@ -1,36 +1,23 @@
 package com.sychev.facedetector.presentation.ui.main
 
-import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.Scaffold
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.sychev.facedetector.domain.SavedScreenshot
+import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.MainActivity
-import com.sychev.facedetector.presentation.ui.components.ScreenshotItem
-import com.sychev.facedetector.service.FaceDetectorService
-import com.sychev.facedetector.utils.TAG
+import com.sychev.facedetector.presentation.ui.components.AppTopBar
+import com.sychev.facedetector.presentation.ui.components.ClothesItem
+import com.sychev.facedetector.presentation.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -45,65 +32,52 @@ class MainFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         return ComposeView(requireContext()).apply {
-            viewModel.onTriggerEvent(MainEvent.GetAllScreenshots)
             setContent {
-                val screenshotList = viewModel.screenshotList.value
+                viewModel.onTriggerEvent(MainEvent.GetAllDetectedClothes)
 
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-//                    horizontalAlignment = Alignment.CenterHorizontally,
-//                    verticalArrangement = Arrangement.Center,
-                ) {
+                val query = viewModel.query.value
+                val detectedClothesList = viewModel.detectedClothesList
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                AppTheme {
+                    Column(
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        Text(
-                            text = "Library",
-                            modifier = Modifier.padding(16.dp, 8.dp, 8.dp, 4.dp),
-                            style = MaterialTheme.typography.h5
+                        AppTopBar(
+                            query = query,
+                            onQueryChange = viewModel::onQueryChange,
+                            onStartAssistant = {
+                                viewModel.onTriggerEvent(MainEvent.LaunchDetector(activity as MainActivity))
+                            }
                         )
-
-                        Button(
-                            modifier = Modifier.padding(16.dp, 8.dp, 8.dp, 4.dp),
-                            onClick = {
-                            viewModel.onTriggerEvent(MainEvent.LaunchDetector(activity as MainActivity))
-                        }) {
-                            Text(text = "Launch Assistant")
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(10.dp)
-                            .padding(16.dp, 0.dp, 16.dp, 8.dp),
-                        elevation = 2.dp,
-                        shape = RoundedCornerShape(16.dp),
-                        color = Color.LightGray
-                    ){
-
-                    }
-
-                    screenshotList?.let {screenshotList ->
-                        LazyVerticalGrid(cells = GridCells.Adaptive(130.dp)) {
-                            itemsIndexed(screenshotList.reversed()){index: Int, savedScreenshot: SavedScreenshot ->
-                                ScreenshotItem(
-                                    savedScreenshot = savedScreenshot,
-                                    onClick = {
-                                        viewModel.onTriggerEvent(MainEvent.PerformGoogleSearch(context, savedScreenshot.celebName))
-                                    }
+                        LazyColumn(
+                            modifier = Modifier,
+                        ) {
+                            itemsIndexed(detectedClothesList) { index: Int, item: DetectedClothes ->
+                                ClothesItem(
+                                    detectedClothes = item,
+                                    onAddToFavoriteClick = {
+                                        viewModel.onTriggerEvent(
+                                            MainEvent.AddToFavoriteDetectedClothesEvent(
+                                                it
+                                            )
+                                        )
+                                    },
+                                    onRemoveFromFavoriteClick = {
+                                        viewModel.onTriggerEvent(
+                                            MainEvent.RemoveFromFavoriteDetectedClothesEvent(
+                                                it
+                                            )
+                                        )
+                                    },
                                 )
                             }
                         }
-                        }
-                            
                     }
                 }
             }
         }
     }
+}
 
 
 
