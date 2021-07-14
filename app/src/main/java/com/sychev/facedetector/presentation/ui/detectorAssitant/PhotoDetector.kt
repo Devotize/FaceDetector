@@ -25,7 +25,6 @@ import android.graphics.Bitmap
 import android.graphics.drawable.ColorDrawable
 import android.view.animation.Animation
 import android.view.animation.Transformation
-import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 
 import com.sychev.facedetector.presentation.MainActivity
@@ -97,7 +96,8 @@ class PhotoDetector
         setOnClickListener {
             viewModel.setIsActive(false)
             takeScreenshot()?.let { btm ->
-                viewModel.onTriggerEvent(DetectorEvent.SearchClothesEvent(btm))
+//                viewModel.onTriggerEvent(DetectorEvent.SearchClothesEvent(btm))
+                viewModel.onTriggerEvent(DetectorEvent.DetectClothesLocalEvent(btm))
             }
         }
     }
@@ -107,14 +107,15 @@ class PhotoDetector
     private val progressBarCenter = ProgressBar(context)
 
     @SuppressLint("ClickableViewAccessibility")
-    private val frameTouchListener = layoutInflater.inflate(R.layout.frame_touch_listener, null).apply {
-        setOnTouchListener { v, event ->
-            (this as FrameLayout).removeAllViews()
-//            findNewFaces(2000)
+    private val frameTouchListener: FrameLayout =
+        layoutInflater.inflate(R.layout.frame_touch_listener, null).apply {
+            setOnTouchListener { v, event ->
+                (this as FrameLayout).removeAllViews()
+    //            findNewFaces(2000)
 
-            false
-        }
-    }
+                false
+            }
+        } as FrameLayout
 
     private val frameParams = WindowManager.LayoutParams(
         WindowManager.LayoutParams.MATCH_PARENT,
@@ -305,7 +306,7 @@ class PhotoDetector
         var timer: Timer? = null
         viewModel.isActive
             .onEach { isActive ->
-                Log.d(TAG, "onDetectorCreated: isActive = $isActive")
+//                Log.d(TAG, "onDetectorCreated: isActive = $isActive")
                 isActive?.let{
                     if (isActive) {
                         timer = Timer()
@@ -324,6 +325,57 @@ class PhotoDetector
                 }
             }.launchIn(CoroutineScope(Main))
 
+        viewModel.detectedClothesListLocal.onEach {rects ->
+            Log.d(TAG, "viewModel.detectedClothesListLocal $rects")
+            rects.forEach { rect ->
+                val circle = Button(context)
+                val centerX = rect.centerX().toInt()
+                val centerY = rect.centerY().toInt()
+                circle.background = ContextCompat.getDrawable(context, R.drawable.detected_clothes_pointer_shape)
+                val circleWidth = 35
+                val circleHeight = 35
+                windowManager.addView(circle, getWmLayoutParams(circleWidth,circleHeight).apply {
+                    x = -widthPx / 2 + centerX
+                    y = -heightPx / 2 + centerY
+                })
+                circle.setOnClickListener {
+                    it.isClickable = false
+                    val tailView = View(context)
+                    tailView.background = ContextCompat.getDrawable(context, R.drawable.rotated_rectangle)
+                    val tailWidth = 40
+                    val tailHeight = 40
+                    val tailPadding = 45
+                    windowManager.addView(tailView, getWmLayoutParams(tailWidth,tailHeight).apply {
+                        x = -widthPx / 2 + centerX
+                        y = if (centerY <= heightPx / 2) -heightPx / 2 + tailPadding + centerY  else -heightPx / 2 - tailPadding + centerY
+                    })
+                    //detected clothes card
+                    val detectedClothesCard = layoutInflater.inflate(R.layout.detected_clothes_card_layout, null)
+                    detectedClothesCard.measure(0,0)
+                    Log.d(TAG, "onDetectorCreated: detectedClothesCard.measuredWidth: ${detectedClothesCard.measuredWidth}")
+                    windowManager.addView(detectedClothesCard, getWmLayoutParams(
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT).apply {
+                        x = if (centerX <= widthPx / 2)
+                            -widthPx / 2 + (detectedClothesCard.measuredWidth - centerX) / 2 + centerX
+                        else
+                            -widthPx / 2 - (detectedClothesCard.measuredWidth - (widthPx - centerX)) / 2 + centerX
+                        
+                        y = if (centerY <= heightPx / 2)
+                            -heightPx/2 + (detectedClothesCard.measuredHeight) / 2 + centerY + circleHeight / 2 + tailPadding / 2
+                        else
+                            -heightPx/2 - (detectedClothesCard.measuredHeight) / 2 + centerY - circleHeight / 2 - tailPadding / 2
+                    })
+                    detectedClothesCard.findViewById<Button>(R.id.detected_clothes_card_close_button).apply {
+                        setOnClickListener {
+                            removeViewFromWM(tailView)
+                            removeViewFromWM(detectedClothesCard)
+                            circle.isClickable = true
+                        }
+                    }
+                }
+            }
+        }.launchIn(CoroutineScope(Main))
     }
 
 }

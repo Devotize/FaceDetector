@@ -3,6 +3,7 @@ package com.sychev.facedetector.presentation.ui.detectorAssitant
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.RectF
 import android.util.Log
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.interactors.clothes.DeleteClothes
@@ -55,6 +56,7 @@ class DetectorViewModel(
     private val _isSelectorMod: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val _errorMessage: MutableStateFlow<String?> = MutableStateFlow(null)
     private val _isActive: MutableStateFlow<Boolean?> = MutableStateFlow(null)
+    private val _detectedClothesListLocal: MutableStateFlow<List<RectF>> = MutableStateFlow(listOf())
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
     val detectedClothesList: StateFlow<List<DetectedClothes>> = _detectedClothesList.asStateFlow()
     val favoriteClothesList = _favoriteClothesList.asStateFlow()
@@ -63,6 +65,7 @@ class DetectorViewModel(
     val isSelectorMod = _isSelectorMod.asStateFlow()
     val errorMessage = _errorMessage.asStateFlow()
     val isActive = _isActive.asStateFlow()
+    val detectedClothesListLocal = _detectedClothesListLocal.asStateFlow()
 
     fun onTriggerEvent(event: DetectorEvent) {
         when (event) {
@@ -90,11 +93,7 @@ class DetectorViewModel(
                 shareUrls(event.urls)
             }
             is DetectClothesLocalEvent -> {
-                detectClothesLocal.execute(context, event.screenshot)
-                    .onEach {
-                        Log.d(TAG, "onTriggerEvent: DetectClothesLocalEvent ${it.data}")
-                    }
-                    .launchIn(CoroutineScope(IO))
+                detectClothesLocal(event.screenshot)
             }
         }
     }
@@ -202,6 +201,16 @@ class DetectorViewModel(
 
     fun setIsActive(isActive: Boolean) {
         _isActive.value = isActive
+    }
+
+    private fun detectClothesLocal(picture: Bitmap) {
+        detectClothesLocal.execute(context, picture)
+            .onEach { dataState ->
+                dataState.data?.let {
+                    _detectedClothesListLocal.value = it
+                }
+            }
+            .launchIn(CoroutineScope(IO))
     }
 
 }

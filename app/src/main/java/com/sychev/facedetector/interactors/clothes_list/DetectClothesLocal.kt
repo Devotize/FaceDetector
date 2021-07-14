@@ -28,8 +28,15 @@ class DetectClothesLocal {
         try {
             emit(DataState.loading())
 
-            emit(DataState.success(detectClothes(context, bitmap)))
+//            emit(DataState.success(detectClothes(context, bitmap)))
 
+            emit(DataState.success(listOf(
+                RectF(100f,100f,200f,200f),
+                RectF(200f,200f,300f,300f),
+                RectF(400f,800f,500f,900f),
+                RectF(600f,900f,700f,1000f),
+            )
+            ))
 
         }catch (e: Exception){
             Log.d(TAG, "execute: error -> ${e.message}")

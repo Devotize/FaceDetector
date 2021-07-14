@@ -9,9 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
-import androidx.navigation.compose.KEY_ROUTE
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.navigate
 import com.sychev.facedetector.presentation.ui.screen.Screen
 import com.sychev.facedetector.utils.TAG
 
@@ -40,12 +39,10 @@ fun BottomNavigationBar(
                     }
 
                 },
-                selected = screen.route == backStackEntry.value?.arguments?.getString(KEY_ROUTE),
+                selected = screen.route == backStackEntry.value?.destination?.route,
                 onClick = {
                     navController.navigate(screen.route) {
-                        popUpTo(navController.graph.startDestination) {
-                            inclusive = true
-                        }
+                        popUpTo(navController.graph.findStartDestination().id)
                         launchSingleTop = true
                     }
                 },
