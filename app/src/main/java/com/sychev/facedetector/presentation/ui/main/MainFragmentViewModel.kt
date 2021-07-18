@@ -38,6 +38,7 @@ class MainFragmentViewModel
     val loading: MutableState<Boolean> = mutableStateOf(false)
     val query = mutableStateOf("")
     val detectedClothesList = mutableStateListOf<DetectedClothes>()
+    val hugeFirstElement = mutableStateOf(false)
 
     fun onTriggerEvent(event: MainEvent) {
         when (event) {

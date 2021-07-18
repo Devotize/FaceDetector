@@ -1,64 +1,86 @@
 package com.sychev.facedetector.interactors.clothes_list
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.RectF
+import android.graphics.*
 import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.sychev.facedetector.domain.data.DataState
 import com.sychev.facedetector.utils.TAG
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.gpu.GpuDelegate
+import org.tensorflow.lite.nnapi.NnApiDelegate
 import org.tensorflow.lite.support.common.FileUtil
-import org.tensorflow.lite.support.image.ImageProcessor
-import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.support.image.ops.ResizeOp
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.math.exp
 
 class DetectClothesLocal {
 
 
-    fun execute(context: Context, bitmap: Bitmap): Flow<DataState<List<RectF>>> = flow<DataState<List<RectF>>>{
+    fun execute(context: Context, bitmap: Bitmap): Flow<DataState<List<Recognition>>> = flow<DataState<List<Recognition>>>{
         try {
             emit(DataState.loading())
 
-//            emit(DataState.success(detectClothes(context, bitmap)))
-
-            emit(DataState.success(listOf(
-                RectF(100f,100f,200f,200f),
-                RectF(200f,200f,300f,300f),
-                RectF(400f,800f,500f,900f),
-                RectF(600f,900f,700f,1000f),
-            )
-            ))
+            emit(DataState.success(detectClothes(context, bitmap)))
+//            delay(500)
+//            emit(DataState.success(listOf(
+//                RectF(100f,100f,200f,200f),
+//                RectF(200f,200f,300f,300f),
+//                RectF(400f,800f,500f,900f),
+//                RectF(600f,900f,700f,1000f),
+//            )
+//            ))
 
         }catch (e: Exception){
-            Log.d(TAG, "execute: error -> ${e.message}")
+            Log.d(TAG, "execute: error -> ${e.localizedMessage}")
             emit(DataState.error("${e.message}"))
         }
     }
 
 
 
-    private fun detectClothes(context: Context, bitmap: Bitmap,): List<RectF> {
+    private fun detectClothes(context: Context, bitmap: Bitmap): ArrayList<Recognition> {
+        val detections: ArrayList<Recognition> = ArrayList<Recognition>()
         Log.d(TAG, "detectClothes: called")
-        //        ClothesTestModel model = ClothesTestModel.newInstance(context);
-        val ip = ImageProcessor.Builder()
-            .add(ResizeOp(416, 416, ResizeOp.ResizeMethod.BILINEAR))
-            .build()
-        val ti = TensorImage(DataType.FLOAT32)
-        ti.load(bitmap)
-        val resizedImage = ip.process(ti)
-        val inputBuffer = TensorBuffer.createFixedSize(intArrayOf(1, 416, 416, 3), DataType.FLOAT32)
-        inputBuffer.loadBuffer(resizedImage.buffer)
+        //initializin labels
+        val labels = Vector<String>()
+        val labelFilename = "file:///android_asset/cloths.txt"
+        val actualFilename = labelFilename.split("file:///android_asset/").toTypedArray()[1]
+        val labelsInput = context.assets.open(actualFilename)
+        val br = BufferedReader(InputStreamReader(labelsInput))
+        var line: String? = br.readLine()
+        while (line != null) {
+            labels.add(line)
+            line = br.readLine()
+        }
+        br.close()
+//        val croppedBitmap = processBitmap(BitmapFactory.decodeResource(context.resources, R.drawable.clothes_detect_test_2))
+        val croppedBitmap = processBitmap(bitmap)
+
         val OUTPUT_WIDTH = 2535
-        val labelSize = 13
+        val tfliteModel = FileUtil.loadMappedFile(context, "yolov4-tiny_clothes_416_weights.tflite")
+        val options = Interpreter.Options().apply {
+            setNumThreads(4)
+            addDelegate(GpuDelegate())
+
+            // Initialize interpreter with NNAPI delegate for Android Pie or above
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+//                val nnApiDelegate = NnApiDelegate()
+//                addDelegate(nnApiDelegate)
+//                setUseNNAPI(true)
+                setNumThreads(4)
+                setAllowFp16PrecisionForFp32(true)
+                setAllowBufferHandleOutput(true)
+            }
+        }
+        val tfliteInterpreter = Interpreter(tfliteModel, options)
+        val byteBuffer = convertBitmapToByteBuffer(croppedBitmap)
+
         val outputMap: MutableMap<Int, Any> = java.util.HashMap()
         outputMap[0] = Array(1) {
             Array(OUTPUT_WIDTH) {
@@ -70,123 +92,149 @@ class DetectClothesLocal {
         outputMap[1] = Array(1) {
             Array(OUTPUT_WIDTH) {
                 FloatArray(
-                    labelSize
+                    labels.size
                 )
             }
         }
-        val tfliteModel = FileUtil.loadMappedFile(context, "ClothesTestModel.tflite")
-        val tfliteInterpreter = Interpreter(tfliteModel, Interpreter.Options())
-        tfliteInterpreter.runForMultipleInputsOutputs(arrayOf(inputBuffer.buffer), outputMap)
-        Log.d(TAG, "detectClothes: outputs: $outputMap")
+        val inputArray = arrayOf<Any>(byteBuffer)
+        tfliteInterpreter.runForMultipleInputsOutputs(inputArray, outputMap)
         val bboxes = outputMap[0] as Array<Array<FloatArray>>?
         val outScores = outputMap[1] as Array<Array<FloatArray>>?
-        val rects = ArrayList<RectF>()
+
+        val scaleX: Float = (bitmap.width.toFloat() / croppedBitmap.width.toFloat())
+        val scaleY: Float = (bitmap.height.toFloat() / croppedBitmap.height.toFloat())
+
         for (i in 0 until OUTPUT_WIDTH) {
-            var maxClass = 0.0f
+            var maxClass = 0f
             var detectedClass = -1
-            val classes = FloatArray(labelSize)
-//            Log.d(TAG, "detectClothes: ${outScores!![0][i].toList()}")
-            for (c in 0 until labelSize) {
-//                Log.d(TAG, "detectClothes: ${activation(outScores!![0][i]).toList()}")
-//                val activatedScores = activation(outScores!![0][i])
-                val softmax = softmax(outScores!![0][i])
-//                Log.d(TAG, "detectClothes: softmax = ${softmax.toList()}")
-                classes[c] = softmax[c].toFloat()
-//                classes[c] = outScores!![0][i][c]
+            val classes = FloatArray(labels.size)
+            for (c in labels.indices) {
+                classes[c] = outScores!![0][i][c]
             }
-            for (c in 0 until labelSize) {
+            for (c in labels.indices) {
                 if (classes[c] > maxClass) {
                     detectedClass = c
                     maxClass = classes[c]
                 }
             }
             val score = maxClass
-//            val score = softmax(maxClass.toDouble(), outScores!![0][i])
 
 
-            if (score > 0.0) {
-                Log.d(TAG, "detectClothes: score = $score")
+
+            if (score > 0.5f) {
                 val xPos = bboxes!![0][i][0]
                 val yPos = bboxes[0][i][1]
                 val w = bboxes[0][i][2]
                 val h = bboxes[0][i][3]
                 val rectF = RectF(
-                    Math.max(0f, xPos - w / 2),
-                    Math.max(0f, yPos - h / 2),
-                    Math.min((bitmap.width - 1).toFloat(), xPos + w / 2),
-                    Math.min((bitmap.height - 1).toFloat(), yPos + h / 2)
+                    Math.max(0f, xPos - w / 2) * (scaleX),
+                    Math.max(0f, yPos - h / 2) * (scaleY),
+                    Math.min((croppedBitmap.width - 1).toFloat(), xPos + w / 2) * (scaleX),
+                    Math.min((croppedBitmap.height - 1).toFloat(), yPos + h / 2) * (scaleY)
                 )
-                if (rectF.left > 200 && rectF.left < 350 && rectF.top > 500) {
-                    Log.d(TAG, "detectClothes: rectF: ${rectF}")
-                }
-//                Log.d(TAG, "detectClothes: rectF: $rectF")
-                rects.add(rectF)
+                Log.d(TAG, "detectClothes: rect: $rectF, label: ${labels[detectedClass]}")
+                detections.add(Recognition(
+                    i.toString(),
+                    labels[detectedClass],
+                    score,
+                    rectF,
+                    detectedClass,
+                    croppedBitmap
+                ))
             }
         }
-        return rects
+        return detections
     }
 
-    fun activation(input: FloatArray): FloatArray {
-        val exp = FloatArray(input.size)
-        var sum = 0.0f
-        for (neuron in exp.indices) {
-            exp[neuron] = exp(input[neuron].toDouble()).toFloat()
-            sum += exp[neuron]
+    private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
+        val BATCH_SIZE = 1
+        val INPUT_SIZE = 416
+        val PIXEL_SIZE = 3
+
+        val byteBuffer =
+            ByteBuffer.allocateDirect(4 * BATCH_SIZE * INPUT_SIZE * INPUT_SIZE * PIXEL_SIZE)
+        byteBuffer.order(ByteOrder.nativeOrder())
+        val intValues = IntArray(INPUT_SIZE * INPUT_SIZE)
+        bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        var pixel = 0
+        for (i in 0 until INPUT_SIZE) {
+            for (j in 0 until INPUT_SIZE) {
+                val `val` = intValues[pixel++]
+                byteBuffer.putFloat((`val` shr 16 and 0xFF) / 255.0f)
+                byteBuffer.putFloat((`val` shr 8 and 0xFF) / 255.0f)
+                byteBuffer.putFloat((`val` and 0xFF) / 255.0f)
+            }
         }
-        val output = FloatArray(input.size)
-        for (neuron in output.indices) {
-            output[neuron] = (exp[neuron] / sum)
-        }
-        return output
+        return byteBuffer
     }
 
-//    fun derivative(input: FloatArray): FloatArray {
-//        val softmax: FloatArray = activation(input)
-//        val output = FloatArray(input.size)
-//        for (neuron in output.indices) {
-//            output[neuron] = (softmax[neuron] * (1.0 - softmax[neuron])).toFloat()
-//        }
-//        return output
-//    }
+    private fun processBitmap(source: Bitmap): Bitmap {
+        val size = 416
+        val height = source.height
+        val width = source.width
+        val croppedBitmap = Bitmap.createBitmap(size,size,Bitmap.Config.ARGB_8888)
+        val frameToCropTransformations = getTransformationMatrix(width,height,size,size,0,false)
+        val cropToFrameTransformations = Matrix()
+        frameToCropTransformations?.invert(cropToFrameTransformations)
 
-    @RequiresApi(Build.VERSION_CODES.N)
-    private fun softmax(input: Double, neuronValues: FloatArray): Double {
-        val doubleNeurons = neuronValues.map {
-            it.toDouble()
-        }.toDoubleArray()
-        val total = Arrays.stream(doubleNeurons).map { a: Double ->
-            Math.exp(
-                a
-            )
-        }.sum()
-        return Math.exp(input) / total
+        val canvas = Canvas(croppedBitmap)
+        if (frameToCropTransformations != null) {
+            canvas.drawBitmap(source, frameToCropTransformations, null)
+        }
+        return croppedBitmap
     }
 
-    private fun softmax(array: FloatArray): DoubleArray {
-        val doubleArray = array.map {
-            it.toDouble()
-        }.toDoubleArray()
-        val max = max(doubleArray)
-        for (i in doubleArray.indices) {
-            doubleArray[i] = doubleArray[i] - max
-        }
-        var sum: Double = 0.0
-        val result = DoubleArray(doubleArray.size)
-        for (i in 0 until doubleArray.size) {
-            sum += Math.exp(array[i].toDouble())
-        }
-        for (i in result.indices) {
-            result[i] = Math.exp(array[i].toDouble()) / sum
-        }
-        return result
-    }
+    private fun getTransformationMatrix(
+        srcWidth: Int,
+        srcHeight: Int,
+        dstWidth: Int,
+        dstHeight: Int,
+        applyRotation: Int,
+        maintainAspectRatio: Boolean
+    ): Matrix? {
+        val matrix = Matrix()
+        if (applyRotation != 0) {
+            // Translate so center of image is at origin.
+            matrix.postTranslate(-srcWidth / 2.0f, -srcHeight / 2.0f)
 
-    private fun max(array: DoubleArray): Double {
-        var result = Double.MIN_VALUE
-        for (i in array.indices) {
-            if (array[i] > result) result = array[i]
+            // Rotate around origin.
+            matrix.postRotate(applyRotation.toFloat())
         }
-        return result
+
+        // Account for the already applied rotation, if any, and then determine how
+        // much scaling is needed for each axis.
+        val transpose = (Math.abs(applyRotation) + 90) % 180 == 0
+        val inWidth = if (transpose) srcHeight else srcWidth
+        val inHeight = if (transpose) srcWidth else srcHeight
+
+        // Apply scaling if necessary.
+        if (inWidth != dstWidth || inHeight != dstHeight) {
+            val scaleFactorX = dstWidth / inWidth.toFloat()
+            val scaleFactorY = dstHeight / inHeight.toFloat()
+            if (maintainAspectRatio) {
+                // Scale by minimum factor so that dst is filled completely while
+                // maintaining the aspect ratio. Some image may fall off the edge.
+                val scaleFactor = Math.max(scaleFactorX, scaleFactorY)
+                matrix.postScale(scaleFactor, scaleFactor)
+            } else {
+                // Scale exactly to fill dst from src.
+                matrix.postScale(scaleFactorX, scaleFactorY)
+            }
+        }
+        if (applyRotation != 0) {
+            // Translate back from origin centered reference to destination frame.
+            matrix.postTranslate(dstWidth / 2.0f, dstHeight / 2.0f)
+        }
+        return matrix
     }
 
 }
+
+data class Recognition(
+    val id: String,
+    val title: String,
+    val confidence: Float,
+    val location: RectF,
+    val detectedClass: Int,
+    val bitmap: Bitmap,
+)

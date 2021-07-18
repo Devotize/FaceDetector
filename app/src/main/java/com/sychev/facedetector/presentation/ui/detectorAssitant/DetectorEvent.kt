@@ -2,6 +2,7 @@ package com.sychev.facedetector.presentation.ui.detectorAssitant
 
 import android.graphics.Bitmap
 import com.sychev.facedetector.domain.DetectedClothes
+import java.nio.ByteBuffer
 
 sealed class DetectorEvent {
 

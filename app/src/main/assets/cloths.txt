@@ -1,0 +1,13 @@
+top
+dress
+trousers
+shorts
+skirt
+outwear
+headwear
+scarf/tie
+sunglasses
+belt
+footwear
+boots
+bag

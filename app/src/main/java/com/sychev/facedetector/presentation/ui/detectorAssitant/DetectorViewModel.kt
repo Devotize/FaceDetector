@@ -11,6 +11,7 @@ import com.sychev.facedetector.interactors.clothes.GetClothesList
 import com.sychev.facedetector.interactors.clothes.GetFavoriteClothes
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes_list.DetectClothesLocal
+import com.sychev.facedetector.interactors.clothes_list.Recognition
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorEvent.*
 import com.sychev.facedetector.presentation.ui.items.SnackbarItem
@@ -56,7 +57,7 @@ class DetectorViewModel(
     private val _isSelectorMod: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val _errorMessage: MutableStateFlow<String?> = MutableStateFlow(null)
     private val _isActive: MutableStateFlow<Boolean?> = MutableStateFlow(null)
-    private val _detectedClothesListLocal: MutableStateFlow<List<RectF>> = MutableStateFlow(listOf())
+    private val _detectedClothesListLocal: MutableStateFlow<List<Recognition>> = MutableStateFlow(listOf())
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
     val detectedClothesList: StateFlow<List<DetectedClothes>> = _detectedClothesList.asStateFlow()
     val favoriteClothesList = _favoriteClothesList.asStateFlow()
@@ -93,6 +94,7 @@ class DetectorViewModel(
                 shareUrls(event.urls)
             }
             is DetectClothesLocalEvent -> {
+                Log.d(TAG, "onTriggerEvent: detect clothes event local")
                 detectClothesLocal(event.screenshot)
             }
         }
@@ -206,6 +208,8 @@ class DetectorViewModel(
     private fun detectClothesLocal(picture: Bitmap) {
         detectClothesLocal.execute(context, picture)
             .onEach { dataState ->
+                _loading.value = dataState.loading
+                _detectedClothesListLocal.value = ArrayList()
                 dataState.data?.let {
                     _detectedClothesListLocal.value = it
                 }

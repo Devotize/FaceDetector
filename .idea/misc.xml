@@ -11,7 +11,9 @@
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/detected_clothes_card_shape.xml" value="0.2169230769230769" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/detected_clothes_list_shape.xml" value="0.2203125" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/detected_clothes_pointer_shape.xml" value="0.2169230769230769" />
+        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/detected_clothes_pointer_shape_red.xml" value="0.2203125" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/gray_circle_shape_filled.xml" value="0.2169230769230769" />
+        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/half_black_gradient.xml" value="0.2203125" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/ic_baseline_arrow_back_24.xml" value="0.2203125" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/ic_baseline_arrow_forward_24.xml" value="0.2169230769230769" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/ic_baseline_arrow_forward_white.xml" value="0.2169230769230769" />
@@ -25,6 +27,7 @@
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/ic_baseline_settings_24.xml" value="0.2203125" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/ic_baseline_share_24.xml" value="0.1935185185185185" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/ic_baseline_star_24.xml" value="0.2169230769230769" />
+        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/ic_outline_camera_alt_24.xml" value="0.2203125" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/red_circle_shape.xml" value="0.17592592592592593" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/red_circle_shape_filled.xml" value="0.17592592592592593" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/red_rounded_shape.xml" value="0.2203125" />
@@ -42,9 +45,9 @@
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/detected_clothes_card_layout.xml" value="0.16893115942028986" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/detected_clothes_layout.xml" value="0.22" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/detected_clothes_list_layout.xml" value="0.18297101449275363" />
-        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/detector_assistant_layout.xml" value="0.2" />
+        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/detector_assistant_layout.xml" value="0.75" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/face_detector_layout.xml" value="0.25" />
-        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/frame_touch_listener.xml" value="0.1" />
+        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/frame_touch_listener.xml" value="0.16" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/save_screenshot_item.xml" value="0.1" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/snackbar_item_layout.xml" value="0.1875" />
       </map>

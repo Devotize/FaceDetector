@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,6 +27,7 @@ import com.sychev.facedetector.presentation.ui.screen.ClothesListScreen
 import com.sychev.facedetector.presentation.ui.screen.Screen
 import com.sychev.facedetector.presentation.ui.theme.AppTheme
 import com.sychev.facedetector.service.FaceDetectorService
+import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.AndroidEntryPoint
 
 const val OVERLAY_PERMISSION_REQUEST_CODE = 2001
@@ -61,8 +63,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val intent = Intent(applicationContext, FaceDetectorService::class.java)
-        stopService(intent)
+        val stopIntent = Intent(applicationContext, FaceDetectorService::class.java)
+        stopService(stopIntent)
+        val bundle = intent.extras
+        viewModel.hugeFirstElement.value = bundle?.getBoolean("from_assistant_launch") ?: false
 
         setContent {
             val navController = rememberNavController()

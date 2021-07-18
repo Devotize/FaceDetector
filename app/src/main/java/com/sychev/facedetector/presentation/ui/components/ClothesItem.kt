@@ -180,10 +180,13 @@ fun ClothesItem(
 
                 }
             }
-            Column(modifier = Modifier.animateContentSize(spring(1.75f))) {
+            Column(modifier = Modifier
+                    .animateContentSize(spring(1.75f))
+                    .padding(16.dp, 8.dp, 16.dp, 8.dp)
+                ) {
                 if (showDetails.value) {
                     Text(
-                        modifier = Modifier.padding(16.dp, 0.dp, 0.dp, 8.dp),
+//                        modifier = Modifier.padding(16.dp, 0.dp, 0.dp, 8.dp),
                         text = detectedClothes.brand,
                         style = MaterialTheme.typography.h6,
                         color = MaterialTheme.colors.onSurface,
@@ -191,6 +194,7 @@ fun ClothesItem(
 
                     listOf(Shop(),Shop(),Shop()).forEach {
                         ShopComponent(shop = it)
+                        Spacer(modifier = Modifier.padding(bottom = 8.dp))
                     }
                 }
             }
@@ -218,14 +222,13 @@ fun ClothesItem(
 
 
 @Composable
-private fun ShopComponent(
+fun ShopComponent(
     shop: Shop
 ) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(16.dp, 8.dp, 16.dp, 8.dp),
+            .wrapContentHeight(),
         shape = MaterialTheme.shapes.large,
         border = BorderStroke(1.dp, MaterialTheme.colors.primaryVariant)
     ) {
@@ -367,7 +370,7 @@ private fun ShopComponent(
     }
 }
 
-private data class Shop(
+data class Shop(
     val name: String = "Wildberries",
     val price: String = "11 549 ₽",
     val size: String = "S, M, L, XL, XXL",
