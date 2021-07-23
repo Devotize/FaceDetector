@@ -3,10 +3,17 @@ package com.sychev.facedetector.presentation.ui.screen
 import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.activity.MainActivity
 import com.sychev.facedetector.presentation.ui.components.AppTopBar
@@ -18,6 +25,7 @@ import com.sychev.facedetector.presentation.ui.theme.AppTheme
 import com.sychev.facedetector.utils.TAG
 import java.util.*
 
+@ExperimentalPagerApi
 @Composable
 fun ClothesListScreen(
     viewModel: MainFragmentViewModel,
@@ -34,58 +42,20 @@ fun ClothesListScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            AppTopBar(
-                query = query,
-                onQueryChange = viewModel::onQueryChange,
-                onStartAssistant = {
-                    viewModel.onTriggerEvent(MainEvent.LaunchDetector(launcher))
-                }
-            )
-            LazyColumn(
-                modifier = Modifier,
-            ) {
-                itemsIndexed(detectedClothesList.filter {
-                    it.brand.toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT))
-                }) { index: Int, item: DetectedClothes ->
-                    if (hugeFirstElement && index == 0) {
-                        Log.d(TAG, "ClothesListScreen: hugefirstelement true")
-                        ClothesBigItem(
-                            detectedClothes = item,
-                            onAddToFavoriteClick = {
-                                viewModel.onTriggerEvent(
-                                    MainEvent.AddToFavoriteDetectedClothesEvent(
-                                        it
-                                    )
-                                )
-                            },
-                            onRemoveFromFavoriteClick = {
-                                viewModel.onTriggerEvent(
-                                    MainEvent.RemoveFromFavoriteDetectedClothesEvent(
-                                        it
-                                    )
-                                )
-                            },
-                        )
-                    } else {
-                        ClothesItem(
-                            detectedClothes = item,
-                            onAddToFavoriteClick = {
-                                viewModel.onTriggerEvent(
-                                    MainEvent.AddToFavoriteDetectedClothesEvent(
-                                        it
-                                    )
-                                )
-                            },
-                            onRemoveFromFavoriteClick = {
-                                viewModel.onTriggerEvent(
-                                    MainEvent.RemoveFromFavoriteDetectedClothesEvent(
-                                        it
-                                    )
-                                )
-                            },
-                        )
-                    }
-                }
+            val pagerState = rememberPagerState(pageCount = detectedClothesList.size, initialOffscreenLimit = 2)
+            HorizontalPager(
+                modifier = Modifier.fillMaxWidth(),
+                state = pagerState
+            ) { page ->
+                    ClothesItem(
+                        detectedClothes = detectedClothesList[page],
+                        onAddToFavoriteClick = {
+
+                    },
+                    onRemoveFromFavoriteClick = {
+
+                    })
+
             }
         }
     }

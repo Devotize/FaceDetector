@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.pager.ExperimentalPagerApi
 import com.sychev.facedetector.R
 import com.sychev.facedetector.presentation.ui.components.BottomNavigationBar
 import com.sychev.facedetector.presentation.ui.main.MainFragmentViewModel
@@ -61,6 +62,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    @ExperimentalPagerApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val stopIntent = Intent(applicationContext, FaceDetectorService::class.java)
@@ -72,7 +74,7 @@ class MainActivity : AppCompatActivity() {
             val navController = rememberNavController()
             AppTheme {
                 Scaffold(
-                    bottomBar = {BottomNavigationBar(navController = navController)},
+//                    bottomBar = {BottomNavigationBar(navController = navController)},
                 ) {
                     NavHost(navController, startDestination = Screen.ClothesList.route, Modifier.padding(it)) {
                         composable(Screen.ClothesList.route){

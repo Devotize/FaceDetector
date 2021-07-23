@@ -44,7 +44,7 @@ fun ClothesItem(
 
     Surface(
         modifier = Modifier
-            .fillMaxWidth()
+            .width(253.dp)
             .wrapContentHeight()
             .padding(16.dp, 8.dp, 16.dp, 8.dp),
         shape = MaterialTheme.shapes.large,
