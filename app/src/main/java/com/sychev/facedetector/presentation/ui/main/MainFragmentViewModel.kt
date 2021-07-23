@@ -13,7 +13,7 @@ import com.sychev.facedetector.domain.SavedScreenshot
 import com.sychev.facedetector.interactors.clothes.GetClothesList
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
-import com.sychev.facedetector.presentation.MainActivity
+import com.sychev.facedetector.presentation.activity.MainActivity
 import com.sychev.facedetector.repository.SavedScreenshotRepo
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel

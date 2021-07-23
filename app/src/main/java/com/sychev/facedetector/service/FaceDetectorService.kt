@@ -67,7 +67,7 @@ class FaceDetectorService: Service() {
             val projectionManager = applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             val mediaProjection = projectionManager.getMediaProjection(RESULT_OK, data)
 //            VideoFaceDetector(applicationContext, mediaProjection)
-            photoDetector = PhotoDetector(applicationContext, mediaProjection, ::stopService)
+            photoDetector = PhotoDetector(applicationContext, mediaProjection)
         }
 
         return START_STICKY

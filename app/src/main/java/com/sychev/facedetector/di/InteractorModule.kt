@@ -3,6 +3,7 @@ package com.sychev.facedetector.di
 import com.sychev.facedetector.interactors.clothes.*
 import com.sychev.facedetector.interactors.clothes_list.DetectClothesLocal
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
+import com.sychev.facedetector.interactors.gender.DefineGender
 import com.sychev.facedetector.presentation.ui.main.MainEvent
 import com.sychev.facedetector.repository.DetectedClothesRepository
 import dagger.Module
@@ -63,5 +64,7 @@ object InteractorModule {
         detectedClothesRepository: DetectedClothesRepository
     ) = RemoveFromFavoriteClothes(detectedClothesRepository)
 
+    @Provides
+    fun provideDefineGender(): DefineGender = DefineGender()
 
 }

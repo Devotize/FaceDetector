@@ -3,16 +3,11 @@ package com.sychev.facedetector.presentation.ui.detectorAssitant
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.RectF
 import android.util.Log
 import com.sychev.facedetector.domain.DetectedClothes
-import com.sychev.facedetector.interactors.clothes.DeleteClothes
-import com.sychev.facedetector.interactors.clothes.GetClothesList
-import com.sychev.facedetector.interactors.clothes.GetFavoriteClothes
-import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
-import com.sychev.facedetector.interactors.clothes_list.DetectClothesLocal
-import com.sychev.facedetector.interactors.clothes_list.Recognition
-import com.sychev.facedetector.interactors.clothes_list.SearchClothes
+import com.sychev.facedetector.interactors.clothes.*
+import com.sychev.facedetector.interactors.clothes_list.*
+import com.sychev.facedetector.interactors.gender.DefineGender
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorEvent.*
 import com.sychev.facedetector.presentation.ui.items.SnackbarItem
 import com.sychev.facedetector.utils.TAG
@@ -39,6 +34,7 @@ class DetectorViewModel(
         fun provideDeleteClothes(): DeleteClothes
         fun provideGetClothesList(): GetClothesList
         fun provideDetectClothesLocal(): DetectClothesLocal
+        fun provideDefineGender(): DefineGender
     }
 
     private val entryPoint = EntryPointAccessors.fromApplication(context, DetectorViewModelEntryPoint::class.java)
@@ -48,6 +44,7 @@ class DetectorViewModel(
     private val deleteClothes = entryPoint.provideDeleteClothes()
     private val getClothesList = entryPoint.provideGetClothesList()
     private val detectClothesLocal = entryPoint.provideDetectClothesLocal()
+    private val defineGender = entryPoint.provideDefineGender()
 
     private val _loading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val _detectedClothesList: MutableStateFlow<List<DetectedClothes>> = MutableStateFlow(listOf())
@@ -58,6 +55,7 @@ class DetectorViewModel(
     private val _errorMessage: MutableStateFlow<String?> = MutableStateFlow(null)
     private val _isActive: MutableStateFlow<Boolean?> = MutableStateFlow(null)
     private val _detectedClothesListLocal: MutableStateFlow<List<Recognition>> = MutableStateFlow(listOf())
+    private val _drawMode: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
     val detectedClothesList: StateFlow<List<DetectedClothes>> = _detectedClothesList.asStateFlow()
     val favoriteClothesList = _favoriteClothesList.asStateFlow()
@@ -67,6 +65,7 @@ class DetectorViewModel(
     val errorMessage = _errorMessage.asStateFlow()
     val isActive = _isActive.asStateFlow()
     val detectedClothesListLocal = _detectedClothesListLocal.asStateFlow()
+    val drawMode = _drawMode.asStateFlow()
 
     fun onTriggerEvent(event: DetectorEvent) {
         when (event) {
@@ -96,6 +95,9 @@ class DetectorViewModel(
             is DetectClothesLocalEvent -> {
                 Log.d(TAG, "onTriggerEvent: detect clothes event local")
                 detectClothesLocal(event.screenshot)
+            }
+            is DefineGenderEvent -> {
+                defineGender(event.screenshot)
             }
         }
     }
@@ -205,6 +207,10 @@ class DetectorViewModel(
         _isActive.value = isActive
     }
 
+    fun setDrawMode(drawMode: Boolean) {
+        _drawMode.value = drawMode
+    }
+
     private fun detectClothesLocal(picture: Bitmap) {
         detectClothesLocal.execute(context, picture)
             .onEach { dataState ->
@@ -215,6 +221,15 @@ class DetectorViewModel(
                 }
             }
             .launchIn(CoroutineScope(IO))
+    }
+
+    private fun defineGender(picture: Bitmap) {
+        defineGender.execute(context, picture)
+            .onEach {dataState ->
+                dataState.data?.let{ gender ->
+                    Log.d(TAG, "defineGender: $gender")
+                }
+            }.launchIn(CoroutineScope(IO))
     }
 
 }

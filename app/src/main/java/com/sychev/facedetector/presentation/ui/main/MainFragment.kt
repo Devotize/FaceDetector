@@ -14,7 +14,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.sychev.facedetector.domain.DetectedClothes
-import com.sychev.facedetector.presentation.MainActivity
+import com.sychev.facedetector.presentation.activity.MainActivity
 import com.sychev.facedetector.presentation.ui.components.AppTopBar
 import com.sychev.facedetector.presentation.ui.components.ClothesItem
 import com.sychev.facedetector.presentation.ui.theme.AppTheme

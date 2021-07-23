@@ -22,4 +22,6 @@ sealed class DetectorEvent {
 
     class DetectClothesLocalEvent(val screenshot: Bitmap): DetectorEvent()
 
+    class DefineGenderEvent(val screenshot: Bitmap): DetectorEvent()
+
 }

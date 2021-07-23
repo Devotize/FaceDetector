@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.sychev.facedetector.domain.DetectedClothes
-import com.sychev.facedetector.presentation.MainActivity
+import com.sychev.facedetector.presentation.activity.MainActivity
 import com.sychev.facedetector.presentation.ui.components.AppTopBar
 import com.sychev.facedetector.presentation.ui.components.ClothesBigItem
 import com.sychev.facedetector.presentation.ui.components.ClothesItem

@@ -2,7 +2,7 @@ package com.sychev.facedetector.presentation.ui.main
 
 import android.content.Context
 import com.sychev.facedetector.domain.DetectedClothes
-import com.sychev.facedetector.presentation.MainActivity
+import com.sychev.facedetector.presentation.activity.MainActivity
 
 sealed class MainEvent() {
     object GetAllScreenshots: MainEvent()
