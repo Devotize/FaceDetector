@@ -10,11 +10,11 @@ import androidx.compose.ui.unit.sp
 import com.sychev.facedetector.R
 
 private val Roboto = FontFamily(
-    Font(R.font.roboto_thin, FontWeight.W100),
-    Font(R.font.roboto_light, FontWeight.W200),
-    Font(R.font.roboto_regular, FontWeight.W300),
-    Font(R.font.roboto_medium, FontWeight.W500),
-    Font(R.font.roboto_bold, FontWeight.W700),
+    Font(R.font.rubik_light, FontWeight.W100),
+    Font(R.font.rubik_light, FontWeight.W200),
+    Font(R.font.rubik_regular, FontWeight.W300),
+    Font(R.font.rubik_medium, FontWeight.W500),
+    Font(R.font.rubik_bold, FontWeight.W700),
 )
 
 val RobotoTypography =Typography(

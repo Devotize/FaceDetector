@@ -2,18 +2,25 @@ package com.sychev.facedetector.presentation.ui.screen
 
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.MaterialTheme
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -26,6 +33,9 @@ import com.sychev.facedetector.presentation.ui.main.MainEvent
 import com.sychev.facedetector.presentation.ui.main.MainFragmentViewModel
 import com.sychev.facedetector.presentation.ui.theme.AppTheme
 import com.sychev.facedetector.utils.TAG
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 
 @ExperimentalPagerApi
@@ -40,12 +50,67 @@ fun ClothesListStartScreen(
     val query = viewModel.query.value
     val detectedClothesList = viewModel.detectedClothesList
     val hugeFirstElement = viewModel.hugeFirstElement.value
+    val scaffoldState = rememberScaffoldState()
+    val scope = rememberCoroutineScope()
 
     AppTheme {
-        Box(
-            modifier = Modifier.fillMaxSize()
-                .background(MaterialTheme.colors.background),
+        Scaffold(
+            modifier = Modifier
+                .fillMaxSize(),
+            scaffoldState = scaffoldState,
+            floatingActionButton = {
+                FloatingActionButton(
+                    modifier = Modifier
+                        .width(73.dp)
+                        .height(73.dp),
+                    onClick = {
+                        viewModel.onTriggerEvent(MainEvent.LaunchDetector(launcher))
+                    },
+                    shape = CircleShape,
+                    backgroundColor = MaterialTheme.colors.secondary,
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        imageVector = Icons.Outlined.CameraAlt,
+                        contentDescription = null,
+                    )
+                }
+            },
+            drawerContent = {
+                Text("Reviews")
+            },
+            drawerShape = RoundedCornerShape(topStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp, bottomStart = 0.dp)
         ) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .padding(start = 18.dp, top = 18.dp, end = 18.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+                    IconButton(onClick = {
+                        if (scaffoldState.drawerState.isClosed) {
+                            scope.launch { scaffoldState.drawerState.open() }
+                        } else {
+                            scope.launch { scaffoldState.drawerState.close() }
+                        }
+
+                    }) {
+                        Icon(
+                            modifier = Modifier
+                                .width(30.dp)
+                                .height(30.dp),
+                            imageVector = Icons.Outlined.Menu,
+                            contentDescription = null
+                        )
+                    }
+                }
+            }
 
         }
     }
