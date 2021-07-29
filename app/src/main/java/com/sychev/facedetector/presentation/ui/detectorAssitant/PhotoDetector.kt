@@ -435,24 +435,24 @@ class PhotoDetector
                 if (it.second <= rect.centerY() && it.second > rect.centerY() - offset) {
                     centerX += offset
                     centerY += offset
-                    circle.background = ContextCompat.getDrawable(context, R.drawable.detected_clothes_pointer_shape_red)
+//                    circle.background = ContextCompat.getDrawable(context, R.drawable.detected_clothes_pointer_shape_red)
                 }
                 if (it.second >= rect.centerY() && it.second < rect.centerY() + offset) {
                     centerX += offset
                     centerY -= offset
-                    circle.background = ContextCompat.getDrawable(context, R.drawable.detected_clothes_pointer_shape_red)
+//                    circle.background = ContextCompat.getDrawable(context, R.drawable.detected_clothes_pointer_shape_red)
                 }
             }
             if (it.first >= rect.centerX() && it.first < rect.centerX() + offset) {
                 if (it.second <= rect.centerY() && it.second > rect.centerY() - offset) {
                     centerX -= offset
                     centerY += offset
-                    circle.background = ContextCompat.getDrawable(context, R.drawable.detected_clothes_pointer_shape_red)
+//                    circle.background = ContextCompat.getDrawable(context, R.drawable.detected_clothes_pointer_shape_red)
                 }
                 if (it.second >= rect.centerY() && it.second < rect.centerY() + offset) {
                     centerX -= offset
                     centerY -= offset
-                    circle.background = ContextCompat.getDrawable(context, R.drawable.detected_clothes_pointer_shape_red)
+//                    circle.background = ContextCompat.getDrawable(context, R.drawable.detected_clothes_pointer_shape_red)
 
                 }
             }

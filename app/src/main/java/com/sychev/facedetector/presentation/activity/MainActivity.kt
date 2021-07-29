@@ -6,9 +6,7 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.provider.Settings
-import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,14 +19,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.sychev.facedetector.R
-import com.sychev.facedetector.presentation.ui.components.BottomNavigationBar
 import com.sychev.facedetector.presentation.ui.main.MainFragmentViewModel
-import com.sychev.facedetector.presentation.ui.screen.ClothesListScreen
+import com.sychev.facedetector.presentation.ui.screen.ClothesListStartScreen
 import com.sychev.facedetector.presentation.ui.screen.Screen
 import com.sychev.facedetector.presentation.ui.theme.AppTheme
 import com.sychev.facedetector.service.FaceDetectorService
-import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.AndroidEntryPoint
 
 const val OVERLAY_PERMISSION_REQUEST_CODE = 2001
@@ -78,7 +73,7 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     NavHost(navController, startDestination = Screen.ClothesList.route, Modifier.padding(it)) {
                         composable(Screen.ClothesList.route){
-                            ClothesListScreen(viewModel = viewModel, launcher = this@MainActivity)
+                            ClothesListStartScreen(viewModel = viewModel, launcher = this@MainActivity)
                         }
                         composable(Screen.FavoriteClothesList.route){
                             Text(text = "favorite clothes list")
