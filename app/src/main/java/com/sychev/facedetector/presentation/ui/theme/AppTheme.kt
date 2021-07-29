@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 private val lightThemeColors = lightColors(
     primary = White,
     primaryVariant = Grey4,
-    secondary = Blue1,
+    secondary = Yellow,
     background = Grey1,
     surface = White,
     error = Red1,
