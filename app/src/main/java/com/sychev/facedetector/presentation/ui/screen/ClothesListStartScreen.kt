@@ -1,13 +1,9 @@
 package com.sychev.facedetector.presentation.ui.screen
 
-import android.util.Log
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -18,25 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
-import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.activity.MainActivity
-import com.sychev.facedetector.presentation.ui.components.AppTopBar
-import com.sychev.facedetector.presentation.ui.components.ClothesBigItem
 import com.sychev.facedetector.presentation.ui.components.ClothesItem
 import com.sychev.facedetector.presentation.ui.main.MainEvent
 import com.sychev.facedetector.presentation.ui.main.MainFragmentViewModel
 import com.sychev.facedetector.presentation.ui.theme.AppTheme
-import com.sychev.facedetector.utils.TAG
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.*
 
 @ExperimentalPagerApi
 @Composable
@@ -49,7 +34,7 @@ fun ClothesListStartScreen(
 
     val query = viewModel.query.value
     val detectedClothesList = viewModel.detectedClothesList
-    val hugeFirstElement = viewModel.hugeFirstElement.value
+    val hugeFirstElement = viewModel.launchFromAssistant.value
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
 
@@ -68,6 +53,7 @@ fun ClothesListStartScreen(
                     },
                     shape = CircleShape,
                     backgroundColor = MaterialTheme.colors.secondary,
+                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 0.dp, pressedElevation = 6.dp)
                 ) {
                     Icon(
                         modifier = Modifier
@@ -88,7 +74,8 @@ fun ClothesListStartScreen(
             ) {
                 Row(
                     modifier = Modifier
-                        .wrapContentSize()
+                        .fillMaxWidth()
+                        .wrapContentHeight()
                         .padding(start = 18.dp, top = 18.dp, end = 18.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -109,7 +96,31 @@ fun ClothesListStartScreen(
                             contentDescription = null
                         )
                     }
+                    Text(
+                        modifier = Modifier
+                            .clickable {
+                                       launcher.finish()
+                            },
+                        text = "Close",
+                        color = MaterialTheme.colors.onBackground,
+                        style = MaterialTheme.typography.h3,
+                    )
                 }
+
+                LazyColumn() {
+                    itemsIndexed(detectedClothesList){index, item ->
+                        ClothesItem(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .padding(start = 8.dp, top = 4.dp, bottom = 4.dp, end = 8.dp),
+                            detectedClothes = item,
+                            onAddToFavoriteClick = { viewModel.onTriggerEvent(MainEvent.AddToFavoriteDetectedClothesEvent(item)) },
+                            onRemoveFromFavoriteClick = {viewModel.onTriggerEvent(MainEvent.RemoveFromFavoriteDetectedClothesEvent(item))}
+                        )
+                    }
+                }
+
             }
 
         }

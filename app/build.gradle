@@ -14,6 +14,7 @@ repositories {
     maven {
         url "https://dl.bintray.com/kotlin/kotlin-eap/"
     }
+    maven { url 'https://jitpack.io' }
 
     maven { url 'https://jitpack.io' }
     google()
@@ -118,6 +119,8 @@ dependencies {
     //compose
     def compose_version = "1.0.0-rc01"
     implementation "androidx.compose.ui:ui:$compose_version"
+    //util
+    implementation "androidx.compose.ui:ui-util:$compose_version"
     // Tooling support (Previews, etc.)
     implementation "androidx.compose.ui:ui-tooling:$compose_version"
     // Foundation (Border, Background, Box, Image, Scroll, shapes, animations, etc.)
@@ -140,6 +143,8 @@ dependencies {
     //pager for compose
     implementation "com.google.accompanist:accompanist-pager:0.14.0"
     implementation "com.google.accompanist:accompanist-pager-indicators:0.14.0"
+    //commpose rating bar
+    implementation 'com.github.a914-gowtham:compose-ratingbar:1.0.9'
 
     //navigation component
     def nav_version = "2.3.5"

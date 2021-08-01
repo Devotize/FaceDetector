@@ -19,7 +19,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.sychev.facedetector.presentation.ui.main.MainEvent
 import com.sychev.facedetector.presentation.ui.main.MainFragmentViewModel
+import com.sychev.facedetector.presentation.ui.screen.ClothesListRetailScreen
 import com.sychev.facedetector.presentation.ui.screen.ClothesListStartScreen
 import com.sychev.facedetector.presentation.ui.screen.Screen
 import com.sychev.facedetector.presentation.ui.theme.AppTheme
@@ -63,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         val stopIntent = Intent(applicationContext, FaceDetectorService::class.java)
         stopService(stopIntent)
         val bundle = intent.extras
-        viewModel.hugeFirstElement.value = bundle?.getBoolean("from_assistant_launch") ?: false
+        viewModel.launchFromAssistant.value = bundle?.getBoolean("from_assistant_launch") ?: false
 
         setContent {
             val navController = rememberNavController()
@@ -71,8 +73,9 @@ class MainActivity : AppCompatActivity() {
                 Scaffold(
 //                    bottomBar = {BottomNavigationBar(navController = navController)},
                 ) {
-                    NavHost(navController, startDestination = Screen.ClothesList.route, Modifier.padding(it)) {
-                        composable(Screen.ClothesList.route){
+                    // for debugging purposes start screen is ClothesListRetail
+                    NavHost(navController, startDestination = if (viewModel.launchFromAssistant.value) Screen.ClothesListStart.route else Screen.ClothesListRetail.route, Modifier.padding(it)) {
+                        composable(Screen.ClothesListStart.route){
                             ClothesListStartScreen(viewModel = viewModel, launcher = this@MainActivity)
                         }
                         composable(Screen.FavoriteClothesList.route){
@@ -83,6 +86,10 @@ class MainActivity : AppCompatActivity() {
                         }
                         composable(Screen.Profile.route){
                             Text(text = "Profile")
+                        }
+                        composable(Screen.ClothesListRetail.route) {
+                            viewModel.onTriggerEvent(MainEvent.GetAllDetectedClothes)
+                            ClothesListRetailScreen(clothes = viewModel.detectedClothesList, launcher = this@MainActivity)
                         }
                     }
                 }

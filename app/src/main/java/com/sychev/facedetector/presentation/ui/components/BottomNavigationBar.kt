@@ -1,6 +1,5 @@
 package com.sychev.facedetector.presentation.ui.components
 
-import android.util.Log
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
@@ -12,7 +11,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sychev.facedetector.presentation.ui.screen.Screen
-import com.sychev.facedetector.utils.TAG
 
 @Composable
 fun BottomNavigationBar(
@@ -20,7 +18,7 @@ fun BottomNavigationBar(
 ) {
     val backStackEntry = navController.currentBackStackEntryAsState()
     val screens = listOf(
-        Screen.ClothesList,
+        Screen.ClothesListStart,
         Screen.FavoriteClothesList,
         Screen.Shop,
         Screen.Profile
@@ -32,7 +30,7 @@ fun BottomNavigationBar(
             BottomNavigationItem(
                 icon = {
                     when (screen.route) {
-                        Screen.ClothesList.route -> Icon(imageVector = Icons.Outlined.Home, contentDescription = null)
+                        Screen.ClothesListStart.route -> Icon(imageVector = Icons.Outlined.Home, contentDescription = null)
                         Screen.FavoriteClothesList.route -> Icon(imageVector = Icons.Outlined.FavoriteBorder, contentDescription = null)
                         Screen.Shop.route -> Icon(imageVector = Icons.Outlined.ShoppingCart, contentDescription = null)
                         Screen.Profile.route -> Icon(imageVector = Icons.Outlined.AccountCircle, contentDescription = null)

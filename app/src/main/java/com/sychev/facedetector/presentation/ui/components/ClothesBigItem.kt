@@ -116,10 +116,10 @@ fun ClothesBigItem(
                         color = MaterialTheme.colors.onSurface,
                     )
 
-                    listOf(Shop(),Shop(),Shop()).forEach {
-                        ShopComponent(shop = it)
-                        Spacer(modifier = Modifier.padding(bottom = 8.dp))
-                    }
+//                    listOf(Shop(),Shop(),Shop()).forEach {
+//                        ShopComponent(shop = it)
+//                        Spacer(modifier = Modifier.padding(bottom = 8.dp))
+//                    }
                 }
             }
 
