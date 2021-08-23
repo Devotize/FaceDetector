@@ -23,14 +23,14 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.sychev.facedetector.R
-import com.sychev.facedetector.domain.DetectedClothes
+import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.utils.loadPicture
 
 @Composable
 fun ClothesBigItem(
-    detectedClothes: DetectedClothes,
-    onAddToFavoriteClick: (DetectedClothes) -> Unit,
-    onRemoveFromFavoriteClick: (DetectedClothes) -> Unit,
+    clothes: Clothes,
+    onAddToFavoriteClick: (Clothes) -> Unit,
+    onRemoveFromFavoriteClick: (Clothes) -> Unit,
 ) {
     val showDetails = remember{ mutableStateOf(false) }
     val context = LocalContext.current
@@ -45,7 +45,7 @@ fun ClothesBigItem(
             modifier = Modifier
                 .padding(8.dp)
         ) {
-            loadPicture(url = detectedClothes.picUrl, defaultImage = R.drawable.clothes_default_icon).value?.let {
+            loadPicture(url = clothes.picUrl, defaultImage = R.drawable.clothes_default_icon).value?.let {
                 Surface(
                     modifier = Modifier
                         .wrapContentSize(),
@@ -68,7 +68,7 @@ fun ClothesBigItem(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = detectedClothes.brand,
+                    text = clothes.brand,
                     style = MaterialTheme.typography.subtitle1,
                     color = Color.Black
                 )
@@ -111,7 +111,7 @@ fun ClothesBigItem(
             Column(modifier = Modifier.animateContentSize(spring(1.75f))) {
                 if (showDetails.value) {
                     Text(
-                        text = detectedClothes.brand,
+                        text = clothes.brand,
                         style = MaterialTheme.typography.h6,
                         color = MaterialTheme.colors.onSurface,
                     )
@@ -148,10 +148,10 @@ fun ClothesBigItem(
                             .height(30.dp)
                             .padding(0.dp, 0.dp, 0.dp, 4.dp),
                         onClick = {
-                            if (detectedClothes.isFavorite) {
-                                onRemoveFromFavoriteClick(detectedClothes)
+                            if (clothes.isFavorite) {
+                                onRemoveFromFavoriteClick(clothes)
                             } else {
-                                onAddToFavoriteClick(detectedClothes)
+                                onAddToFavoriteClick(clothes)
                             }
                         },
                     ) {
@@ -159,7 +159,7 @@ fun ClothesBigItem(
                             modifier = Modifier,
                             imageVector = Icons.Default.Favorite,
                             contentDescription = null,
-                            tint = if (detectedClothes.isFavorite) Color.Red else MaterialTheme.colors.primaryVariant
+                            tint = if (clothes.isFavorite) Color.Red else MaterialTheme.colors.primaryVariant
                         )
                     }
                     IconButton(
@@ -172,7 +172,7 @@ fun ClothesBigItem(
                                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                 type = "text/plain"
                                 putExtra(Intent.EXTRA_SUBJECT, "Sharing Url")
-                                putExtra(Intent.EXTRA_TEXT, detectedClothes.url)
+                                putExtra(Intent.EXTRA_TEXT, clothes.url)
                             }
                             context.startActivity(intent)
                         }

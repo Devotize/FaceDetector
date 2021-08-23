@@ -19,17 +19,17 @@ import androidx.compose.ui.unit.dp
 import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarStyle
 import com.sychev.facedetector.R
-import com.sychev.facedetector.domain.DetectedClothes
+import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.utils.loadPicture
 
 @Composable
 fun ClothesRetailItem(
     modifier: Modifier = Modifier,
-    detectedClothes: DetectedClothes,
-    onAddToFavoriteClick: (DetectedClothes) -> Unit,
-    onRemoveFromFavoriteClick: (DetectedClothes) -> Unit,
+    clothes: Clothes,
+    onAddToFavoriteClick: (Clothes) -> Unit,
+    onRemoveFromFavoriteClick: (Clothes) -> Unit,
 ) {
-    val rating = remember{ mutableStateOf(4f)}
+    val rating = remember{ mutableStateOf(clothes.rating.toFloat())}
     Card(
         modifier = modifier,
         shape = MaterialTheme.shapes.large
@@ -50,10 +50,10 @@ fun ClothesRetailItem(
                         .wrapContentSize()
                         .align(Alignment.Bottom),
                     onClick = {
-                        if (detectedClothes.isFavorite) {
-                            onRemoveFromFavoriteClick(detectedClothes)
+                        if (clothes.isFavorite) {
+                            onRemoveFromFavoriteClick(clothes)
                         } else {
-                            onAddToFavoriteClick(detectedClothes)
+                            onAddToFavoriteClick(clothes)
                         }
                     },
                 ) {
@@ -61,18 +61,18 @@ fun ClothesRetailItem(
                         modifier = Modifier
                             .width(30.dp)
                             .height(30.dp),
-                        imageVector = if (detectedClothes.isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                        imageVector = if (clothes.isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = null,
-                        tint = if (detectedClothes.isFavorite) Color.Red else MaterialTheme.colors.primaryVariant
+                        tint = if (clothes.isFavorite) Color.Red else MaterialTheme.colors.primaryVariant
                     )
                 }
                 Text(
-                    text = "Wildberries",
+                    text = clothes.provider,
                     style = MaterialTheme.typography.subtitle1,
                     color = MaterialTheme.colors.primaryVariant
                 )
             }
-            loadPicture(url = detectedClothes.picUrl, defaultImage = R.drawable.clothes_default_icon).value?.let{bitmap ->
+            loadPicture(url = clothes.picUrl, defaultImage = R.drawable.clothes_default_icon).value?.let{ bitmap ->
                 Image(
                     modifier = Modifier
                         .width(185.dp)
@@ -96,14 +96,14 @@ fun ClothesRetailItem(
                         modifier = Modifier
                             .widthIn(max = 150.dp)
                             .heightIn(max = 47.dp),
-                        text = "${detectedClothes.brand} ${detectedClothes.itemCategory}",
+                        text = "${clothes.brand} ${clothes.itemCategory}",
                         color = MaterialTheme.colors.onPrimary,
                         style = MaterialTheme.typography.overline
                     )
                     Text(
                         modifier = Modifier
                             .padding(top = 4.dp),
-                        text = "20 700 р.",
+                        text = "${clothes.price} р.",
                         color = MaterialTheme.colors.onPrimary,
                         style = MaterialTheme.typography.h2,
                     )

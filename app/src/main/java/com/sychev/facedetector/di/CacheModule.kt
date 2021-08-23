@@ -3,7 +3,7 @@ package com.sychev.facedetector.di
 import android.content.Context
 import androidx.room.Room
 import com.sychev.facedetector.data.local.AppDatabase
-import com.sychev.facedetector.data.local.mapper.DetectedClothesEntityConverter
+import com.sychev.facedetector.data.local.mapper.ClothesEntityConverter
 import com.sychev.facedetector.data.local.mapper.SavedScreenshotConverter
 import dagger.Module
 import dagger.Provides
@@ -42,7 +42,7 @@ object CacheModule {
 
     @Singleton
     @Provides
-    fun provideDetectedClothesConverter() = DetectedClothesEntityConverter()
+    fun provideDetectedClothesConverter() = ClothesEntityConverter()
 
 }
 

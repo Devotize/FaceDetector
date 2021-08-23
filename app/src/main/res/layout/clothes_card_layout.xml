@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/detected_clothes_card_shape"
+    >
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_margin="12dp"
+            app:cardCornerRadius="8dp"
+            android:elevation="0dp">
+
+            <ImageView
+                android:id="@+id/clothes_card_image_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:background="@drawable/clothes_default_icon"/>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/clothes_card_name_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxWidth="135dp"
+                android:maxHeight="35dp"
+                android:text="Сумка Habra mabra вторая строчка"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                />
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                >
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_gravity="bottom"
+                    >
+                    <TextView
+                        android:id="@+id/clothes_card_price"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1299 ₽"
+                        android:textSize="21sp"
+                        android:textColor="#3D3D3D"
+                        />
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="#3D3D3D"
+                        android:layout_gravity="bottom"
+                        android:layout_marginStart="16dp"
+                        app:cardCornerRadius="12dp">
+
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            >
+
+                            <ImageView
+                                android:layout_width="15dp"
+                                android:layout_height="15dp"
+                                android:src="@drawable/ic_baseline_star_24"
+                                android:layout_marginStart="8dp"
+                                android:layout_gravity="center"
+                                />
+
+                            <TextView
+                                android:id="@+id/clothes_card_rating"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="4.7"
+                                android:textColor="@color/white"
+                                android:layout_marginTop="2dp"
+                                android:layout_marginBottom="2dp"
+                                android:layout_marginEnd="8dp"
+                                android:layout_marginStart="4dp"
+                                android:textSize="14sp"
+                                />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+
+                    </androidx.cardview.widget.CardView>
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </FrameLayout>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_margin="12dp">
+
+            <Button
+                android:id="@+id/clothes_card_close_button"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:background="@drawable/close_icon"
+                android:layout_gravity="center|top"/>
+
+            <Button
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@drawable/filled_heart"
+                android:layout_gravity="bottom"
+                />
+
+        </FrameLayout>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+
+</FrameLayout>

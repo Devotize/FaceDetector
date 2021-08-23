@@ -8,7 +8,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sychev.facedetector.domain.DetectedClothes
+import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.SavedScreenshot
 import com.sychev.facedetector.interactors.clothes.GetClothesList
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
@@ -37,8 +37,9 @@ class MainFragmentViewModel
     val screenshotList: MutableState<List<SavedScreenshot>?> = mutableStateOf(null);
     val loading: MutableState<Boolean> = mutableStateOf(false)
     val query = mutableStateOf("")
-    val detectedClothesList = mutableStateListOf<DetectedClothes>()
+    val savedClothesList = mutableStateListOf<Clothes>()
     val launchFromAssistant = mutableStateOf(false)
+    var closeApp = false
 
     fun onTriggerEvent(event: MainEvent) {
         when (event) {
@@ -52,16 +53,20 @@ class MainFragmentViewModel
                 event.context.startActivity(browserIntent)
             }
             is MainEvent.LaunchDetector -> {
+                closeApp = event.closeApp
                 launchDetector(event.launcher)
             }
-            is MainEvent.GetAllDetectedClothes -> {
-                getAllDetectedClothes()
+            is MainEvent.GetAllClothes -> {
+                getAllClothes()
             }
-            is MainEvent.AddToFavoriteDetectedClothesEvent -> {
-                addToFavoriteClothes(event.detectedClothes)
+            is MainEvent.AddToFavoriteClothesEvent -> {
+                addToFavoriteClothes(event.clothes)
             }
-            is MainEvent.RemoveFromFavoriteDetectedClothesEvent -> {
-                removeFromFavoriteClothes(event.detectedClothes)
+            is MainEvent.RemoveFromFavoriteClothesEvent -> {
+                removeFromFavoriteClothes(event.clothes)
+            }
+            is MainEvent.GetAllFavoriteClothes -> {
+                getAllFavoriteClothes()
             }
         }
     }
@@ -80,33 +85,42 @@ class MainFragmentViewModel
         query.value = newQuery
     }
 
-    private fun getAllDetectedClothes() {
-        getClothesList.execute().onEach { dataState ->
+    private fun getAllClothes() {
+        getClothesList.execute(false).onEach { dataState ->
            loading.value = dataState.loading
             dataState.data?.let {
-                Log.d(TAG, "getAllDetectedClothes: detectedClothes: $it")
-                detectedClothesList.clear()
-                detectedClothesList.addAll(it)
+                savedClothesList.clear()
+                savedClothesList.addAll(it)
             }
         }.launchIn(viewModelScope)
     }
 
-    private fun removeFromFavoriteClothes(detectedClothes: DetectedClothes) {
+    private fun getAllFavoriteClothes() {
+        getClothesList.execute(true).onEach { dataState ->
+            loading.value = dataState.loading
+            dataState.data?.let {
+                savedClothesList.clear()
+                savedClothesList.addAll(it)
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun removeFromFavoriteClothes(clothes: Clothes) {
         Log.d(TAG, "removeFromFavoriteClothes: called")
-        removeFromFavoriteClothes.execute(detectedClothes)
+        removeFromFavoriteClothes.execute(clothes)
             .onEach {
                 if (!it.loading) {
-                    getAllDetectedClothes()
+                    savedClothesList.remove(clothes)
                 }
             }
             .launchIn(viewModelScope)
     }
 
-    private fun addToFavoriteClothes(detectedClothes: DetectedClothes) {
-        insertClothesToFavorite.execute(detectedClothes)
+    private fun addToFavoriteClothes(clothes: Clothes) {
+        insertClothesToFavorite.execute(clothes)
             .onEach {
                 if (!it.loading) {
-                    getAllDetectedClothes()
+                    getAllFavoriteClothes()
                 }
             }
             .launchIn(viewModelScope)

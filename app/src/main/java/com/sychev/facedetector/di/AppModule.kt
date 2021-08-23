@@ -20,7 +20,6 @@ object AppModule {
         return context as BaseApplication
     }
 
-    @Singleton
     @Provides
     fun provideViewModel(@ApplicationContext context: Context): DetectorViewModel
     {

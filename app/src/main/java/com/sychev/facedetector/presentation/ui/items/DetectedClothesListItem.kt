@@ -3,22 +3,16 @@ package com.sychev.facedetector.presentation.ui.items
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PixelFormat
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.FrameLayout
-import android.widget.ImageButton
 import androidx.core.content.ContextCompat
-import androidx.core.view.marginTop
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sychev.facedetector.R
-import com.sychev.facedetector.domain.DetectedClothes
-import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorEvent
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorViewModel
 import com.sychev.facedetector.presentation.ui.items.adapter.DetectedClothesListAdapter
 import com.sychev.facedetector.utils.TAG
@@ -27,7 +21,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -109,20 +102,20 @@ class DetectedClothesListItem(
     }
 
     private fun onInitialize() {
-        viewModel.detectedClothesList.onEach { detectedClothesList ->
-            Log.d(TAG, "onInitialize: detectedClothesList: $detectedClothesList")
-            open()
-            if (detectedClothesList.isEmpty()) {
-                close()
-                return@onEach
-            }
-            myAdapter.apply {
-                val startPosition = list.size
-                val itemCount = detectedClothesList.size
-                list.addAll(detectedClothesList)
-                notifyItemRangeInserted(startPosition, itemCount)
-            }
-        }.launchIn(CoroutineScope(Main))
+//        viewModel.clothesList.onEach { detectedClothesList ->
+//            Log.d(TAG, "onInitialize: detectedClothesList: $detectedClothesList")
+//            open()
+//            if (detectedClothesList.isEmpty()) {
+//                close()
+//                return@onEach
+//            }
+//            myAdapter.apply {
+//                val startPosition = list.size
+//                val itemCount = detectedClothesList.size
+//                list.addAll(detectedClothesList)
+//                notifyItemRangeInserted(startPosition, itemCount)
+//            }
+//        }.launchIn(CoroutineScope(Main))
     }
 
 }

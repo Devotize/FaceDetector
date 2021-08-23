@@ -9,7 +9,9 @@ import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toRectF
 import com.sychev.facedetector.R
+import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.custom_view.ResizableRectangleView
 import com.sychev.facedetector.utils.TAG
 import kotlinx.coroutines.CoroutineScope

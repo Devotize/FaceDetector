@@ -1,53 +1,159 @@
 package com.sychev.facedetector.presentation.ui.components
 
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
+import coil.compose.rememberImagePainter
+import com.sychev.facedetector.R
+import com.sychev.facedetector.presentation.ui.detectorAssitant.PhotoDetector
 import com.sychev.facedetector.presentation.ui.screen.Screen
 
 @Composable
 fun BottomNavigationBar(
-    navController: NavController
+    navController: NavController,
+    launchAssistant: () -> Unit,
 ) {
     val backStackEntry = navController.currentBackStackEntryAsState()
     val screens = listOf(
-        Screen.ClothesListStart,
+        Screen.FeedList,
         Screen.FavoriteClothesList,
         Screen.Shop,
-        Screen.Profile
+        Screen.Profile,
     )
     BottomNavigation(
         backgroundColor = MaterialTheme.colors.primary,
     ) {
-        screens.forEach { screen ->
-            BottomNavigationItem(
-                icon = {
-                    when (screen.route) {
-                        Screen.ClothesListStart.route -> Icon(imageVector = Icons.Outlined.Home, contentDescription = null)
-                        Screen.FavoriteClothesList.route -> Icon(imageVector = Icons.Outlined.FavoriteBorder, contentDescription = null)
-                        Screen.Shop.route -> Icon(imageVector = Icons.Outlined.ShoppingCart, contentDescription = null)
-                        Screen.Profile.route -> Icon(imageVector = Icons.Outlined.AccountCircle, contentDescription = null)
+        //home screen
+        BottomNavigationItem(
+            icon = {
+                if (Screen.FeedList.route != backStackEntry.value?.destination?.route)
+                    Icon(imageVector = Icons.Outlined.Home, contentDescription = null)
+                else
+                    Icon(imageVector = Icons.Default.Home, contentDescription = null)
+            },
+            selected = Screen.FeedList.route == backStackEntry.value?.destination?.route,
+            onClick = {
+                navController.navigate(Screen.FeedList.route) {
+                    popUpTo(navController.graph.findStartDestination().id)
+                    launchSingleTop = true
+                }
+            },
+            selectedContentColor = MaterialTheme.colors.secondary,
+            unselectedContentColor = MaterialTheme.colors.onBackground
+        )
+        //fav screen
+        BottomNavigationItem(
+            icon = {
+                if (Screen.FavoriteClothesList.route != backStackEntry.value?.destination?.route)
+                    Icon(
+                    imageVector = Icons.Outlined.FavoriteBorder,
+                    contentDescription = null
+                    )
+                else
+                    Icon(
+                    imageVector = Icons.Filled.Favorite,
+                    contentDescription = null
+                    )
+            },
+            selected = Screen.FavoriteClothesList.route == backStackEntry.value?.destination?.route,
+            onClick = {
+                navController.navigate(Screen.FavoriteClothesList.route) {
+                    popUpTo(navController.graph.findStartDestination().id)
+                    launchSingleTop = true
+                }
+            },
+            selectedContentColor = MaterialTheme.colors.secondary,
+            unselectedContentColor = MaterialTheme.colors.onBackground
+        )
+        //assistant
+        val transition by rememberInfiniteTransition().animateFloat(
+            initialValue = 0f,
+            targetValue = 360f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 2500,
+                    easing = LinearEasing,
+                    delayMillis = 0
+                ),
+                repeatMode = RepeatMode.Restart
+            )
+        )
+        Image(
+            modifier = Modifier
+                .clickable {
+                    if (!PhotoDetector.isShown) {
+                        launchAssistant()
                     }
-
+                }
+                .graphicsLayer {
+                    rotationZ = transition
                 },
-                selected = screen.route == backStackEntry.value?.destination?.route,
-                onClick = {
-                    navController.navigate(screen.route) {
+            painter = painterResource(id = R.drawable.yellow_abstract_icon_final),
+            contentDescription = null,
+        )
+        //retail screen
+        BottomNavigationItem(
+            icon = {
+                if (Screen.ClothesListRetail.route != backStackEntry.value?.destination?.route)
+                    Icon(
+                     imageVector = Icons.Outlined.ShoppingCart,
+                     contentDescription = null
+                    )
+                else
+                    Icon(
+                        imageVector = Icons.Filled.ShoppingCart,
+                        contentDescription = null
+                    )
+            },
+            selected = Screen.ClothesListRetail.route == backStackEntry.value?.destination?.route,
+            onClick = {
+                navController.navigate(Screen.ClothesListRetail.route) {
+                    popUpTo(navController.graph.findStartDestination().id)
+                    launchSingleTop = true
+                }
+            },
+            selectedContentColor = MaterialTheme.colors.secondary,
+            unselectedContentColor = MaterialTheme.colors.onBackground
+        )
+        //profile screen
+        BottomNavigationItem(
+            icon = {
+                if (Screen.Profile.route != backStackEntry.value?.destination?.route)
+                    Icon(
+                        imageVector = Icons.Outlined.AccountCircle,
+                        contentDescription = null
+                    )
+                else
+                    Icon(
+                        imageVector = Icons.Filled.AccountCircle,
+                        contentDescription = null
+                    )
+            },
+            selected = Screen.Profile.route == backStackEntry.value?.destination?.route,
+            onClick = {
+                    navController.navigate(Screen.Profile.route) {
                         popUpTo(navController.graph.findStartDestination().id)
                         launchSingleTop = true
                     }
-                },
-                selectedContentColor = MaterialTheme.colors.secondary,
-                unselectedContentColor = MaterialTheme.colors.onBackground
-            )
-        }
+
+            },
+            selectedContentColor = MaterialTheme.colors.secondary,
+            unselectedContentColor = MaterialTheme.colors.onBackground
+        )
     }
 
 }

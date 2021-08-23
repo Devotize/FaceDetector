@@ -1,7 +1,6 @@
 package com.sychev.facedetector.interactors.clothes
 
-import android.util.Log
-import com.sychev.facedetector.domain.DetectedClothes
+import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.data.DataState
 import com.sychev.facedetector.repository.DetectedClothesRepository
 import kotlinx.coroutines.flow.Flow
@@ -11,11 +10,14 @@ class GetClothesList(
     private val detectedClothesRepository: DetectedClothesRepository
 ) {
 
-    fun execute(): Flow<DataState<List<DetectedClothes>>> = flow <DataState<List<DetectedClothes>>>{
+    fun execute(favoriteOnly: Boolean): Flow<DataState<List<Clothes>>> = flow <DataState<List<Clothes>>>{
         try {
             emit(DataState.loading())
-
-            val result = detectedClothesRepository.getDetectedClothesList()
+            val result: List<Clothes> = if (favoriteOnly) {
+                detectedClothesRepository.getFavoriteClothes()
+            } else {
+                detectedClothesRepository.getClothesList()
+            }
 
             emit(DataState.success(result))
 
@@ -25,11 +27,11 @@ class GetClothesList(
         }
     }
 
-    fun execute(numOfElements: Int): Flow<DataState<List<DetectedClothes>>> = flow <DataState<List<DetectedClothes>>>{
+    fun execute(numOfElements: Int): Flow<DataState<List<Clothes>>> = flow <DataState<List<Clothes>>>{
         try {
             emit(DataState.loading())
 
-            val result = detectedClothesRepository.getDetectedClothesList(numOfElements)
+            val result = detectedClothesRepository.getClothesList(numOfElements)
 
             emit(DataState.success(result))
 

@@ -29,14 +29,19 @@ import android.provider.MediaStore
 import android.view.animation.Animation
 import android.view.animation.Transformation
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.toRect
+import androidx.core.graphics.toRectF
+import com.bumptech.glide.Glide
+import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.activity.CameraActivity
+import com.sychev.facedetector.presentation.activity.ClothesRetailActivity
 import com.sychev.facedetector.presentation.activity.MainActivity
 import com.sychev.facedetector.presentation.ui.items.BottomFavoriteSheet
 import com.sychev.facedetector.presentation.ui.items.BottomGallerySheet
 import com.sychev.facedetector.presentation.ui.items.DetectedClothesListItem
 import com.sychev.facedetector.presentation.ui.items.FrameDrawItem
 import com.sychev.facedetector.service.FaceDetectorService
+import com.sychev.facedetector.utils.Gender
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlin.collections.ArrayList
@@ -47,6 +52,11 @@ class PhotoDetector
     private val context: Context,
     private val mediaProjection: MediaProjection,
 ) {
+
+    companion object{
+        var isShown = false
+        var insideApp = true
+    }
 
     @EntryPoint
     @InstallIn(SingletonComponent::class)
@@ -63,8 +73,17 @@ class PhotoDetector
     private val bottomGallerySheet = BottomGallerySheet(context)
     private val bottomFavoriteSheet = BottomFavoriteSheet(context)
     private val frameDrawItem = FrameDrawItem(context).apply {
-        setAddClothesPointer {
-            addClothesPointer(it)
+        setAddClothesPointer { rect ->
+            screenshot?.let{ screenshot ->
+                val croppedBitmap = Bitmap.createBitmap(screenshot, rect.left, rect.top, rect.width(), rect.height())
+                val detectedClothes = DetectedClothes(
+                    location = rect.toRectF(),
+                    sourceBitmap = screenshot,
+                    croppedBitmap = croppedBitmap,
+                    gender = Gender.FEMALE
+                )
+                addClothesPointer(detectedClothes)
+            }
         }
     }
 
@@ -102,25 +121,24 @@ class PhotoDetector
     private val showButton = rootView.findViewById<FrameLayout>(R.id.detector_show_button).apply {
         setOnClickListener {
             viewModel.setIsActive(true)
-
-            (frameTouchListener as FrameLayout).removeAllViews()
+            frameTouchListener.removeAllViews()
 //            findNewFaces(0)
         }
         setOnTouchListener { v, event ->
+            Log.d(TAG, "touched: ")
             when (event.action){
                 MotionEvent.ACTION_MOVE -> {
                     rootViewParams.y = (event.rawY - (heightPx / 2)).toInt()
                     windowManager.updateViewLayout(rootView, rootViewParams)
                     bottomGradient.visibility = View.INVISIBLE
-                    if (rootViewParams.y > (heightPx / 2) - (heightPx / 2) / 7) {
                         if (bottomGradient.parent == null) {
                             frameTouchListener.addView(bottomGradient, bottomGradient.layoutParams)
                         }
                         bottomGradient.visibility = View.VISIBLE
-                    }
                     false
                 }
                 MotionEvent.ACTION_UP -> {
+                    bottomGradient.visibility = View.GONE
                     if (rootViewParams.y > (heightPx / 2) - (heightPx / 2) / 7) {
                         val stopIntent = Intent(context, FaceDetectorService::class.java)
                         context.stopService(stopIntent)
@@ -141,7 +159,7 @@ class PhotoDetector
             takeScreenshot()?.let { btm ->
 //                viewModel.onTriggerEvent(DetectorEvent.SearchClothesEvent(btm))
                 viewModel.onTriggerEvent(DetectorEvent.DetectClothesLocalEvent(btm))
-                viewModel.onTriggerEvent(DetectorEvent.DefineGenderEvent(btm))
+//                viewModel.onTriggerEvent(DetectorEvent.DefineGenderEvent(btm))
             }
         }
     }
@@ -183,6 +201,7 @@ class PhotoDetector
 
     private val additionExpandedHeight = 180
     private val additionExpandedWidth = 38
+    private val clothesList: ArrayList<Clothes> = ArrayList()
 
     private val progressBarCenter = ProgressBar(context)
     var recognitionsXY = ArrayList<Pair<Float, Float>>()
@@ -271,17 +290,21 @@ class PhotoDetector
     }
 
     fun open() {
+        Log.d(TAG, "open: assistantOpened")
         addViewToWM(frameTouchListener, frameParams)
         addViewToWM(rootView, rootViewParams)
+        isShown = true
     }
 
     fun close() {
+        Log.d(TAG, "close: assistant closed")
         removeViewFromWM(rootView)
         removeViewFromWM(frameTouchListener)
         additionalDetectedClothesViews.forEach {
             removeViewFromWM(it)
         }
         frameDrawItem.hide()
+        isShown = false
     }
 
     private fun takeScreenshot(): Bitmap? {
@@ -325,11 +348,7 @@ class PhotoDetector
             PixelFormat.TRANSLUCENT
         )
     }
-    private fun launchApp() {
-        val intent = Intent(context, MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        context.startActivity(intent)
-    }
+
 
     private fun showProgressBar() {
         if (progressBarCenter.parent == null) {
@@ -419,15 +438,88 @@ class PhotoDetector
         })
         showButton.startAnimation(anim)
     }
+    private val circleWidth = 35
+    private val circleHeight = 35
 
-    private fun addClothesPointer(location: Rect) {
-        val rect = location
+    private fun addClothesCard(circle: View, selectedClothesList: List<Clothes>) {
+        val clothes = selectedClothesList[0]
+        val layoutParams = circle.layoutParams as WindowManager.LayoutParams
+        val centerX = layoutParams.x + widthPx / 2
+        val centerY = layoutParams.y + heightPx / 2
+        val tailView = View(context)
+        tailView.background = ContextCompat.getDrawable(context, R.drawable.rotated_rectangle)
+        val tailWidth = 40
+        val tailHeight = 40
+        val tailPadding = 45
+        addViewToWM(tailView, getWmLayoutParams(tailWidth,tailHeight).apply {
+            x = -widthPx / 2 + centerX
+            y = if (centerY <= heightPx / 2) -heightPx / 2 + tailPadding + centerY  else -heightPx / 2 - tailPadding + centerY
+        })
+        additionalDetectedClothesViews.add(tailView)
+        //detected clothes card
+        val detectedClothesCard = layoutInflater.inflate(R.layout.clothes_card_layout, null)
+        detectedClothesCard.measure(0,0)
+        val clothesImage = detectedClothesCard.findViewById<ImageView>(R.id.clothes_card_image_view)
+        Glide.with(context)
+            .asBitmap()
+            .load(clothes.picUrl)
+            .into(clothesImage)
+        val priceTextView = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_price).apply {
+            text = "${clothes.price} ₽"
+        }
+        val ratingTextView = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_rating).apply {
+            text = "${clothes.rating}"
+        }
+        val nameTextView = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_name_text_view).apply {
+            text = "${clothes.brand} ${clothes.itemCategory}"
+        }
+//        Log.d(TAG, "onDetectorCreated: detectedClothesCard.measuredWidth: ${detectedClothesCard.measuredWidth}")
+        addViewToWM(detectedClothesCard, getWmLayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT).apply {
+            x = if (centerX <= widthPx / 2)
+                -widthPx / 2 + (detectedClothesCard.measuredWidth - centerX) / 2 + centerX
+            else
+                -widthPx / 2 - (detectedClothesCard.measuredWidth - (widthPx - centerX)) / 2 + centerX
+
+            y = if (centerY <= heightPx / 2)
+                -heightPx/2 + (detectedClothesCard.measuredHeight) / 2 + centerY + circleHeight / 2 + tailPadding / 2
+            else
+                -heightPx/2 - (detectedClothesCard.measuredHeight) / 2 + centerY - circleHeight / 2 - tailPadding / 2
+        })
+        additionalDetectedClothesViews.add(detectedClothesCard)
+        detectedClothesCard.setOnClickListener {
+            additionalDetectedClothesViews.forEach { addedView ->
+                removeViewFromWM(addedView)
+            }
+            val intent = Intent(context, ClothesRetailActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//            intent.putExtra("from_assistant_launch", true)
+            val arrayClothes = ArrayList<Clothes>()
+            arrayClothes.addAll(selectedClothesList)
+            intent.putExtra("clothes_list", clothesList)
+            intent.putExtra("selected_clothes", arrayClothes)
+            context.startActivity(intent)
+        }
+        detectedClothesCard.findViewById<Button>(R.id.clothes_card_close_button).apply {
+            setOnClickListener {
+                removeViewFromWM(tailView)
+                removeViewFromWM(detectedClothesCard)
+                additionalDetectedClothesViews.remove(tailView)
+                additionalDetectedClothesViews.remove(detectedClothesCard)
+                circle.isClickable = true
+            }
+        }
+    }
+
+    private fun addClothesPointer(detectedClothes: DetectedClothes) {
+        val rect = detectedClothes.location
         var centerX = rect.centerX().toInt()
         var centerY = rect.centerY().toInt()
 
         val circle = Button(context)
         circle.elevation = 4f
-        circle.background = ContextCompat.getDrawable(context, R.drawable.detected_clothes_pointer_shape)
+        circle.background = ContextCompat.getDrawable(context, R.drawable.circle_with_red_center)
 
         val offset = 30
         recognitionsXY.forEach {
@@ -460,62 +552,31 @@ class PhotoDetector
 
         recognitionsXY.add(Pair(centerX.toFloat(), centerY.toFloat()))
 
-        val circleWidth = 35
-        val circleHeight = 35
         addViewToWM(circle, getWmLayoutParams(circleWidth,circleHeight).apply {
             x = -widthPx / 2 + centerX
             y = -heightPx / 2 + centerY
         })
         additionalDetectedClothesViews.add(circle)
         circle.setOnClickListener {
+            viewModel.onTriggerEvent(DetectorEvent.SearchClothesEvent(detectedClothes, context, circle))
             it.isClickable = false
-            val tailView = View(context)
-            tailView.background = ContextCompat.getDrawable(context, R.drawable.rotated_rectangle)
-            val tailWidth = 40
-            val tailHeight = 40
-            val tailPadding = 45
-            addViewToWM(tailView, getWmLayoutParams(tailWidth,tailHeight).apply {
-                x = -widthPx / 2 + centerX
-                y = if (centerY <= heightPx / 2) -heightPx / 2 + tailPadding + centerY  else -heightPx / 2 - tailPadding + centerY
-            })
-            additionalDetectedClothesViews.add(tailView)
-            //detected clothes card
-            val detectedClothesCard = layoutInflater.inflate(R.layout.detected_clothes_card_layout, null)
-            detectedClothesCard.measure(0,0)
-            Log.d(TAG, "onDetectorCreated: detectedClothesCard.measuredWidth: ${detectedClothesCard.measuredWidth}")
-            addViewToWM(detectedClothesCard, getWmLayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT).apply {
-                x = if (centerX <= widthPx / 2)
-                    -widthPx / 2 + (detectedClothesCard.measuredWidth - centerX) / 2 + centerX
-                else
-                    -widthPx / 2 - (detectedClothesCard.measuredWidth - (widthPx - centerX)) / 2 + centerX
-
-                y = if (centerY <= heightPx / 2)
-                    -heightPx/2 + (detectedClothesCard.measuredHeight) / 2 + centerY + circleHeight / 2 + tailPadding / 2
-                else
-                    -heightPx/2 - (detectedClothesCard.measuredHeight) / 2 + centerY - circleHeight / 2 - tailPadding / 2
-            })
-            additionalDetectedClothesViews.add(detectedClothesCard)
-            detectedClothesCard.setOnClickListener {
-                val intent = Intent(context, MainActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                intent.putExtra("from_assistant_launch", true)
-                context.startActivity(intent)
-            }
-            detectedClothesCard.findViewById<Button>(R.id.detected_clothes_card_close_button).apply {
-                setOnClickListener {
-                    removeViewFromWM(tailView)
-                    removeViewFromWM(detectedClothesCard)
-                    additionalDetectedClothesViews.remove(tailView)
-                    additionalDetectedClothesViews.remove(detectedClothesCard)
-                    circle.isClickable = true
-                }
-            }
         }
     }
 
     private fun onDetectorCreated() {
+        viewModel.clothesList.onEach { pair: Pair<View?, List<Clothes>> ->
+            pair.first?.let{ circle ->
+                if (pair.second.isNotEmpty()) {
+                    addClothesCard(circle, pair.second)
+                    pair.second.forEach {
+                        if (!clothesList.contains(it)) {
+                            clothesList.add(it)
+                        }
+                    }
+                }
+            }
+        }.launchIn(CoroutineScope(Main))
+
         viewModel.loading.onEach { loading ->
             if (loading) {
                 showProgressBar()
@@ -559,14 +620,14 @@ class PhotoDetector
             }
         }.launchIn(CoroutineScope(Main))
 
-        viewModel.detectedClothesListLocal.onEach {recognitions ->
+        viewModel.detectedClothesListLocal.onEach {recognitions: List<DetectedClothes> ->
             additionalDetectedClothesViews.forEach {
                 removeViewFromWM(it)
             }
             Log.d(TAG, "viewModel.detectedClothesListLocal $recognitions")
             recognitionsXY = ArrayList<Pair<Float, Float>>()
             recognitions.forEach { recognition ->
-                addClothesPointer(recognition.location.toRect())
+                addClothesPointer(recognition)
             }
         }.launchIn(CoroutineScope(Main))
     }

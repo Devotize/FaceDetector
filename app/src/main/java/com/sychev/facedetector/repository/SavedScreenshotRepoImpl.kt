@@ -1,22 +1,12 @@
 package com.sychev.facedetector.repository
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.util.Base64
 import com.sychev.facedetector.data.local.dao.ScreenshotDao
 import com.sychev.facedetector.data.local.mapper.SavedScreenshotConverter
 import com.sychev.facedetector.data.remote.CelebDetectionApi
-import com.sychev.facedetector.data.remote.ClothesDetectionApi
-import com.sychev.facedetector.data.remote.converter.DetectedClothesDtoConverter
-import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.SavedScreenshot
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
 
 class SavedScreenshotRepoImpl(
     private val screenshotDao: ScreenshotDao,

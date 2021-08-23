@@ -18,8 +18,18 @@ data class DetectedClothesEntity (
     val itemCategory: String,
     @ColumnInfo(name = "brand")
     val brand: String,
+    @ColumnInfo(name = "item_id")
+    val itemId: String,
+    @ColumnInfo(name = "price")
+    val price: Int,
+    @ColumnInfo(name = "rating")
+    val rating: Int,
+    @ColumnInfo(name = "price_Discount")
+    val priceDiscount: Int,
+    @ColumnInfo(name = "provider")
+    val provider: String,
     @ColumnInfo(name = "is_favorite")
-    var isFavorite: Boolean
+    var isFavorite: Boolean,
     ){
     companion object{
         const val TABLE_NAME = "detected_clothes_table"

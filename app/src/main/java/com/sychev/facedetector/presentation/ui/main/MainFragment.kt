@@ -8,12 +8,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.sychev.facedetector.domain.DetectedClothes
+import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.presentation.activity.MainActivity
 import com.sychev.facedetector.presentation.ui.components.AppTopBar
 import com.sychev.facedetector.presentation.ui.components.ClothesItem
@@ -33,10 +32,10 @@ class MainFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                viewModel.onTriggerEvent(MainEvent.GetAllDetectedClothes)
+                viewModel.onTriggerEvent(MainEvent.GetAllClothes)
 
                 val query = viewModel.query.value
-                val detectedClothesList = viewModel.detectedClothesList
+                val detectedClothesList = viewModel.savedClothesList
 
                 AppTheme {
                     Column(
@@ -46,25 +45,25 @@ class MainFragment : Fragment() {
                             query = query,
                             onQueryChange = viewModel::onQueryChange,
                             onStartAssistant = {
-                                viewModel.onTriggerEvent(MainEvent.LaunchDetector(activity as MainActivity))
+                                viewModel.onTriggerEvent(MainEvent.LaunchDetector(activity as MainActivity, true))
                             }
                         )
                         LazyColumn(
                             modifier = Modifier,
                         ) {
-                            itemsIndexed(detectedClothesList) { index: Int, item: DetectedClothes ->
+                            itemsIndexed(detectedClothesList) { index: Int, item: Clothes ->
                                 ClothesItem(
-                                    detectedClothes = item,
+                                    clothes = item,
                                     onAddToFavoriteClick = {
                                         viewModel.onTriggerEvent(
-                                            MainEvent.AddToFavoriteDetectedClothesEvent(
+                                            MainEvent.AddToFavoriteClothesEvent(
                                                 it
                                             )
                                         )
                                     },
                                     onRemoveFromFavoriteClick = {
                                         viewModel.onTriggerEvent(
-                                            MainEvent.RemoveFromFavoriteDetectedClothesEvent(
+                                            MainEvent.RemoveFromFavoriteClothesEvent(
                                                 it
                                             )
                                         )

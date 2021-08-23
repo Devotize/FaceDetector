@@ -32,10 +32,10 @@ class FaceDetectorService: Service() {
     }
 
     private fun stopService() {
-        stopForeground(true)
-        stopSelf()
         photoDetector?.close()
         photoDetector = null
+        stopForeground(true)
+        stopSelf()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

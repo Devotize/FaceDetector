@@ -15,7 +15,6 @@ import com.sychev.facedetector.R
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorEvent
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorViewModel
 import com.sychev.facedetector.presentation.ui.items.adapter.BottomGalleryListAdapter
-import com.sychev.facedetector.presentation.ui.items.adapter.DetectedClothesListAdapter
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -82,7 +81,7 @@ class BottomGallerySheet(
             sheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
 
-        viewModel.onTriggerEvent(DetectorEvent.GetAllDetectedClothes)
+        viewModel.onTriggerEvent(DetectorEvent.GetAllClothes)
         viewModel.allDetectedClothesInCache
             .onEach { detectedClothesList ->
                 myAdapter.list.clear()

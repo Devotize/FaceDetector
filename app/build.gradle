@@ -3,6 +3,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
+    id 'kotlin-parcelize'
 }
 
 repositories {
@@ -105,6 +106,7 @@ dependencies {
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
+    implementation 'com.squareup.retrofit2:converter-scalars:2.1.0'
     //tf lite model deployment
     implementation 'org.tensorflow:tensorflow-lite:2.3.0'
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.2.0'
@@ -114,6 +116,8 @@ dependencies {
     //glide
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     kapt 'com.github.bumptech.glide:compiler:4.12.0'
+    //coil for compose
+    implementation "io.coil-kt:coil-compose:1.3.1"
 
 
     //compose
@@ -145,6 +149,8 @@ dependencies {
     implementation "com.google.accompanist:accompanist-pager-indicators:0.14.0"
     //commpose rating bar
     implementation 'com.github.a914-gowtham:compose-ratingbar:1.0.9'
+    //fling behavior
+    implementation 'com.github.iamjosephmj:flinger:1.0.2'
 
     //navigation component
     def nav_version = "2.3.5"

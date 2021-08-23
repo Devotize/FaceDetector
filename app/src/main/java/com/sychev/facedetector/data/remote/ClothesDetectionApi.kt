@@ -1,23 +1,28 @@
 package com.sychev.facedetector.data.remote
 
-import com.sychev.facedetector.data.remote.model.DetectedClothesDto
-import okhttp3.MultipartBody
+import com.sychev.facedetector.data.remote.model.SearchClothesResult
 import okhttp3.RequestBody
-import okhttp3.Response
 import okhttp3.ResponseBody
+import retrofit2.Call
 import retrofit2.http.*
-import java.io.File
 
 
-//https://searcher-ml02.rgsbank.ru:8083/docs
-//https://rgsb-searcher-segment-ml02.rgsbank.ru:8083/docs
+//https://rgsb-back-ml02.mlcrm.rgsbank.ru:8083
 
 interface ClothesDetectionApi {
 
 
-    @POST("search")
+    @POST("searchByCrop")
     suspend fun detectClothes(
-    @Body requestBody: RequestBody,
-    ): DetectedClothesDto
+        @Query("img_type") imgType: String,
+        @Query("gender") gender: String,
+        @Query("size") size: Int = 1,
+        @Body requestBody: RequestBody,
+    ): SearchClothesResult
+
+    @GET("endlessCelebrities")
+    suspend fun getCelebPics(
+        @Query("page_num") page: Int
+    ): ResponseBody
 
 }

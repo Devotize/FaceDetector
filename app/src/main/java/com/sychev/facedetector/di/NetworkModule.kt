@@ -3,7 +3,9 @@ package com.sychev.facedetector.di
 import com.google.gson.GsonBuilder
 import com.sychev.facedetector.data.remote.CelebDetectionApi
 import com.sychev.facedetector.data.remote.ClothesDetectionApi
-import com.sychev.facedetector.data.remote.converter.DetectedClothesDtoConverter
+import com.sychev.facedetector.data.remote.UnsplashApi
+import com.sychev.facedetector.data.remote.converter.ClothesDtoConverter
+import com.sychev.facedetector.data.remote.model.UnsplashDto
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,6 +14,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.inject.Singleton
@@ -73,7 +76,7 @@ object NetworkModule {
     @Provides
     fun provideClothesDetectionService(okHttpClient: OkHttpClient): ClothesDetectionApi {
         return Retrofit.Builder()
-            .baseUrl("https://searcher-ml02.rgsbank.ru:8083/")
+            .baseUrl("https://rgsb-back-ml02.mlcrm.rgsbank.ru:8083/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
             .build()
@@ -82,7 +85,18 @@ object NetworkModule {
 
     @Singleton
     @Provides
-    fun provideDetectedClothesConverter(): DetectedClothesDtoConverter = DetectedClothesDtoConverter()
+    fun provideDetectedClothesConverter(): ClothesDtoConverter = ClothesDtoConverter()
+
+    @Singleton
+    @Provides
+    fun provideUnsplashService(okHttpClient: OkHttpClient): UnsplashApi {
+        return Retrofit.Builder()
+            .baseUrl("https://api.unsplash.com/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
+            .build()
+            .create(UnsplashApi::class.java)
+    }
 
 }
 

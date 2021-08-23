@@ -1,13 +1,15 @@
 package com.sychev.facedetector.domain
 
 import android.graphics.Bitmap
+import android.graphics.RectF
 
 data class DetectedClothes(
-    val url: String,
-    val gender: String,
-    val itemCategory: String,
-    val picUrl: String,
-    val brand: String,
-    var isFavorite: Boolean = false
-) {
-}
+    val id: String = "-1",
+    val title: String = "undefined",
+    val confidence: Float = 1f,
+    val location: RectF,
+    val detectedClass: Int = -1,
+    val sourceBitmap: Bitmap,
+    val croppedBitmap: Bitmap,
+    var gender: String,
+)

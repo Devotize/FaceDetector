@@ -1,22 +1,24 @@
 package com.sychev.facedetector.presentation.ui.detectorAssitant
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.view.View
+import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
-import java.nio.ByteBuffer
 
 sealed class DetectorEvent {
 
-    class SearchClothesEvent(val screenshot: Bitmap) : DetectorEvent()
+    class SearchClothesEvent(val detectedClothes: DetectedClothes, val context: Context, val circle: View) : DetectorEvent()
 
-    class InsertClothesToFavoriteEvent(val detectedClothes: DetectedClothes): DetectorEvent()
+    class InsertClothesToFavoriteEvent(val clothes: Clothes): DetectorEvent()
 
-    class DeleteDetectedClothesEvent(val detectedClothes: DetectedClothes): DetectorEvent()
+    class DeleteClothesEvent(val clothes: Clothes): DetectorEvent()
 
     object GetFavoriteClothesEvent: DetectorEvent()
 
-    object GetAllDetectedClothes: DetectorEvent()
+    object GetAllClothes: DetectorEvent()
 
-    class GetNumDetectedClothes(val numOfElements: Int): DetectorEvent()
+    class GetNumClothes(val numOfElements: Int): DetectorEvent()
 
     class ShareMultiplyUrls(val urls: ArrayList<String>): DetectorEvent()
 

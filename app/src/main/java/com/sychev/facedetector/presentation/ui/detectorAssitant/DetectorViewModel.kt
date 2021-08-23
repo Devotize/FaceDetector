@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.util.Log
+import android.view.View
+import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.interactors.clothes.*
 import com.sychev.facedetector.interactors.clothes_list.*
@@ -47,19 +49,19 @@ class DetectorViewModel(
     private val defineGender = entryPoint.provideDefineGender()
 
     private val _loading: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    private val _detectedClothesList: MutableStateFlow<List<DetectedClothes>> = MutableStateFlow(listOf())
-    private val _favoriteClothesList: MutableStateFlow<List<DetectedClothes>> = MutableStateFlow(listOf())
-    private val _allDetectedClothesInCache: MutableStateFlow<List<DetectedClothes>> = MutableStateFlow(listOf())
+    private val _clothesList: MutableStateFlow<Pair<View?, List<Clothes>>> = MutableStateFlow(Pair(null, listOf()))
+    private val _favoriteClothesList: MutableStateFlow<List<Clothes>> = MutableStateFlow(listOf())
+    private val _allClothesInCache: MutableStateFlow<List<Clothes>> = MutableStateFlow(listOf())
     private val _selectedButton: MutableStateFlow<SelectedButton?> = MutableStateFlow(null)
     private val _isSelectorMod: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val _errorMessage: MutableStateFlow<String?> = MutableStateFlow(null)
     private val _isActive: MutableStateFlow<Boolean?> = MutableStateFlow(null)
-    private val _detectedClothesListLocal: MutableStateFlow<List<Recognition>> = MutableStateFlow(listOf())
+    private val _detectedClothesListLocal: MutableStateFlow<List<DetectedClothes>> = MutableStateFlow(listOf())
     private val _drawMode: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
-    val detectedClothesList: StateFlow<List<DetectedClothes>> = _detectedClothesList.asStateFlow()
+    val clothesList: StateFlow<Pair<View?, List<Clothes>>> = _clothesList.asStateFlow()
     val favoriteClothesList = _favoriteClothesList.asStateFlow()
-    val allDetectedClothesInCache = _allDetectedClothesInCache.asStateFlow()
+    val allDetectedClothesInCache = _allClothesInCache.asStateFlow()
     val selectedButton = _selectedButton.asStateFlow()
     val isSelectorMod = _isSelectorMod.asStateFlow()
     val errorMessage = _errorMessage.asStateFlow()
@@ -70,24 +72,24 @@ class DetectorViewModel(
     fun onTriggerEvent(event: DetectorEvent) {
         when (event) {
             is SearchClothesEvent -> {
-                searchClothes(bitmap = event.screenshot)
+                searchClothes(detectedClothes = event.detectedClothes, circle = event.circle, context = event.context)
             }
             is InsertClothesToFavoriteEvent -> {
                 Log.d(TAG, "onTriggerEvent: InsertClothesToFavoriteEvent")
-                insertClothesToFavorite(event.detectedClothes)
+                insertClothesToFavorite(event.clothes)
             }
             is GetFavoriteClothesEvent -> {
                 getFavoriteClothes()
             }
-            is DeleteDetectedClothesEvent -> {
-                Log.d(TAG, "onTriggerEvent: DeleteDetectedCLothesEvent detectedClothes: ${event.detectedClothes}")
-                deleteClothes.execute(event.detectedClothes).launchIn(CoroutineScope(IO))
+            is DeleteClothesEvent -> {
+                Log.d(TAG, "onTriggerEvent: DeleteDetectedCLothesEvent detectedClothes: ${event.clothes}")
+                deleteClothes.execute(event.clothes).launchIn(CoroutineScope(IO))
             }
-            is GetAllDetectedClothes -> {
-                getAllDetectedClothes()
+            is GetAllClothes -> {
+                getAllClothes()
             }
-            is GetNumDetectedClothes -> {
-                getNumDetectedClothes(event.numOfElements)
+            is GetNumClothes -> {
+                getNumClothes(event.numOfElements)
             }
             is ShareMultiplyUrls -> {
                 shareUrls(event.urls)
@@ -102,14 +104,15 @@ class DetectorViewModel(
         }
     }
 
-    private fun searchClothes(bitmap: Bitmap) {
-        searchClothes.execute(bitmap, context).onEach { dataState ->
+    private fun searchClothes(detectedClothes: DetectedClothes, context: Context, circle: View) {
+        searchClothes.execute(detectedClothes, context).onEach { dataState ->
             _loading.value = dataState.loading
             dataState.data?.let {
                 Log.d(TAG, "searchClothes: detectedClothesList value changed")
-                _detectedClothesList.value = it
+                _clothesList.value = Pair(circle, it)
             }
             dataState.error?.let{
+                circle.isClickable = true
                 Log.d(TAG, "searchClothes: error -> ${it}")
                 onErrorMessageChange(it)
                 CoroutineScope(Main).launch{
@@ -119,8 +122,8 @@ class DetectorViewModel(
         }.launchIn(CoroutineScope(IO))
     }
 
-    private fun insertClothesToFavorite(detectedClothes: DetectedClothes) {
-        insertClothesToFavorite.execute(detectedClothes).onEach { dataState ->
+    private fun insertClothesToFavorite(clothes: Clothes) {
+        insertClothesToFavorite.execute(clothes).onEach { dataState ->
             _loading.value = dataState.loading
             dataState.error?.let{
                 Log.d(TAG, "searchClothes: error -> ${it}")
@@ -144,7 +147,7 @@ class DetectorViewModel(
         }.launchIn(CoroutineScope(IO))
     }
 
-    private fun getNumDetectedClothes(numOfElements: Int) {
+    private fun getNumClothes(numOfElements: Int) {
         getClothesList.execute(numOfElements)
             .onEach { dataState ->
                 _loading.value = dataState.loading
@@ -160,14 +163,14 @@ class DetectorViewModel(
             .launchIn(CoroutineScope(IO))
     }
 
-   private fun getAllDetectedClothes() {
+   private fun getAllClothes() {
        // if i ever need to get all clothes in cache
-       getClothesList.execute()
+       getClothesList.execute(favoriteOnly = false)
            .onEach { dataState ->
                _loading.value = dataState.loading
 
                dataState.data?.let {
-                    _allDetectedClothesInCache.value = it
+                    _allClothesInCache.value = it
                }
                dataState.error?.let{
                    Log.d(TAG, "searchClothes: error -> ${it}")
@@ -228,6 +231,9 @@ class DetectorViewModel(
             .onEach {dataState ->
                 dataState.data?.let{ gender ->
                     Log.d(TAG, "defineGender: $gender")
+                    _detectedClothesListLocal.value.forEach {
+                        it.gender = gender
+                    }
                 }
             }.launchIn(CoroutineScope(IO))
     }

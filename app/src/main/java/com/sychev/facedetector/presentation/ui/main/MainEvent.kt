@@ -1,7 +1,7 @@
 package com.sychev.facedetector.presentation.ui.main
 
 import android.content.Context
-import com.sychev.facedetector.domain.DetectedClothes
+import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.presentation.activity.MainActivity
 
 sealed class MainEvent() {
@@ -9,11 +9,13 @@ sealed class MainEvent() {
 
     class PerformGoogleSearch(val context: Context, val celebName: String): MainEvent()
 
-    class LaunchDetector(val launcher: MainActivity) : MainEvent()
+    class LaunchDetector(val launcher: MainActivity, val closeApp: Boolean) : MainEvent()
 
-    object GetAllDetectedClothes: MainEvent()
+    object GetAllClothes: MainEvent()
 
-    class AddToFavoriteDetectedClothesEvent(val detectedClothes: DetectedClothes): MainEvent()
+    object GetAllFavoriteClothes: MainEvent()
 
-    class RemoveFromFavoriteDetectedClothesEvent(val detectedClothes: DetectedClothes): MainEvent()
+    class AddToFavoriteClothesEvent(val clothes: Clothes): MainEvent()
+
+    class RemoveFromFavoriteClothesEvent(val clothes: Clothes): MainEvent()
 }

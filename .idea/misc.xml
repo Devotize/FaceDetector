@@ -34,6 +34,7 @@
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/red_circle_shape_filled.xml" value="0.17592592592592593" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/red_rounded_shape.xml" value="0.2203125" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/sheet_arrow_background_shape.xml" value="0.2203125" />
+        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/sircle_with_red_center.xml" value="0.2203125" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/tail_shape.xml" value="0.2169230769230769" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/drawable/white_circle_shape_filled.xml" value="0.2203125" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/font/testoi.xml" value="0.12708333333333333" />
@@ -43,6 +44,7 @@
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/bottom_gallery_sheet_layout.xml" value="0.15" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/bounding_box_layout.xml" value="0.16" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/celeb_name_layout.xml" value="0.33" />
+        <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/clothes_card_layout.xml" value="0.18" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/clothes_item.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/clothes_item_bottom_sheet.xml" value="0.25" />
         <entry key="..\:/Users/Devotize/AndroidStudioProjects/FaceDetector/app/src/main/res/layout/detected_clothes_card_layout.xml" value="0.16893115942028986" />

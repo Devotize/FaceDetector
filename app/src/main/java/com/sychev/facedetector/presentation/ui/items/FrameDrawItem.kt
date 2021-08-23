@@ -6,6 +6,7 @@ import android.graphics.*
 import android.os.Build
 import android.util.Log
 import android.view.*
+import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.custom_view.FrameDrawView
 
 class FrameDrawItem(

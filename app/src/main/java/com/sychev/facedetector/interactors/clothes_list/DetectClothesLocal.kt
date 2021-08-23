@@ -4,13 +4,18 @@ import android.content.Context
 import android.graphics.*
 import android.os.Build
 import android.util.Log
+import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.data.DataState
+import com.sychev.facedetector.interactors.gender.DefineGender
+import com.sychev.facedetector.utils.MIN_SCORE
 import com.sychev.facedetector.utils.TAG
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.GpuDelegate
-import org.tensorflow.lite.nnapi.NnApiDelegate
 import org.tensorflow.lite.support.common.FileUtil
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -22,19 +27,11 @@ import kotlin.collections.ArrayList
 class DetectClothesLocal {
 
 
-    fun execute(context: Context, bitmap: Bitmap): Flow<DataState<List<Recognition>>> = flow<DataState<List<Recognition>>>{
+    fun execute(context: Context, bitmap: Bitmap): Flow<DataState<List<DetectedClothes>>> = flow<DataState<List<DetectedClothes>>>{
         try {
             emit(DataState.loading())
 
             emit(DataState.success(detectClothes(context, bitmap)))
-//            delay(500)
-//            emit(DataState.success(listOf(
-//                RectF(100f,100f,200f,200f),
-//                RectF(200f,200f,300f,300f),
-//                RectF(400f,800f,500f,900f),
-//                RectF(600f,900f,700f,1000f),
-//            )
-//            ))
 
         }catch (e: Exception){
             Log.d(TAG, "execute: error -> ${e.localizedMessage}")
@@ -44,8 +41,8 @@ class DetectClothesLocal {
 
 
 
-    private fun detectClothes(context: Context, bitmap: Bitmap): ArrayList<Recognition> {
-        val detections: ArrayList<Recognition> = ArrayList<Recognition>()
+    private fun detectClothes(context: Context, bitmap: Bitmap): ArrayList<DetectedClothes> {
+        val detections: ArrayList<DetectedClothes> = ArrayList<DetectedClothes>()
         Log.d(TAG, "detectClothes: called")
         //initializin labels
         val labels = Vector<String>()
@@ -60,26 +57,26 @@ class DetectClothesLocal {
         }
         br.close()
 //        val croppedBitmap = processBitmap(BitmapFactory.decodeResource(context.resources, R.drawable.clothes_detect_test_2))
-        val croppedBitmap = processBitmap(bitmap)
+        val transformedBitmap = processBitmap(bitmap)
 
         val OUTPUT_WIDTH = 2535
         val tfliteModel = FileUtil.loadMappedFile(context, "yolov4-tiny_clothes_416_weights.tflite")
-        val options = Interpreter.Options().apply {
-            setNumThreads(4)
-            addDelegate(GpuDelegate())
-
-            // Initialize interpreter with NNAPI delegate for Android Pie or above
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-//                val nnApiDelegate = NnApiDelegate()
-//                addDelegate(nnApiDelegate)
-//                setUseNNAPI(true)
-                setNumThreads(4)
-                setAllowFp16PrecisionForFp32(true)
-                setAllowBufferHandleOutput(true)
-            }
-        }
-        val tfliteInterpreter = Interpreter(tfliteModel, options)
-        val byteBuffer = convertBitmapToByteBuffer(croppedBitmap)
+//        val options = Interpreter.Options().apply {
+//            setNumThreads(4)
+//            addDelegate(GpuDelegate())
+//
+//            // Initialize interpreter with NNAPI delegate for Android Pie or above
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+////                val nnApiDelegate = NnApiDelegate()
+////                addDelegate(nnApiDelegate)
+////                setUseNNAPI(true)
+//                setNumThreads(4)
+//                setAllowFp16PrecisionForFp32(true)
+//                setAllowBufferHandleOutput(true)
+//            }
+//        }
+        val tfliteInterpreter = Interpreter(tfliteModel, Interpreter.Options())
+        val byteBuffer = convertBitmapToByteBuffer(transformedBitmap)
 
         val outputMap: MutableMap<Int, Any> = java.util.HashMap()
         outputMap[0] = Array(1) {
@@ -97,12 +94,16 @@ class DetectClothesLocal {
             }
         }
         val inputArray = arrayOf<Any>(byteBuffer)
+
         tfliteInterpreter.runForMultipleInputsOutputs(inputArray, outputMap)
+        val gender = DefineGender.defineGender(context, bitmap)
+
+
         val bboxes = outputMap[0] as Array<Array<FloatArray>>?
         val outScores = outputMap[1] as Array<Array<FloatArray>>?
 
-        val scaleX: Float = (bitmap.width.toFloat() / croppedBitmap.width.toFloat())
-        val scaleY: Float = (bitmap.height.toFloat() / croppedBitmap.height.toFloat())
+        val scaleX: Float = (bitmap.width.toFloat() / transformedBitmap.width.toFloat())
+        val scaleY: Float = (bitmap.height.toFloat() / transformedBitmap.height.toFloat())
 
         for (i in 0 until OUTPUT_WIDTH) {
             var maxClass = 0f
@@ -121,7 +122,7 @@ class DetectClothesLocal {
 
 
 
-            if (score > 0.5f) {
+            if (score > MIN_SCORE) {
                 val xPos = bboxes!![0][i][0]
                 val yPos = bboxes[0][i][1]
                 val w = bboxes[0][i][2]
@@ -129,17 +130,20 @@ class DetectClothesLocal {
                 val rectF = RectF(
                     Math.max(0f, xPos - w / 2) * (scaleX),
                     Math.max(0f, yPos - h / 2) * (scaleY),
-                    Math.min((croppedBitmap.width - 1).toFloat(), xPos + w / 2) * (scaleX),
-                    Math.min((croppedBitmap.height - 1).toFloat(), yPos + h / 2) * (scaleY)
+                    Math.min((transformedBitmap.width - 1).toFloat(), xPos + w / 2) * (scaleX),
+                    Math.min((transformedBitmap.height - 1).toFloat(), yPos + h / 2) * (scaleY)
                 )
-                Log.d(TAG, "detectClothes: rect: $rectF, label: ${labels[detectedClass]}")
-                detections.add(Recognition(
-                    i.toString(),
-                    labels[detectedClass],
-                    score,
-                    rectF,
-                    detectedClass,
-                    croppedBitmap
+//                Log.d(TAG, "detectClothes: rect: $rectF, label: ${labels[detectedClass]}")
+                val croppedBitmap = Bitmap.createBitmap(bitmap, rectF.left.toInt(), rectF.top.toInt(), rectF.width().toInt(), rectF.height().toInt())
+                detections.add(DetectedClothes(
+                    id = i.toString(),
+                    title = labels[detectedClass],
+                    confidence = score,
+                    location = rectF,
+                    detectedClass = detectedClass,
+                    sourceBitmap = bitmap,
+                    croppedBitmap = croppedBitmap,
+                    gender = gender,
                 ))
             }
         }
@@ -229,12 +233,3 @@ class DetectClothesLocal {
     }
 
 }
-
-data class Recognition(
-    val id: String,
-    val title: String,
-    val confidence: Float,
-    val location: RectF,
-    val detectedClass: Int,
-    val bitmap: Bitmap,
-)

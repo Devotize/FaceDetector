@@ -12,9 +12,8 @@ import android.widget.CheckBox
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.google.android.material.snackbar.Snackbar
 import com.sychev.facedetector.R
-import com.sychev.facedetector.domain.DetectedClothes
+import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorEvent
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorViewModel
 import com.sychev.facedetector.utils.TAG
@@ -23,7 +22,7 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-class BottomGalleryListAdapter(val list: ArrayList<DetectedClothes>, private val viewModel: DetectorViewModel): RecyclerView.Adapter<BottomGalleryListAdapter.MyViewHolder>(){
+class BottomGalleryListAdapter(val list: ArrayList<Clothes>, private val viewModel: DetectorViewModel): RecyclerView.Adapter<BottomGalleryListAdapter.MyViewHolder>(){
 
     val urlsToShare = ArrayList<String>()
 
@@ -47,9 +46,9 @@ class BottomGalleryListAdapter(val list: ArrayList<DetectedClothes>, private val
         private val clothesImageView = itemView.findViewById<ImageView>(R.id.clothes_item_bottom_sheet_image_view)
         private val checkBox = itemView.findViewById<CheckBox>(R.id.clothes_item_bottom_sheet_check_box)
         private val closeButton = itemView.findViewById<Button>(R.id.clothes_item_bottom_sheet_close_button)
-        fun bind(detectedClothes: DetectedClothes, position: Int) {
+        fun bind(clothes: Clothes, position: Int) {
             Glide.with(itemView)
-                .load(detectedClothes.picUrl)
+                .load(clothes.picUrl)
                 .placeholder(R.drawable.clothes_default_icon)
                 .into(clothesImageView)
 
@@ -67,10 +66,10 @@ class BottomGalleryListAdapter(val list: ArrayList<DetectedClothes>, private val
 
             checkBox.setOnCheckedChangeListener { buttonView, isChecked ->
                 if (isChecked) {
-                    urlsToShare.add(detectedClothes.url)
+                    urlsToShare.add(clothes.url)
                 } else {
                     try {
-                        urlsToShare.remove(detectedClothes.url)
+                        urlsToShare.remove(clothes.url)
                     }catch (e: Exception){
                         e.printStackTrace()
                         Log.d(TAG, "bind: error -> ${e.message}")
@@ -79,7 +78,7 @@ class BottomGalleryListAdapter(val list: ArrayList<DetectedClothes>, private val
             }
 
             itemView.setOnClickListener {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(detectedClothes.url))
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(clothes.url))
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 it.context.startActivity(
                     intent,
@@ -87,7 +86,7 @@ class BottomGalleryListAdapter(val list: ArrayList<DetectedClothes>, private val
             }
 
             closeButton.setOnClickListener {
-                viewModel.onTriggerEvent(DetectorEvent.DeleteDetectedClothesEvent(detectedClothes))
+                viewModel.onTriggerEvent(DetectorEvent.DeleteClothesEvent(clothes))
                 list.removeAt(position)
                 this@BottomGalleryListAdapter.notifyItemRemoved(position)
                 this@BottomGalleryListAdapter.notifyItemRangeChanged(position, list.size)

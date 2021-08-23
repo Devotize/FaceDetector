@@ -13,12 +13,12 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.sychev.facedetector.R
-import com.sychev.facedetector.domain.DetectedClothes
+import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorEvent
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorViewModel
 import com.sychev.facedetector.utils.TAG
 
-class DetectedClothesListAdapter(val list: ArrayList<DetectedClothes>, private val viewModel: DetectorViewModel): RecyclerView.Adapter<DetectedClothesListAdapter.ClothesItem>() {
+class DetectedClothesListAdapter(val list: ArrayList<Clothes>, private val viewModel: DetectorViewModel): RecyclerView.Adapter<DetectedClothesListAdapter.ClothesItem>() {
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ClothesItem {
@@ -43,52 +43,52 @@ class DetectedClothesListAdapter(val list: ArrayList<DetectedClothes>, private v
 //        val closeButton = itemView.findViewById<Button>(R.id.clothes_item_close_button)
         val favoriteButton = itemView.findViewById<Button>(R.id.clothes_item_favorite_button)
 
-        fun bind(detectedClothes: DetectedClothes, position: Int) {
+        fun bind(clothes: Clothes, position: Int) {
             Glide.with(itemView)
-                .load(detectedClothes.picUrl)
+                .load(clothes.picUrl)
                 .placeholder(R.drawable.clothes_default_icon)
                 .into(clothesImageView)
 
 
-            favoriteButton.background = if (detectedClothes.isFavorite) {
+            favoriteButton.background = if (clothes.isFavorite) {
                 ContextCompat.getDrawable(itemView.context, R.drawable.filled_heart)
             } else {
                 ContextCompat.getDrawable(itemView.context, R.drawable.empty_heart_grey)
             }
 
             itemView.setOnClickListener {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(detectedClothes.url))
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(clothes.url))
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 it.context.startActivity(
                     intent,
                 )
             }
             favoriteButton.setOnClickListener {
-                detectedClothes.isFavorite = !detectedClothes.isFavorite
-                when (detectedClothes.isFavorite) {
+                clothes.isFavorite = !clothes.isFavorite
+                when (clothes.isFavorite) {
                     true -> {
                         Log.d(
                             TAG,
-                            "bind: favoriteButton clicked, isFavorite = ${detectedClothes.isFavorite}"
+                            "bind: favoriteButton clicked, isFavorite = ${clothes.isFavorite}"
                         )
                         it.background =
                             ContextCompat.getDrawable(itemView.context, R.drawable.filled_heart)
                         viewModel.onTriggerEvent(
                             DetectorEvent.InsertClothesToFavoriteEvent(
-                                detectedClothes
+                                clothes
                             )
                         )
                     }
                     false -> {
                         Log.d(
                             TAG,
-                            "bind: favoriteButton clicked, isFavorite = ${detectedClothes.isFavorite}"
+                            "bind: favoriteButton clicked, isFavorite = ${clothes.isFavorite}"
                         )
                         it.background =
                             ContextCompat.getDrawable(itemView.context, R.drawable.empty_heart_grey)
                         viewModel.onTriggerEvent(
-                            DetectorEvent.DeleteDetectedClothesEvent(
-                                detectedClothes
+                            DetectorEvent.DeleteClothesEvent(
+                                clothes
                             )
                         )
                     }

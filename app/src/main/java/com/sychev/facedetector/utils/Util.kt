@@ -3,6 +3,7 @@ package com.sychev.facedetector.utils
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -54,4 +55,32 @@ fun loadPicture(url: String?, @DrawableRes defaultImage: Int): MutableState<Bitm
 
         })
     return bitmapState
+}
+
+@Composable
+fun loadPicture(url: String): MutableState<Bitmap?> {
+    val bitmapState: MutableState<Bitmap?> = remember{mutableStateOf(null)}
+
+    Glide.with(LocalContext.current)
+        .asBitmap()
+        .load(url)
+        .into(object : CustomTarget<Bitmap>() {
+            override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+//                Log.d(TAG, "onResourceReady: url: $url")
+//                Log.d(TAG, "FeedListScreen: newBitmap: $resource")
+                bitmapState.value = resource
+            }
+
+            override fun onLoadCleared(placeholder: Drawable?) {
+            }
+
+        })
+    return bitmapState
+}
+
+class Gender() {
+    companion object {
+        const val FEMALE = "женский"
+        const val MALE = "мужской"
+    }
 }
