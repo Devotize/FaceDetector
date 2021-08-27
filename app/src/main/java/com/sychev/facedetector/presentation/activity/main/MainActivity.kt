@@ -1,4 +1,4 @@
-package com.sychev.facedetector.presentation.activity
+package com.sychev.facedetector.presentation.activity.main
 
 import android.content.Context
 import android.content.Intent
@@ -18,28 +18,28 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navArgument
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.gson.Gson
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.presentation.ui.components.BottomNavigationBar
 import com.sychev.facedetector.presentation.ui.components.GenericDialog
 import com.sychev.facedetector.presentation.ui.detectorAssitant.PhotoDetector
-import com.sychev.facedetector.presentation.ui.main.MainEvent
-import com.sychev.facedetector.presentation.ui.main.MainFragmentViewModel
-import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailScreen
+import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.screen.FavoriteClothesListScreen
-import com.sychev.facedetector.presentation.ui.screen.Screen
-import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailEvent
-import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailViewModel
+import com.sychev.facedetector.presentation.ui.navigation.Screen
+import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailScreen
+import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.FavoriteClothesListViewModel
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedListScreen
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedViewModel
 import com.sychev.facedetector.presentation.ui.theme.AppTheme
@@ -48,6 +48,8 @@ import com.sychev.facedetector.utils.MessageDialog
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.lang.StringBuilder
+import javax.inject.Inject
 
 const val OVERLAY_PERMISSION_REQUEST_CODE = 2001
 const val MEDIA_PROJECTION_REQUEST_CODE = 21
@@ -55,8 +57,10 @@ const val MEDIA_PROJECTION_REQUEST_CODE = 21
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    private val mainViewModel: MainFragmentViewModel by viewModels()
-    private val feedViewModel: FeedViewModel by viewModels()
+    private val mainViewModel: MainViewModel by viewModels()
+
+    @Inject
+    lateinit var navigationManager: NavigationManager
 
     private val getDrawOverlays =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -96,21 +100,33 @@ class MainActivity : AppCompatActivity() {
                 val scaffoldState = rememberScaffoldState()
                 val scope = rememberCoroutineScope()
                 val dialogMessages = MessageDialog.dialogMessages
+                navigationManager.commands.value.also { screen ->
+                    if (screen is Screen.Default) {
+                        return@also
+                    }
+                    if (screen.arguments != null) {
+                        navController.currentBackStackEntry?.arguments?.putParcelable(
+                            "arg",
+                            screen.arguments
+                        )
+                    }
+                    navController.navigate(route = screen.route)
+                }
 
                 Scaffold(
                     scaffoldState = scaffoldState,
                     bottomBar = {
-                            BottomNavigationBar(
-                                navController = navController,
-                                launchAssistant = {
-                                    mainViewModel.onTriggerEvent(
-                                        MainEvent.LaunchDetector(
-                                            this,
-                                            true
-                                        )
+                        BottomNavigationBar(
+                            navController = navController,
+                            launchAssistant = {
+                                mainViewModel.onTriggerEvent(
+                                    MainEvent.LaunchDetector(
+                                        this,
+                                        true
                                     )
-                                }
-                            )
+                                )
+                            }
+                        )
                     },
                     drawerContent = {
                         Text("Reviews")
@@ -125,56 +141,52 @@ class MainActivity : AppCompatActivity() {
                     Column(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentHeight()
-                                    .padding(start = 18.dp, top = 18.dp, end = 18.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                IconButton(onClick = {
-                                    Log.d(TAG, "onCreate: menu clicked")
-                                    if (scaffoldState.drawerState.isClosed) {
-                                        scope.launch { scaffoldState.drawerState.open() }
-                                    } else {
-                                        scope.launch { scaffoldState.drawerState.close() }
-                                    }
-
-                                }) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .width(30.dp)
-                                            .height(30.dp),
-                                        imageVector = Icons.Outlined.Menu,
-                                        contentDescription = null
-                                    )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .padding(start = 18.dp, top = 18.dp, end = 18.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            IconButton(onClick = {
+                                Log.d(TAG, "onCreate: menu clicked")
+                                if (scaffoldState.drawerState.isClosed) {
+                                    scope.launch { scaffoldState.drawerState.open() }
+                                } else {
+                                    scope.launch { scaffoldState.drawerState.close() }
                                 }
-                                Text(
+
+                            }) {
+                                Icon(
                                     modifier = Modifier
-                                        .clickable {
-                                            this@MainActivity.finish()
-                                        },
-                                    text = "Close",
-                                    color = MaterialTheme.colors.onBackground,
-                                    style = MaterialTheme.typography.h3,
+                                        .width(30.dp)
+                                        .height(30.dp),
+                                    imageVector = Icons.Outlined.Menu,
+                                    contentDescription = null
                                 )
                             }
+                            Text(
+                                modifier = Modifier
+                                    .clickable {
+                                        this@MainActivity.finish()
+                                    },
+                                text = "Close",
+                                color = MaterialTheme.colors.onBackground,
+                                style = MaterialTheme.typography.h3,
+                            )
+                        }
                         NavHost(
                             navController,
                             startDestination = Screen.FeedList.route,
                             Modifier.padding(it)
                         ) {
-//                            composable(Screen.ClothesListStart.route) {
-//                                FavoriteClothesListScreen(
-//                                    viewModel = mainViewModel,
-//                                    navController = navController,
-//                                )
-//                            }
                             composable(Screen.FavoriteClothesList.route) {
+                                val viewModel = hiltViewModel<FavoriteClothesListViewModel>(
+                                    navController.getBackStackEntry(Screen.FavoriteClothesList.route)
+                                )
                                 FavoriteClothesListScreen(
-                                    viewModel = mainViewModel,
-                                    navController = navController,
+                                    viewModel = viewModel,
                                 )
                             }
                             composable(Screen.Profile.route) {
@@ -183,31 +195,47 @@ class MainActivity : AppCompatActivity() {
                             composable(Screen.ClothesListRetail.route) {
 
                             }
-                            composable(Screen.FeedList.route) {
-                                FeedListScreen(viewModel = feedViewModel)
+                            composable(Screen.FeedList.route) { backStackEntry ->
+                                val fvm: FeedViewModel = hiltViewModel<FeedViewModel>(
+                                    navController.getBackStackEntry(Screen.FeedList.route)
+                                )
+                                FeedListScreen(viewModel = fvm)
+                            }
+                            composable(
+                                route = Screen.ClothesDetail.route,
+                            ) { backStackEntry ->
+                                Log.d(TAG, "onCreate: destination: DetailScreen")
+                                navController.previousBackStackEntry?.arguments?.getParcelable<Clothes>(
+                                    "arg"
+                                )?.let {
+                                    ClothesDetailScreen(
+                                        clothes = it
+                                    )
+                                }
                             }
                         }
                     }
                 }
-                    if(dialogMessages.isNotEmpty()) {
-                        dialogMessages.forEach {
-                            GenericDialog(
-                                title = it.title,
-                                message = it.message,
-                                onDismiss = {
-                                     it.onDismiss()
-                                },
-                                onPositiveAction = {
-                                    it.onPositiveAction()
-                                }
-                            )
-                        }
+                if (dialogMessages.isNotEmpty()) {
+                    dialogMessages.forEach {
+                        GenericDialog(
+                            title = it.title,
+                            message = it.message,
+                            onDismiss = {
+                                it.onDismiss()
+                            },
+                            onPositiveAction = {
+                                it.onPositiveAction()
+                            }
+                        )
                     }
+                }
             }
 
         }
 
     }
+
     private fun launchMediaProjection() {
         val projectionManager =
             applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager

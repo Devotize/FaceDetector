@@ -57,7 +57,7 @@ class DetectedClothesListAdapter(val list: ArrayList<Clothes>, private val viewM
             }
 
             itemView.setOnClickListener {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(clothes.url))
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(clothes.clothesUrl))
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 it.context.startActivity(
                     intent,

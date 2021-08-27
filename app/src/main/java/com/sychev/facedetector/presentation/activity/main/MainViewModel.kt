@@ -1,4 +1,4 @@
-package com.sychev.facedetector.presentation.ui.main
+package com.sychev.facedetector.presentation.activity.main
 
 import android.content.Intent
 import android.net.Uri
@@ -13,7 +13,6 @@ import com.sychev.facedetector.domain.SavedScreenshot
 import com.sychev.facedetector.interactors.clothes.GetClothesList
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
-import com.sychev.facedetector.presentation.activity.MainActivity
 import com.sychev.facedetector.repository.SavedScreenshotRepo
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +24,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainFragmentViewModel
+class MainViewModel
 @Inject
     constructor(
     private val repository: SavedScreenshotRepo,

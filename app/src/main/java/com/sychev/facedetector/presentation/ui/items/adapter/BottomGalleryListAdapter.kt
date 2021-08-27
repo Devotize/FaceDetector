@@ -66,10 +66,10 @@ class BottomGalleryListAdapter(val list: ArrayList<Clothes>, private val viewMod
 
             checkBox.setOnCheckedChangeListener { buttonView, isChecked ->
                 if (isChecked) {
-                    urlsToShare.add(clothes.url)
+                    urlsToShare.add(clothes.clothesUrl)
                 } else {
                     try {
-                        urlsToShare.remove(clothes.url)
+                        urlsToShare.remove(clothes.clothesUrl)
                     }catch (e: Exception){
                         e.printStackTrace()
                         Log.d(TAG, "bind: error -> ${e.message}")
@@ -78,7 +78,7 @@ class BottomGalleryListAdapter(val list: ArrayList<Clothes>, private val viewMod
             }
 
             itemView.setOnClickListener {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(clothes.url))
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(clothes.clothesUrl))
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 it.context.startActivity(
                     intent,

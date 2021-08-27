@@ -7,14 +7,14 @@ import kotlinx.parcelize.Parcelize
 data class Clothes(
     val brand: String,
     val gender: String,
-    val itemCategory: String,
     val itemId: String,
     val picUrl: String,
     val price: Int,
     val priceDiscount: Int,
     val provider: String,
     val rating: Int,
-    val url: String,
+    val clothesUrl: String,
+    val itemCategory: String,
     var isFavorite: Boolean = false
 ): Parcelable {
 }

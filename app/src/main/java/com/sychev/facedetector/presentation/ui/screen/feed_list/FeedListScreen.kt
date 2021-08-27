@@ -41,6 +41,7 @@ import com.sychev.facedetector.utils.TAG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -64,12 +65,14 @@ fun FeedListScreen(
     )
     val detectedClothes = viewModel.detectedClothes
     val foundedClothesList = viewModel.foundedClothes
+    val scope = rememberCoroutineScope()
 
     if (pagerState.currentPage == pictures.lastIndex) {
         viewModel.onTriggerEvent(FeedEvent.GetCelebPicsEvent())
     }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        if (pictures.isNotEmpty()) {
             VerticalPager(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -80,7 +83,7 @@ fun FeedListScreen(
                     snapAnimationSpec = tween(easing = LinearOutSlowInEasing)
                 ),
             ) { page: Int ->
-                val processing = remember{mutableStateOf(false)}
+                var processing by remember{mutableStateOf(false)}
                 var scale by remember { mutableStateOf(1f) }
                 var offsetX by remember { mutableStateOf(0f) }
                 var offsetY by remember { mutableStateOf(0f) }
@@ -146,41 +149,39 @@ fun FeedListScreen(
                         imageLoader = imageLoader
                     )
                     val bitmapState = remember{mutableStateOf<Bitmap?>(null)}
-                    LaunchedEffect(key1 = imagePainter, key2 = pagerState.currentPage) {
-                        launch {
-                            try {
-                                val result =
-                                    (imageLoader.execute(request) as SuccessResult).drawable
-                                val bitmap = (result as BitmapDrawable).bitmap
+                    scope.launch {
+                        try {
+                            val result =
+                                (imageLoader.execute(request) as SuccessResult).drawable
+                            val bitmap = (result as BitmapDrawable).bitmap
 //                                Log.d(TAG, "FeedListScreen: bitmap: $bitmap, page: $page")
 //                                Log.d(TAG, "FeedListScreen: btimapheight: ${bitmap.height}, bitmapWidth: ${bitmap.width}")
 //                                Log.d(TAG, "FeedListScreen: imageWidth: ${imageWidthPx}, imageHeightPx: ${imageHeightPx}")
-                                val resizedBitmap = Bitmap.createScaledBitmap(bitmap, imageWidthPx.toInt(), imageHeightPx.toInt(), false)
+                            val resizedBitmap = Bitmap.createScaledBitmap(bitmap, imageWidthPx.toInt(), imageHeightPx.toInt(), false)
 //                                Log.d(
 //                                    TAG,
 //                                    "FeedListScreen: processedPages:${viewModel.processedPages.toList()}"
 //                                )
 //                                Log.d(TAG, "FeedListScreen: currentPage: ${pagerState.currentPage}")
-                                delay(1000)
-                                if (!viewModel.processedPages.contains(page) && pagerState.currentPage == page) {
-                                    viewModel.onTriggerEvent(FeedEvent.DetectClothesEvent(
-                                        context = context,
-                                        bitmap = resizedBitmap,
-                                        page = page,
-                                        onLoaded = { loaded ->
-                                            Log.d(TAG, "FeedListScreen: loaded: $loaded")
-                                            processing.value = loaded
-                                        },
-                                    ))
-                                }
-                                bitmapState.value = bitmap
-                            } catch (e: Exception) {
-                                Log.d(TAG, "FeedListScreen: exception: ${e.message}")
-                                processing.value = false
-                                e.printStackTrace()
+                            delay(1000)
+                            if (!viewModel.processedPages.contains(page) && pagerState.currentPage == page) {
+                                viewModel.onTriggerEvent(FeedEvent.DetectClothesEvent(
+                                    context = context,
+                                    bitmap = resizedBitmap,
+                                    page = page,
+                                    onLoaded = { loaded ->
+                                        processing= loaded
+                                    },
+                                ))
                             }
+                            bitmapState.value = bitmap
+                        } catch (e: Exception) {
+                            Log.d(TAG, "FeedListScreen: exception: ${e.message}")
+                            processing = false
+                            e.printStackTrace()
                         }
                     }
+
 //                    bitmapState.value?.let{bitmap ->
                     BoxWithConstraints(modifier = Modifier
 //                        .background(
@@ -210,28 +211,28 @@ fun FeedListScreen(
                             contentDescription = null,
                             contentScale = ContentScale.FillBounds
                         )
-                            detectedClothes.forEach { pair ->
-                                if (pair.first == page) {
-                                    pair.second.forEach { item ->
-                                        var isSearching by remember{mutableStateOf(false)}
-                                        ClothesPointer(
-                                            location = item.location,
-                                            onPointerClick = {
-                                                viewModel.onTriggerEvent(FeedEvent.FindClothes(
-                                                    detectedClothes = item,
-                                                    context = context,
-                                                    page = page,
-                                                    location = item.location,
-                                                    onLoaded = {
-                                                        isSearching = it
-                                                    }
-                                                ))
-                                            },
-                                            loading = isSearching
-                                        )
-                                    }
+                        detectedClothes.forEach { pair ->
+                            if (pair.first == page) {
+                                pair.second.forEach { item ->
+                                    var isSearching by remember{mutableStateOf(false)}
+                                    ClothesPointer(
+                                        location = item.location,
+                                        onPointerClick = {
+                                            viewModel.onTriggerEvent(FeedEvent.FindClothes(
+                                                detectedClothes = item,
+                                                context = context,
+                                                page = page,
+                                                location = item.location,
+                                                onLoaded = {
+                                                    isSearching = it
+                                                }
+                                            ))
+                                        },
+                                        loading = isSearching
+                                    )
                                 }
                             }
+                        }
 
                         val clothesList = ArrayList<Clothes>()
                         foundedClothesList.forEach { foundedClothes ->
@@ -261,8 +262,7 @@ fun FeedListScreen(
 
                         }
 
-                        if (processing.value) {
-                            Log.d(TAG, "FeedListScreen: pocessing = $processing")
+                        if (processing) {
                             BoxWithConstraints(
                                 Modifier
                                     .fillMaxSize(),
@@ -318,6 +318,8 @@ fun FeedListScreen(
                 }
 
             }
+        }
+
         if (loading) {
             CircularProgressIndicator(
                 modifier = Modifier

@@ -35,7 +35,7 @@ import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.activity.CameraActivity
 import com.sychev.facedetector.presentation.activity.ClothesRetailActivity
-import com.sychev.facedetector.presentation.activity.MainActivity
+import com.sychev.facedetector.presentation.activity.main.MainActivity
 import com.sychev.facedetector.presentation.ui.items.BottomFavoriteSheet
 import com.sychev.facedetector.presentation.ui.items.BottomGallerySheet
 import com.sychev.facedetector.presentation.ui.items.DetectedClothesListItem

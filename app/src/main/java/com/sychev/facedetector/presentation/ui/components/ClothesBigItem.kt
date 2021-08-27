@@ -172,7 +172,7 @@ fun ClothesBigItem(
                                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                 type = "text/plain"
                                 putExtra(Intent.EXTRA_SUBJECT, "Sharing Url")
-                                putExtra(Intent.EXTRA_TEXT, clothes.url)
+                                putExtra(Intent.EXTRA_TEXT, clothes.clothesUrl)
                             }
                             context.startActivity(intent)
                         }

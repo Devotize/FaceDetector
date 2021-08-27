@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.google.accompanist.pager.*
 import com.sychev.facedetector.domain.Clothes
-import com.sychev.facedetector.presentation.activity.MainActivity
+import com.sychev.facedetector.presentation.activity.main.MainActivity
 import com.sychev.facedetector.presentation.ui.components.ClothesChip
 import com.sychev.facedetector.presentation.ui.components.ClothesRetailItem
 import com.sychev.facedetector.presentation.ui.components.PagerIndicator

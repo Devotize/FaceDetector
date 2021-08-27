@@ -3,11 +3,9 @@ package com.sychev.facedetector.presentation.ui.components
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,10 +15,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-import coil.compose.rememberImagePainter
 import com.sychev.facedetector.R
 import com.sychev.facedetector.presentation.ui.detectorAssitant.PhotoDetector
-import com.sychev.facedetector.presentation.ui.screen.Screen
+import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
+import com.sychev.facedetector.presentation.ui.navigation.Screen
 
 @Composable
 fun BottomNavigationBar(

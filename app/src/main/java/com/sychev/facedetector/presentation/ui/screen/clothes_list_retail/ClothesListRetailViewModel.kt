@@ -6,19 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sychev.facedetector.domain.Clothes
-import com.sychev.facedetector.interactors.clothes.GetClothesList
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
 import com.sychev.facedetector.interactors.clothes_list.ProcessClothesForRetail
-import com.sychev.facedetector.repository.DetectedClothesRepository
-import com.sychev.facedetector.repository.SavedScreenshotRepo
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,7 +43,7 @@ constructor(
                         }
                         if (event.selectedClothes.isNotEmpty()) {
                             clothesChips.forEach { pair ->
-                                if (pair.second[0].url == event.selectedClothes[0].url) {
+                                if (pair.second[0].clothesUrl == event.selectedClothes[0].clothesUrl) {
                                     onTriggerEvent(ClothesListRetailEvent.OnSelectChipEvent(pair))
                                 }
                             }

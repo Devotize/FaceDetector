@@ -8,7 +8,7 @@ class ClothesEntityConverter: DomainMapper<Clothes, DetectedClothesEntity> {
 
     override fun fromDomainModel(model: Clothes): DetectedClothesEntity {
         return DetectedClothesEntity(
-            url = model.url,
+            url = model.clothesUrl,
             image = model.picUrl,
             gender = model.gender,
             itemCategory = model.itemCategory,
@@ -24,7 +24,7 @@ class ClothesEntityConverter: DomainMapper<Clothes, DetectedClothesEntity> {
 
     override fun toDomainModel(model: DetectedClothesEntity): Clothes {
         return Clothes(
-            url = model.url,
+            clothesUrl = model.url,
             picUrl = model.image,
             gender = model.gender,
             itemCategory = model.itemCategory,

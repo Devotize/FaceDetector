@@ -18,6 +18,8 @@ import com.sychev.facedetector.interactors.pics.GetRandomPics
 import com.sychev.facedetector.utils.MessageDialog
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
@@ -101,7 +103,7 @@ constructor(
                     processedPages.add(page)
                     detectedClothes.add(Pair(page, it))
                 }
-            }.launchIn(viewModelScope)
+            }.launchIn(CoroutineScope(IO))
     }
 
     private fun searchClothes(detectedClothes: DetectedClothes, context: Context, page: Int, location: RectF, callback: (Boolean) -> Unit) {
@@ -134,7 +136,7 @@ constructor(
                             .build()
                     )
                 }
-            }.launchIn(viewModelScope)
+            }.launchIn(CoroutineScope(IO))
     }
 
     fun removeFromFoundedClothes(fc: FoundedClothes) {

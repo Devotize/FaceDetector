@@ -3,14 +3,14 @@ package com.sychev.facedetector.presentation.activity
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.sychev.facedetector.domain.Clothes
-import com.sychev.facedetector.presentation.ui.screen.Screen
+import com.sychev.facedetector.presentation.ui.navigation.Screen
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailScreen
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailViewModel
 import com.sychev.facedetector.presentation.ui.theme.AppTheme
@@ -36,7 +36,9 @@ class ClothesRetailActivity: AppCompatActivity() {
                 NavHost(navController = navController, startDestination = Screen.ClothesListRetail.route) {
                     composable(Screen.ClothesListRetail.route){
 
-                        val clothesListRetailViewModel: ClothesListRetailViewModel by viewModels()
+                        val clothesListRetailViewModel: ClothesListRetailViewModel = hiltViewModel(
+                            navController.getBackStackEntry(Screen.ClothesListRetail.route)
+                        )
 
                         ClothesListRetailScreen(
                             viewModel = clothesListRetailViewModel,

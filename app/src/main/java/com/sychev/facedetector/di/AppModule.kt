@@ -3,6 +3,7 @@ package com.sychev.facedetector.di
 import android.content.Context
 import com.sychev.facedetector.presentation.BaseApplication
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorViewModel
+import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,4 +26,8 @@ object AppModule {
     {
         return DetectorViewModel(context)
     }
+
+    @Singleton
+    @Provides
+    fun provideNavigationManager() = NavigationManager()
 }

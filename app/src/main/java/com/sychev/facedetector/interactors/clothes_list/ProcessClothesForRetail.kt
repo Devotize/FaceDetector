@@ -12,7 +12,7 @@ class ProcessClothesForRetail(
     fun execute(clothesList: List<Clothes>): Flow<DataState<List<Clothes>>> = flow<DataState<List<Clothes>>> {
         emit(DataState.loading())
         val result = clothesList.map {
-            repository.getClothesByUrl(it.url)
+            repository.getClothesByUrl(it.clothesUrl)
         }
         emit(DataState.success(result))
     }
