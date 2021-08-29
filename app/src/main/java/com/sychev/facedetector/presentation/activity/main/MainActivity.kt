@@ -39,6 +39,7 @@ import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.screen.FavoriteClothesListScreen
 import com.sychev.facedetector.presentation.ui.navigation.Screen
 import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailScreen
+import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailViewModel
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.FavoriteClothesListViewModel
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedListScreen
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedViewModel
@@ -208,8 +209,10 @@ class MainActivity : AppCompatActivity() {
                                 navController.previousBackStackEntry?.arguments?.getParcelable<Clothes>(
                                     "arg"
                                 )?.let {
+                                    val detailViewModel = hiltViewModel<ClothesDetailViewModel>(navController.getBackStackEntry(Screen.ClothesDetail.route))
                                     ClothesDetailScreen(
-                                        clothes = it
+                                        clothes = it,
+                                        viewModel = detailViewModel,
                                     )
                                 }
                             }

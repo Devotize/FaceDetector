@@ -38,4 +38,6 @@ interface DetectedClothesRepository {
         page: Int
     ): List<Bitmap>
 
+    suspend fun searchClothesByQuery(query: String, size: Int): List<Clothes>
+
 }

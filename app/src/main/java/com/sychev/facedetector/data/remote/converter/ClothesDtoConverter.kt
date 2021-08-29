@@ -18,6 +18,7 @@ class ClothesDtoConverter: DomainMapper<Clothes, ClothesDto> {
             provider = model.provider,
             rating = model.rating,
             url = model.clothesUrl,
+            color = model.color
         )
     }
 
@@ -33,6 +34,7 @@ class ClothesDtoConverter: DomainMapper<Clothes, ClothesDto> {
             provider = model.provider,
             rating = model.rating,
             clothesUrl = model.url,
+            color = model.color
         )
     }
 

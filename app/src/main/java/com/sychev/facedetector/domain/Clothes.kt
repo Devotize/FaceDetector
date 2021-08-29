@@ -15,6 +15,7 @@ data class Clothes(
     val rating: Int,
     val clothesUrl: String,
     val itemCategory: String,
+    val color: String,
     var isFavorite: Boolean = false
 ): Parcelable {
 }

@@ -13,10 +13,13 @@ import com.sychev.facedetector.data.remote.converter.ClothesDtoConverter
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.utils.TAG
+import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -49,7 +52,7 @@ class DetectedClothesRepositoryImpl(
                 .build()
 
 
-        val result = clothesDetectionApi.detectClothes(
+        val result = clothesDetectionApi.searchClothesByCrop(
             imgType = detectedClothes.title,
             gender = detectedClothes.gender,
             size = 1,
@@ -147,4 +150,25 @@ class DetectedClothesRepositoryImpl(
         }
         return bitmapList
     }
+
+    override suspend fun searchClothesByQuery(query: String, size: Int): List<Clothes> {
+        val jsonObject = JSONObject()
+        jsonObject.put("query", query)
+        jsonObject.put("size", size)
+        val body = jsonObject.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+        val result = clothesDetectionApi.searchClothesByText(body = body)
+        return clothesDtoConverter.toDomainClothesList(result)
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+

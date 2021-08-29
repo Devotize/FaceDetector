@@ -19,6 +19,7 @@ class ClothesEntityConverter: DomainMapper<Clothes, DetectedClothesEntity> {
             rating = model.rating,
             priceDiscount = model.priceDiscount,
             provider = model.provider,
+            color = model.color
         )
     }
 
@@ -35,6 +36,7 @@ class ClothesEntityConverter: DomainMapper<Clothes, DetectedClothesEntity> {
             rating = model.rating,
             priceDiscount = model.priceDiscount,
             provider = model.provider,
+            color = model.color,
         )
     }
 

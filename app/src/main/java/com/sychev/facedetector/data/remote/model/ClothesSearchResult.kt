@@ -39,7 +39,9 @@ data class SearchClothesResult(
             @SerializedName("rating")
             val rating: Int,
             @SerializedName("url")
-            val url: String
+            val url: String,
+            @SerializedName("colour")
+            val color: String,
         )
 
     }

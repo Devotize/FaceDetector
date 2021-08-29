@@ -44,6 +44,17 @@ class SearchClothes(
             emit(DataState.error("${e.message}"))
             e.printStackTrace()
         }
-
     }
+
+    fun execute(query: String, size: Int): Flow<DataState<List<Clothes>>> = flow<DataState<List<Clothes>>>{
+        try {
+            emit(DataState.loading())
+            val result = detectedClothesRepository.searchClothesByQuery(query = query, size = size)
+            emit(DataState.success(result))
+        }catch (e: Exception) {
+            e.printStackTrace()
+            emit(DataState.error("${e.message}"))
+        }
+    }
+
 }

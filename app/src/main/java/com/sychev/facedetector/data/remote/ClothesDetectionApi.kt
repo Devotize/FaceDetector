@@ -13,7 +13,7 @@ interface ClothesDetectionApi {
 
 
     @POST("searchByCrop")
-    suspend fun detectClothes(
+    suspend fun searchClothesByCrop(
         @Query("img_type") imgType: String,
         @Query("gender") gender: String,
         @Query("size") size: Int = 1,
@@ -24,5 +24,10 @@ interface ClothesDetectionApi {
     suspend fun getCelebPics(
         @Query("page_num") page: Int
     ): ResponseBody
+
+    @POST("searchFullText")
+    suspend fun searchClothesByText(
+        @Body body: RequestBody,
+    ): List<SearchClothesResult.SearchResult.ClothesDto>
 
 }

@@ -30,6 +30,8 @@ data class DetectedClothesEntity (
     val provider: String,
     @ColumnInfo(name = "is_favorite")
     var isFavorite: Boolean,
+    @ColumnInfo(name="color")
+    val color: String,
     ){
     companion object{
         const val TABLE_NAME = "detected_clothes_table"

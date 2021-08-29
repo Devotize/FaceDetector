@@ -13,7 +13,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,9 +28,22 @@ import com.sychev.facedetector.domain.Clothes
 
 @Composable
 fun ClothesDetailScreen(
-    clothes: Clothes
+    clothes: Clothes,
+    viewModel: ClothesDetailViewModel,
 ){
     val scrollState = rememberScrollState()
+    var firstLaunch by remember{mutableStateOf(true)}
+    if (firstLaunch) {
+        viewModel.onTriggerEvent(
+            ClothesDetailEvent.SearchSimilarClothesEvent(
+                query = "${clothes.itemCategory} ${clothes.gender} ${clothes.color}",
+                size = 6,
+            )
+        )
+        firstLaunch = false
+    }
+
+
     Column(
         modifier = Modifier
             .verticalScroll(
@@ -172,6 +185,8 @@ fun ClothesDetailScreen(
         
     }
 }
+
+
 
 
 
