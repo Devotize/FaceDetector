@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -37,11 +39,12 @@ fun ClothesDetailScreen(
         viewModel.onTriggerEvent(
             ClothesDetailEvent.SearchSimilarClothesEvent(
                 query = "${clothes.itemCategory} ${clothes.gender} ${clothes.color}",
-                size = 6,
+                size = 10,
             )
         )
         firstLaunch = false
     }
+    val similarClothes = viewModel.similarClothes
 
 
     Column(
@@ -98,7 +101,7 @@ fun ClothesDetailScreen(
                         .background(MaterialTheme.colors.background),
                     value = clothes.rating.toFloat(),
                     numStars = 5,
-                    size = 18.dp,
+                    size = 22.dp,
                     activeColor = MaterialTheme.colors.secondary,
                     inactiveColor = MaterialTheme.colors.primaryVariant,
                     isIndicator = true,
@@ -181,13 +184,77 @@ fun ClothesDetailScreen(
             style = MaterialTheme.typography.h3,
             color = MaterialTheme.colors.onPrimary,
         )
+        
+        Spacer(modifier = Modifier.height(6.dp))
 
+        LazyRow(
+            modifier = Modifier,
+            contentPadding = PaddingValues(6.dp)
+        ){
+            itemsIndexed(similarClothes) {index, item -> 
+                SimilarClothesCard(
+                    modifier = Modifier.padding(end = 12.dp),
+                    clothes = item
+                )
+            }
+        }
         
     }
 }
 
 
+@Composable
+private fun SimilarClothesCard(
+    modifier: Modifier = Modifier,
+    clothes: Clothes
+) {
+    Column(
+        modifier = modifier
+    ) {
+        val painter = rememberImagePainter(data = clothes.picUrl){
+            crossfade(true)
+            error(R.drawable.clothes_default_icon_gray)
+        }
+        Image(
+            modifier = Modifier
+                .width(114.dp)
+                .height(164.dp),
+            painter = painter,
+            contentDescription = null,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            modifier = Modifier
+                .widthIn(max = 114.dp),
+            text = "${clothes.brand} ${clothes.itemCategory}",
+            color = MaterialTheme.colors.onPrimary,
+            style = MaterialTheme.typography.subtitle1
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        RatingBar(
+            modifier = Modifier
+                .background(MaterialTheme.colors.background),
+            value = clothes.rating.toFloat(),
+            numStars = 5,
+            size = 16.dp,
+            activeColor = MaterialTheme.colors.secondary,
+            inactiveColor = MaterialTheme.colors.primaryVariant,
+            isIndicator = true,
+            ratingBarStyle = RatingBarStyle.Normal,
+            onRatingChanged = {
 
+            }
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = clothes.price.toString().plus(" ₽"),
+            color = MaterialTheme.colors.onPrimary,
+            style = MaterialTheme.typography.h3
+        )
+        
+    }
+}
 
 
 
