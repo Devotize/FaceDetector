@@ -41,7 +41,7 @@ import com.sychev.facedetector.presentation.ui.items.BottomGallerySheet
 import com.sychev.facedetector.presentation.ui.items.DetectedClothesListItem
 import com.sychev.facedetector.presentation.ui.items.FrameDrawItem
 import com.sychev.facedetector.service.FaceDetectorService
-import com.sychev.facedetector.utils.Gender
+import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.ClothesFilters
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlin.collections.ArrayList
@@ -80,7 +80,7 @@ class PhotoDetector
                     location = rect.toRectF(),
                     sourceBitmap = screenshot,
                     croppedBitmap = croppedBitmap,
-                    gender = Gender.FEMALE
+                    gender = ClothesFilters.Gender.FEMALE.title
                 )
                 addClothesPointer(detectedClothes)
             }

@@ -27,7 +27,12 @@ interface ClothesDetectionApi {
 
     @POST("searchFullText")
     suspend fun searchClothesByText(
-        @Body body: RequestBody,
+        @Body body: HashMap<String, Any>,
+    ): List<SearchClothesResult.SearchResult.ClothesDto>
+
+    @POST("searchByFilters")
+    suspend fun searchClothesByFilters(
+        @Body body: HashMap<String, Any>
     ): List<SearchClothesResult.SearchResult.ClothesDto>
 
 }

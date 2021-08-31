@@ -10,9 +10,15 @@ class InsertClothesToFavorite(
     private val detectedClothesRepository: DetectedClothesRepository
 ) {
     fun execute(clothes: Clothes): Flow<DataState<Clothes>> = flow<DataState<Clothes>> {
-        clothes.isFavorite = true
-        emit(DataState.loading())
-        detectedClothesRepository.updateClothes(clothes)
-        emit(DataState())
+        try {
+            clothes.isFavorite = true
+            emit(DataState.loading())
+            detectedClothesRepository.updateClothes(clothes)
+            emit(DataState.success(clothes))
+        }catch (e: Exception) {
+            e.printStackTrace()
+            emit(DataState.error("${e.message}"))
+        }
+
     }
 }

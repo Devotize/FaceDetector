@@ -40,4 +40,18 @@ class GetClothesList(
             emit(DataState.error("error: ${e.message}"))
         }
     }
+
+    fun execute(clothesList: List<Clothes>): Flow<DataState<List<Clothes>>> = flow <DataState<List<Clothes>>>{
+        try {
+            emit(DataState.loading())
+
+            val result = detectedClothesRepository.getClothesList(clothesList)
+
+            emit(DataState.success(result))
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(DataState.error("error: ${e.message}"))
+        }
+    }
 }

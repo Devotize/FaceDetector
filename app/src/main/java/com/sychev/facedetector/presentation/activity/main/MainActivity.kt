@@ -18,12 +18,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -43,6 +43,9 @@ import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDeta
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.FavoriteClothesListViewModel
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedListScreen
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedViewModel
+import com.sychev.facedetector.presentation.ui.screen.shop_screen.ShopScreen
+import com.sychev.facedetector.presentation.ui.screen.shop_screen.ShopViewModel
+import com.sychev.facedetector.presentation.ui.screen.shop_screen.filters_screen.FiltersScreen
 import com.sychev.facedetector.presentation.ui.theme.AppTheme
 import com.sychev.facedetector.service.FaceDetectorService
 import com.sychev.facedetector.utils.MessageDialog
@@ -59,6 +62,7 @@ const val MEDIA_PROJECTION_REQUEST_CODE = 21
 class MainActivity : AppCompatActivity() {
 
     private val mainViewModel: MainViewModel by viewModels()
+    private val shopViewModel: ShopViewModel by viewModels()
 
     @Inject
     lateinit var navigationManager: NavigationManager
@@ -101,6 +105,7 @@ class MainActivity : AppCompatActivity() {
                 val scaffoldState = rememberScaffoldState()
                 val scope = rememberCoroutineScope()
                 val dialogMessages = MessageDialog.dialogMessages
+                var hasNavBottomBar by remember{ mutableStateOf(true)}
                 navigationManager.commands.value.also { screen ->
                     if (screen is Screen.Default) {
                         return@also
@@ -117,17 +122,19 @@ class MainActivity : AppCompatActivity() {
                 Scaffold(
                     scaffoldState = scaffoldState,
                     bottomBar = {
-                        BottomNavigationBar(
-                            navController = navController,
-                            launchAssistant = {
-                                mainViewModel.onTriggerEvent(
-                                    MainEvent.LaunchDetector(
-                                        this,
-                                        true
+                        if (hasNavBottomBar) {
+                            BottomNavigationBar(
+                                navController = navController,
+                                launchAssistant = {
+                                    mainViewModel.onTriggerEvent(
+                                        MainEvent.LaunchDetector(
+                                            this,
+                                            true
+                                        )
                                     )
-                                )
-                            }
-                        )
+                                }
+                            )
+                        }
                     },
                     drawerContent = {
                         Text("Reviews")
@@ -142,41 +149,41 @@ class MainActivity : AppCompatActivity() {
                     Column(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .padding(start = 18.dp, top = 18.dp, end = 18.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            IconButton(onClick = {
-                                Log.d(TAG, "onCreate: menu clicked")
-                                if (scaffoldState.drawerState.isClosed) {
-                                    scope.launch { scaffoldState.drawerState.open() }
-                                } else {
-                                    scope.launch { scaffoldState.drawerState.close() }
-                                }
-
-                            }) {
-                                Icon(
-                                    modifier = Modifier
-                                        .width(30.dp)
-                                        .height(30.dp),
-                                    imageVector = Icons.Outlined.Menu,
-                                    contentDescription = null
-                                )
-                            }
-                            Text(
-                                modifier = Modifier
-                                    .clickable {
-                                        this@MainActivity.finish()
-                                    },
-                                text = "Close",
-                                color = MaterialTheme.colors.onBackground,
-                                style = MaterialTheme.typography.h3,
-                            )
-                        }
+//                        Row(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .wrapContentHeight()
+//                                .padding(start = 18.dp, top = 18.dp, end = 18.dp),
+//                            verticalAlignment = Alignment.CenterVertically,
+//                            horizontalArrangement = Arrangement.SpaceBetween
+//                        ) {
+//                            IconButton(onClick = {
+//                                Log.d(TAG, "onCreate: menu clicked")
+//                                if (scaffoldState.drawerState.isClosed) {
+//                                    scope.launch { scaffoldState.drawerState.open() }
+//                                } else {
+//                                    scope.launch { scaffoldState.drawerState.close() }
+//                                }
+//
+//                            }) {
+//                                Icon(
+//                                    modifier = Modifier
+//                                        .width(30.dp)
+//                                        .height(30.dp),
+//                                    imageVector = Icons.Outlined.Menu,
+//                                    contentDescription = null
+//                                )
+//                            }
+//                            Text(
+//                                modifier = Modifier
+//                                    .clickable {
+//                                        this@MainActivity.finish()
+//                                    },
+//                                text = "Close",
+//                                color = MaterialTheme.colors.onBackground,
+//                                style = MaterialTheme.typography.h3,
+//                            )
+//                        }
                         NavHost(
                             navController,
                             startDestination = Screen.FeedList.route,
@@ -186,11 +193,23 @@ class MainActivity : AppCompatActivity() {
                                 val viewModel = hiltViewModel<FavoriteClothesListViewModel>(
                                     navController.getBackStackEntry(Screen.FavoriteClothesList.route)
                                 )
+                                hasNavBottomBar = true
                                 FavoriteClothesListScreen(
                                     viewModel = viewModel,
                                 )
                             }
+                            composable(Screen.Shop.route) {
+                                hasNavBottomBar = true
+                                ShopScreen(viewModel = this@MainActivity.shopViewModel)
+                            }
+                            
+                            composable(Screen.FiltersScreen.route) {
+                                hasNavBottomBar = false
+                                FiltersScreen(viewModel = this@MainActivity.shopViewModel)
+                            }
+                            
                             composable(Screen.Profile.route) {
+                                hasNavBottomBar = true
                                 Text(text = "Profile")
                             }
                             composable(Screen.ClothesListRetail.route) {
@@ -200,6 +219,7 @@ class MainActivity : AppCompatActivity() {
                                 val fvm: FeedViewModel = hiltViewModel<FeedViewModel>(
                                     navController.getBackStackEntry(Screen.FeedList.route)
                                 )
+                                hasNavBottomBar = true
                                 FeedListScreen(viewModel = fvm)
                             }
                             composable(

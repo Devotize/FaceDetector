@@ -12,14 +12,12 @@ import com.sychev.facedetector.data.remote.UnsplashApi
 import com.sychev.facedetector.data.remote.converter.ClothesDtoConverter
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
+import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.ClothesFilters
 import com.sychev.facedetector.utils.TAG
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -152,11 +150,85 @@ class DetectedClothesRepositoryImpl(
     }
 
     override suspend fun searchClothesByQuery(query: String, size: Int): List<Clothes> {
-        val jsonObject = JSONObject()
-        jsonObject.put("query", query)
-        jsonObject.put("size", size)
-        val body = jsonObject.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
-        val result = clothesDetectionApi.searchClothesByText(body = body)
+        val hm = HashMap<String, Any>()
+        hm.put("query", query)
+        hm.put("size", size)
+        val result = clothesDetectionApi.searchClothesByText(body = hm)
+        return clothesDtoConverter.toDomainClothesList(result)
+    }
+
+    override suspend fun searchClothesByFilters(
+        filters: ClothesFilters,
+    ): List<Clothes> {
+        val hm = HashMap<String, Any>()
+        filters.gender?.let {
+            val valueList = ArrayList<String>()
+            it.forEach { item ->
+                valueList.add(item.title)
+            }
+            hm.put("genders", valueList)
+        }
+        hm.put("size", filters.size)
+        filters.itemCategories?.let {
+            val valueList = ArrayList<String>()
+            it.forEach { item ->
+                valueList.add(item.title)
+            }
+            hm.put("item_categories", valueList)
+        }
+        filters.itemSubcategories?.let {
+            val valueList = ArrayList<String>()
+            it.forEach { item ->
+                valueList.add(item.title)
+            }
+            hm.put("item_subcategories", valueList)
+        }
+        filters.brands?.let {
+            val valueList = ArrayList<String>()
+            it.forEach { item ->
+                valueList.add(item.title)
+            }
+            hm.put("brands", valueList)
+        }
+        filters.prices?.let {
+            hm.put("prices", it)
+        }
+        filters.itemSizes?.let {
+            val valueList = ArrayList<Int>()
+            it.forEach { item ->
+                valueList.add(item.size)
+            }
+            hm.put("item_sizes", valueList)
+        }
+        filters.colors?.let {
+            val valueList = ArrayList<String>()
+            it.forEach { item ->
+                valueList.add(item.title)
+            }
+            hm.put("colours", valueList)
+        }
+        filters.novice?.let {
+            val valueList = ArrayList<Int>()
+            it.forEach { item ->
+                valueList.add(item.index)
+            }
+            hm.put("novice_flgs", valueList)
+        }
+        filters.popularFlags?.let {
+            val valueList = ArrayList<Int>()
+            it.forEach { item ->
+                valueList.add(item.index)
+            }
+            hm.put("popular_flgs", valueList)
+        }
+        filters.providers?.let {
+            val valueList = ArrayList<String>()
+            it.forEach { item ->
+                valueList.add(item.title)
+            }
+            hm.put("providers", valueList)
+        }
+        val result = clothesDetectionApi.searchClothesByFilters(hm)
         return clothesDtoConverter.toDomainClothesList(result)
     }
 }

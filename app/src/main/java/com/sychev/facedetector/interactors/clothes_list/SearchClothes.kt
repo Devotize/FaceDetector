@@ -7,6 +7,7 @@ import android.view.View
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.data.DataState
+import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.ClothesFilters
 import com.sychev.facedetector.repository.DetectedClothesRepository
 import com.sychev.facedetector.utils.TAG
 import kotlinx.coroutines.flow.Flow
@@ -49,7 +50,28 @@ class SearchClothes(
     fun execute(query: String, size: Int): Flow<DataState<List<Clothes>>> = flow<DataState<List<Clothes>>>{
         try {
             emit(DataState.loading())
-            val result = detectedClothesRepository.searchClothesByQuery(query = query, size = size)
+            val clothesList = detectedClothesRepository.searchClothesByQuery(query = query, size = size)
+            detectedClothesRepository.insertClothesOrIgnoreIfFavorite(clothesList)
+
+            val result = detectedClothesRepository.getClothesList(clothesList)
+            emit(DataState.success(result))
+        }catch (e: Exception) {
+            e.printStackTrace()
+            emit(DataState.error("${e.message}"))
+        }
+    }
+
+    fun execute(
+        filters: ClothesFilters
+    ): Flow<DataState<List<Clothes>>> = flow<DataState<List<Clothes>>>{
+        try {
+            emit(DataState.loading())
+            val clothesList = detectedClothesRepository.searchClothesByFilters(
+                filters
+            )
+            detectedClothesRepository.insertClothesOrIgnoreIfFavorite(clothesList)
+
+            val result = detectedClothesRepository.getClothesList(clothesList)
             emit(DataState.success(result))
         }catch (e: Exception) {
             e.printStackTrace()

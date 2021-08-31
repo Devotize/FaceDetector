@@ -35,23 +35,23 @@ val RobotoTypography =Typography(
     ),
     h4 = TextStyle(
         fontFamily = Roboto,
-        fontWeight = FontWeight.W300,
+        fontWeight = FontWeight.W400,
         fontSize = 18.sp
     ),
     h5 = TextStyle(
         fontFamily = Roboto,
-        fontWeight = FontWeight.W300,
+        fontWeight = FontWeight.W400,
         fontSize = 16.sp
     ),
     h6 = TextStyle(
         fontFamily = Roboto,
-        fontWeight = FontWeight.W200,
+        fontWeight = FontWeight.W400,
         fontSize = 14.sp
     ),
     subtitle1 = TextStyle(
         fontFamily = Roboto,
-        fontWeight = FontWeight.W300,
-        fontSize = 16.sp
+        fontWeight = FontWeight.W200,
+        fontSize = 18.sp
     ),
     subtitle2 = TextStyle(
         fontFamily = Roboto,

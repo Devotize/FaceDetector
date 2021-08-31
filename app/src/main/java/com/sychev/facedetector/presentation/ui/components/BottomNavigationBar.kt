@@ -103,10 +103,10 @@ fun BottomNavigationBar(
             painter = painterResource(id = R.drawable.yellow_abstract_icon_final),
             contentDescription = null,
         )
-        //retail screen
+        //shop screen
         BottomNavigationItem(
             icon = {
-                if (Screen.ClothesListRetail.route != backStackEntry.value?.destination?.route)
+                if (Screen.Shop.route != backStackEntry.value?.destination?.route)
                     Icon(
                      imageVector = Icons.Outlined.ShoppingCart,
                      contentDescription = null
@@ -117,9 +117,9 @@ fun BottomNavigationBar(
                         contentDescription = null
                     )
             },
-            selected = Screen.ClothesListRetail.route == backStackEntry.value?.destination?.route,
+            selected = Screen.Shop.route == backStackEntry.value?.destination?.route,
             onClick = {
-                navController.navigate(Screen.ClothesListRetail.route) {
+                navController.navigate(Screen.Shop.route) {
                     popUpTo(navController.graph.findStartDestination().id)
                     launchSingleTop = true
                 }

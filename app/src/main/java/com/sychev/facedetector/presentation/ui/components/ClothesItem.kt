@@ -12,9 +12,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.gowtham.ratingbar.RatingBar
@@ -27,6 +30,7 @@ import com.sychev.facedetector.utils.loadPicture
 fun ClothesItem(
     modifier: Modifier = Modifier,
     clothes: Clothes,
+    shape: Shape = MaterialTheme.shapes.medium,
     onAddToFavoriteClick: (Clothes) -> Unit,
     onRemoveFromFavoriteClick: (Clothes) -> Unit,
 ) {
@@ -35,7 +39,7 @@ fun ClothesItem(
 
     Surface(
         modifier = modifier,
-        shape = MaterialTheme.shapes.large,
+        shape = shape,
     ) {
         Row(
             modifier = Modifier

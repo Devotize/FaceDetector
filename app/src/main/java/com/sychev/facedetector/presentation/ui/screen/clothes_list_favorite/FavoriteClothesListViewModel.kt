@@ -9,6 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.navArgument
 import com.google.gson.Gson
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.interactors.clothes.GetClothesList
 import com.sychev.facedetector.interactors.clothes.GetFavoriteClothes
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
@@ -26,7 +27,8 @@ class FavoriteClothesListViewModel
     private val getFavoriteClothes: GetFavoriteClothes,
     private val insertClothesToFavorite: InsertClothesToFavorite,
     private val removeFromFavoriteClothes: RemoveFromFavoriteClothes,
-    private val navigationManager: NavigationManager
+    private val navigationManager: NavigationManager,
+    private val getClothesList: GetClothesList,
 ): ViewModel(){
 
     val favoriteClothesList = mutableStateListOf<Clothes>()
@@ -62,7 +64,7 @@ class FavoriteClothesListViewModel
             .onEach { dataState ->
                 loading.value = dataState.loading
                 dataState.data?.let{
-                    favoriteClothesList.addAll(it)
+                    favoriteClothesList.addAll(it.reversed())
                 }
             }.launchIn(viewModelScope)
     }
@@ -70,18 +72,31 @@ class FavoriteClothesListViewModel
     private fun removeFromFavoriteClothes(clothes: Clothes) {
         Log.d(TAG, "removeFromFavoriteClothes: called")
         removeFromFavoriteClothes.execute(clothes)
-            .onEach {
-
+            .onEach { dataState ->
+                dataState.data?.let {
+                    refreshClothesList()
+                }
             }
             .launchIn(viewModelScope)
     }
 
     private fun addToFavoriteClothes(clothes: Clothes) {
         insertClothesToFavorite.execute(clothes)
-            .onEach {
-
+            .onEach { dataState ->
+                dataState.data?.let {
+                    refreshClothesList()
+                }
             }
             .launchIn(viewModelScope)
+    }
+
+    private fun refreshClothesList() {
+        getClothesList.execute(favoriteClothesList).onEach {dataState ->
+            dataState.data?.let{
+                favoriteClothesList.clear()
+                favoriteClothesList.addAll(it)
+            }
+        }.launchIn(viewModelScope)
     }
 
 }

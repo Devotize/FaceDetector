@@ -77,10 +77,3 @@ fun loadPicture(url: String): MutableState<Bitmap?> {
         })
     return bitmapState
 }
-
-class Gender() {
-    companion object {
-        const val FEMALE = "женский"
-        const val MALE = "мужской"
-    }
-}

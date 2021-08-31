@@ -2,10 +2,9 @@ package com.sychev.facedetector.interactors.gender
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.renderscript.ScriptGroup
 import android.util.Log
 import com.sychev.facedetector.domain.data.DataState
-import com.sychev.facedetector.utils.Gender
+import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.ClothesFilters
 import com.sychev.facedetector.utils.TAG
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -17,8 +16,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import java.util.Arrays
-import java.util.function.DoubleUnaryOperator
 import kotlin.math.exp
 
 
@@ -56,7 +53,7 @@ class DefineGender {
                     maxScoreIdx = i
                 }
             }
-            val result: String = if (maxScoreIdx == 0) Gender.MALE else Gender.FEMALE
+            val result: String = if (maxScoreIdx == 0) ClothesFilters.Gender.MALE.title else ClothesFilters.Gender.FEMALE.title
             Log.d(TAG, "defineGender: result: $result")
             return result
         }

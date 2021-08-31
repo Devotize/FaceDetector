@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
-import retrofit2.http.Query
+import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.ClothesFilters
 
 interface DetectedClothesRepository {
 
@@ -39,5 +39,9 @@ interface DetectedClothesRepository {
     ): List<Bitmap>
 
     suspend fun searchClothesByQuery(query: String, size: Int): List<Clothes>
+
+    suspend fun searchClothesByFilters(
+        filters: ClothesFilters,
+    ): List<Clothes>
 
 }
