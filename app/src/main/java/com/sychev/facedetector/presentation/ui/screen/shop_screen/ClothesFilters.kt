@@ -1,21 +1,21 @@
-package com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite
+package com.sychev.facedetector.presentation.ui.screen.shop_screen
 
 import com.sychev.facedetector.domain.Clothes
 
 open class ClothesFilters {
 
-    open var title: String = "default"
-    open var gender: List<Gender>? = null
+    open var title: String = ""
+    open var gender: ArrayList<Gender> = ArrayList()
     open var size: Int = 1
-    open var itemCategories: List<ItemCategories>? = null
-    open var itemSubcategories: List<ItemSubcategories>? = null
-    open var brands: List<Brands>? = null
-    open var prices: List<Int>? = null
-    open var itemSizes: List<ItemSizes>? = null
-    open var colors: List<ClothesColors>? = null
-    open var novice: List<Novice>? = null
-    open var popularFlags: List<PopularFlags>? = null
-    open var providers: List<Providers>? = null
+    open var itemCategories: ArrayList<ItemCategories> = ArrayList()
+    open var itemSubcategories: ArrayList<ItemSubcategories> = ArrayList()
+    open var brands: ArrayList<Brands> = ArrayList()
+    open var prices: ArrayList<Int> = ArrayList()
+    open var itemSizes: ArrayList<ItemSizes> = ArrayList()
+    open var colors: ArrayList<ClothesColors> = ArrayList()
+    open var novice: ArrayList<Novice> = ArrayList()
+    open var popularFlags: ArrayList<PopularFlags> = ArrayList()
+    open var providers: ArrayList<Providers> = ArrayList()
 
     var clothes: List<Clothes>? = null
 
@@ -99,19 +99,19 @@ open class ClothesFilters {
             return listOf<ClothesFilters>(
                 object : DefaultClothesFilters() {
                     override var title: String = "Clothes up to 500 ₽"
-                    override var prices: List<Int>? = listOf(0, 500)
+                    override var prices: ArrayList<Int> = arrayListOf<Int>(0, 500)
                 },
                 object : DefaultClothesFilters() {
                     override var title: String = "New of the week"
-                    override var novice: List<Novice>? = listOf(Novice.NEW)
+                    override var novice: ArrayList<Novice> = arrayListOf(Novice.NEW)
                 },
                 object : DefaultClothesFilters() {
                     override var title: String = "Popular"
-                    override var popularFlags: List<PopularFlags>? = listOf(PopularFlags.POPULAR)
+                    override var popularFlags: ArrayList<PopularFlags> = arrayListOf(PopularFlags.POPULAR)
                 },
                 object : DefaultClothesFilters() {
                     override var title: String = "Clothes up to 1000 ₽"
-                    override var prices: List<Int>? = listOf(500, 1000)
+                    override var prices: ArrayList<Int> = arrayListOf(500, 1000)
                 }
             )
         }

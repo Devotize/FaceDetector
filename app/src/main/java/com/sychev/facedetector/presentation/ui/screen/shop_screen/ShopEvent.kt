@@ -1,7 +1,6 @@
 package com.sychev.facedetector.presentation.ui.screen.shop_screen
 
 import com.sychev.facedetector.domain.Clothes
-import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.ClothesFilters
 
 sealed class ShopEvent {
     class SearchByFilters(
@@ -19,5 +18,11 @@ sealed class ShopEvent {
     class RemoveFromFavoriteClothesEvent(val clothes: Clothes): ShopEvent()
 
     object GoToFiltersScreen: ShopEvent()
+
+    object GotBackToShopScreen: ShopEvent()
+
+    class ChangeCustomFilters(val newFilters: ClothesFilters): ShopEvent()
+
+    object SaveCustomClothesFilter: ShopEvent()
 
 }

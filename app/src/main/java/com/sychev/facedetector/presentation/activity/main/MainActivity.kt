@@ -1,5 +1,6 @@
 package com.sychev.facedetector.presentation.activity.main
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
@@ -100,23 +101,24 @@ class MainActivity : AppCompatActivity() {
             bundle?.getBoolean("from_assistant_launch") ?: false
 
         setContent {
+
             AppTheme {
                 val navController = rememberNavController()
                 val scaffoldState = rememberScaffoldState()
                 val scope = rememberCoroutineScope()
                 val dialogMessages = MessageDialog.dialogMessages
                 var hasNavBottomBar by remember{ mutableStateOf(true)}
-                navigationManager.commands.value.also { screen ->
-                    if (screen is Screen.Default) {
+                navigationManager.commands.value.also { pairScreenNavBuider ->
+                    if (pairScreenNavBuider.first is Screen.Default) {
                         return@also
                     }
-                    if (screen.arguments != null) {
+                    if (pairScreenNavBuider.first.arguments != null) {
                         navController.currentBackStackEntry?.arguments?.putParcelable(
                             "arg",
-                            screen.arguments
+                            pairScreenNavBuider.first.arguments
                         )
                     }
-                    navController.navigate(route = screen.route)
+                    navController.navigate(route = pairScreenNavBuider.first.route, builder = pairScreenNavBuider.second)
                 }
 
                 Scaffold(

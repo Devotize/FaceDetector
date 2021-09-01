@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import com.sychev.facedetector.domain.data.DataState
-import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.ClothesFilters
+import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
 import com.sychev.facedetector.utils.TAG
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

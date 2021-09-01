@@ -1,6 +1,5 @@
 package com.sychev.facedetector.presentation.ui.screen.shop_screen
 
-import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
@@ -17,7 +16,6 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -26,14 +24,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
-import com.google.accompanist.pager.rememberPagerState
-import com.google.android.material.internal.NavigationMenu
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.presentation.ui.components.ClothesItem
-import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
-import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.ClothesFilters
-import com.sychev.facedetector.utils.TAG
 import io.iamjosephmj.flinger.bahaviours.StockFlingBehaviours
 
 @OptIn(ExperimentalFoundationApi::class)

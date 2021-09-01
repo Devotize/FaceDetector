@@ -1,15 +1,11 @@
 package com.sychev.facedetector.interactors.clothes_list
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.util.Log
-import android.view.View
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.data.DataState
-import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.ClothesFilters
+import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
 import com.sychev.facedetector.repository.DetectedClothesRepository
-import com.sychev.facedetector.utils.TAG
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlin.Exception

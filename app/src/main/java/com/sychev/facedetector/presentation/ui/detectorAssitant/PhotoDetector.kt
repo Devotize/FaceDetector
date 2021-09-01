@@ -41,7 +41,7 @@ import com.sychev.facedetector.presentation.ui.items.BottomGallerySheet
 import com.sychev.facedetector.presentation.ui.items.DetectedClothesListItem
 import com.sychev.facedetector.presentation.ui.items.FrameDrawItem
 import com.sychev.facedetector.service.FaceDetectorService
-import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.ClothesFilters
+import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlin.collections.ArrayList

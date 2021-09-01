@@ -13,7 +13,6 @@ import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
 import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.navigation.Screen
-import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.ClothesFilters
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -38,6 +37,7 @@ class ShopViewModel
         addAll(ClothesFilters.defaultFilters())
     }
     private val selectedFilter = mutableStateOf<ClothesFilters?>(null)
+    val customFilter = mutableStateOf<ClothesFilters>(ClothesFilters())
 
     init {
         findClothesForFilters()
@@ -68,6 +68,17 @@ class ShopViewModel
             is ShopEvent.GoToFiltersScreen -> {
                 navigationManager.navigate(Screen.FiltersScreen)
             }
+            is ShopEvent.GotBackToShopScreen -> {
+                navigationManager.navigate(Screen.Shop) {
+                    popUpTo(Screen.Shop.route)
+                }
+            }
+            is ShopEvent.ChangeCustomFilters -> {
+                onCustomFilterChange(event.newFilters)
+            }
+            is ShopEvent.SaveCustomClothesFilter -> {
+                onSaveCustomFilters()
+            }
         }
     }
 
@@ -95,9 +106,9 @@ class ShopViewModel
         this.gender.value = gender
         filters.forEach {
             if (gender == null) {
-                it.gender = null
+                it.gender = ArrayList()
             } else {
-                it.gender = listOf(gender)
+                it.gender = arrayListOf(gender)
             }
         }
         if (clothesList.isEmpty()) {
@@ -156,7 +167,7 @@ class ShopViewModel
         }.launchIn(viewModelScope)
     }
 
-    fun findClothesForFilters() {
+    private fun findClothesForFilters() {
         var multiIndex = 0
         filters.forEachIndexed { index, filter ->
             if (index == multiIndex) {
@@ -175,6 +186,18 @@ class ShopViewModel
                     }
                 }.launchIn(viewModelScope)
         }
+    }
+
+    private fun onCustomFilterChange(newFilters: ClothesFilters) {
+        customFilter.value = ClothesFilters()
+        customFilter.value = newFilters
+    }
+
+    private fun onSaveCustomFilters() {
+        filters.add(customFilter.value)
+        customFilter.value = ClothesFilters()
+        onTriggerEvent(ShopEvent.GotBackToShopScreen)
+        findClothesForFilters()
     }
 
 }
