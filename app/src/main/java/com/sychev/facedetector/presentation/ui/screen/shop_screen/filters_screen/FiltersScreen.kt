@@ -5,6 +5,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
@@ -21,6 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -39,15 +43,16 @@ fun FiltersScreen(
     val customFilter = viewModel.customFilter.value
     val scrollState = rememberScrollState()
     var isTitleEmpty by remember { mutableStateOf(false) }
+    var isMinPriceLowerThenMax by remember { mutableStateOf(true)}
     Box(
         modifier = Modifier
-            .verticalScroll(scrollState)
             .fillMaxSize()
             .background(MaterialTheme.colors.primary)
     ) {
         Column(
             modifier = Modifier
                 .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
+                .verticalScroll(scrollState)
                 .background(MaterialTheme.colors.primary)
                 .fillMaxSize(),
         ) {
@@ -504,19 +509,92 @@ fun FiltersScreen(
                 }
                 if (showItemsRow) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(bottom = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceAround ,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         //min value
                         OutlinedTextField(
-                            value = if (customFilter.prices.isNotEmpty()) {
-                                customFilter.prices[0].toString()
+                            modifier = Modifier.width(130.dp),
+                            singleLine = true,
+                            isError = !isMinPriceLowerThenMax,
+                            value = if (customFilter.prices.isEmpty() || customFilter.prices[0] == 0) {
+                                ""
                             } else {
-                                   ""
+                                customFilter.prices[0].toString()
                                    },
-                            onValueChange = {
-
-                            }
+                            onValueChange = { str ->
+                                val newFilter = if (str.isNotEmpty()) {
+                                    customFilter.also {
+                                        it.prices[0] = str.toInt()
+                                    }
+                                } else {
+                                    customFilter.also {
+                                        it.prices[0] = 0
+                                    }
+                                }
+                                viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilter))
+                            },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Done,
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.clearFocus()
+                                }
+                            ),
+                            label = {
+                                Text(text = "Min price")
+                            },
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                cursorColor = MaterialTheme.colors.onPrimary,
+                                textColor = MaterialTheme.colors.onPrimary,
+                                focusedBorderColor = MaterialTheme.colors.secondary,
+                                focusedLabelColor = MaterialTheme.colors.secondary,
+                            )
+                        )
+                        //max value
+                        OutlinedTextField(
+                            modifier = Modifier.width(130.dp),
+                            singleLine = true,
+                            isError = !isMinPriceLowerThenMax,
+                            value = if (customFilter.prices.isEmpty() || customFilter.prices[1] == 1000000000) {
+                                ""
+                            } else {
+                                customFilter.prices[1].toString()
+                            },
+                            onValueChange = { str ->
+                                val newFilter = if (str.isNotEmpty()) {
+                                    customFilter.also {
+                                        it.prices[1] = str.toInt()
+                                    }
+                                } else {
+                                    customFilter.also {
+                                        it.prices[1] = 1000000000
+                                    }
+                                }
+                                viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilter))
+                            },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.clearFocus()
+                                }
+                            ),
+                            label = {
+                                Text(text = "Max price")
+                            },
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                cursorColor = MaterialTheme.colors.onPrimary,
+                                textColor = MaterialTheme.colors.onPrimary,
+                                focusedBorderColor = MaterialTheme.colors.secondary,
+                                focusedLabelColor = MaterialTheme.colors.secondary,
+                            )
                         )
                     }
                 }
@@ -651,7 +729,8 @@ fun FiltersScreen(
                     ),
                     onClick = {
                         isTitleEmpty = customFilter.title.isEmpty()
-                        if (!isTitleEmpty) {
+                        isMinPriceLowerThenMax = customFilter.prices[0] < customFilter.prices[1]
+                        if (!isTitleEmpty && isMinPriceLowerThenMax) {
                             viewModel.onTriggerEvent(ShopEvent.SaveCustomClothesFilter)
                         }
                     },

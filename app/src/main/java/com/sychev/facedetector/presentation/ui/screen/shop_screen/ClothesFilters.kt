@@ -10,7 +10,7 @@ open class ClothesFilters {
     open var itemCategories: ArrayList<ItemCategories> = ArrayList()
     open var itemSubcategories: ArrayList<ItemSubcategories> = ArrayList()
     open var brands: ArrayList<Brands> = ArrayList()
-    open var prices: ArrayList<Int> = ArrayList()
+    open var prices: ArrayList<Int> = arrayListOf(0, 1000000000)
     open var itemSizes: ArrayList<ItemSizes> = ArrayList()
     open var colors: ArrayList<ClothesColors> = ArrayList()
     open var novice: ArrayList<Novice> = ArrayList()
