@@ -3,6 +3,7 @@ package com.sychev.facedetector.presentation.ui.screen.feed_list
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
+import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 
 sealed class FeedEvent() {
@@ -25,4 +26,5 @@ sealed class FeedEvent() {
         val onLoaded: (Boolean) -> Unit,
         ): FeedEvent()
     class GetCelebPicsEvent(): FeedEvent()
+    class GoToRetailScreen(val clothesList: List<Clothes>): FeedEvent()
 }

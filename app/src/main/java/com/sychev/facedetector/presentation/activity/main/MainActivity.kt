@@ -7,6 +7,7 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Parcelable
 import android.provider.Settings
 import android.util.Log
 import androidx.activity.compose.setContent
@@ -25,6 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -42,6 +45,9 @@ import com.sychev.facedetector.presentation.ui.navigation.Screen
 import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailScreen
 import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailViewModel
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.FavoriteClothesListViewModel
+import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailEvent
+import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailScreen
+import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailViewModel
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedListScreen
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedViewModel
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.ShopScreen
@@ -51,7 +57,11 @@ import com.sychev.facedetector.presentation.ui.theme.AppTheme
 import com.sychev.facedetector.service.FaceDetectorService
 import com.sychev.facedetector.utils.MessageDialog
 import com.sychev.facedetector.utils.TAG
+import com.sychev.facedetector.utils.toMoneyString
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.StringBuilder
 import javax.inject.Inject
@@ -64,6 +74,7 @@ class MainActivity : AppCompatActivity() {
 
     private val mainViewModel: MainViewModel by viewModels()
     private val shopViewModel: ShopViewModel by viewModels()
+    private val retailViewModel: ClothesListRetailViewModel by viewModels()
 
     @Inject
     lateinit var navigationManager: NavigationManager
@@ -94,11 +105,13 @@ class MainActivity : AppCompatActivity() {
     @ExperimentalPagerApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val stopIntent = Intent(applicationContext, FaceDetectorService::class.java)
-        stopService(stopIntent)
+//        val stopIntent = Intent(applicationContext, FaceDetectorService::class.java)
+//        stopService(stopIntent)
         val bundle = intent.extras
         mainViewModel.launchFromAssistant.value =
             bundle?.getBoolean("from_assistant_launch") ?: false
+        var firstLaunch = true
+        val clothesListRetail = bundle?.getParcelableArrayList<Clothes>("clothes_list")
 
         setContent {
 
@@ -108,18 +121,7 @@ class MainActivity : AppCompatActivity() {
                 val scope = rememberCoroutineScope()
                 val dialogMessages = MessageDialog.dialogMessages
                 var hasNavBottomBar by remember{ mutableStateOf(true)}
-                navigationManager.commands.value.also { pairScreenNavBuider ->
-                    if (pairScreenNavBuider.first is Screen.Default) {
-                        return@also
-                    }
-                    if (pairScreenNavBuider.first.arguments != null) {
-                        navController.currentBackStackEntry?.arguments?.putParcelable(
-                            "arg",
-                            pairScreenNavBuider.first.arguments
-                        )
-                    }
-                    navController.navigate(route = pairScreenNavBuider.first.route, builder = pairScreenNavBuider.second)
-                }
+
 
                 Scaffold(
                     scaffoldState = scaffoldState,
@@ -204,12 +206,12 @@ class MainActivity : AppCompatActivity() {
                                 hasNavBottomBar = true
                                 ShopScreen(viewModel = this@MainActivity.shopViewModel)
                             }
-                            
+
                             composable(Screen.FiltersScreen.route) {
                                 hasNavBottomBar = false
                                 FiltersScreen(viewModel = this@MainActivity.shopViewModel)
                             }
-                            
+
                             composable(Screen.Profile.route) {
                                 hasNavBottomBar = true
                                 Text(text = "Profile")
@@ -228,15 +230,47 @@ class MainActivity : AppCompatActivity() {
                                 route = Screen.ClothesDetail.route,
                             ) { backStackEntry ->
                                 Log.d(TAG, "onCreate: destination: DetailScreen")
-                                navController.previousBackStackEntry?.arguments?.getParcelable<Clothes>(
-                                    "arg"
+                                navController.previousBackStackEntry?.arguments?.getParcelableArrayList<Clothes>(
+                                    "args"
                                 )?.let {
                                     val detailViewModel = hiltViewModel<ClothesDetailViewModel>(navController.getBackStackEntry(Screen.ClothesDetail.route))
                                     ClothesDetailScreen(
-                                        clothes = it,
+                                        clothes = it[0],
                                         viewModel = detailViewModel,
                                     )
                                 }
+                            }
+                            composable(Screen.ClothesListRetail.route) { navBackStackEntry ->
+                                hasNavBottomBar = false
+                                var clothesList = listOf<Clothes>()
+                                clothesListRetail?.let {
+                                    clothesList = it
+                                }
+                                navController.previousBackStackEntry?.arguments?.getParcelableArrayList<Clothes>(
+                                    "args"
+                                )?.let {
+                                    Log.d(TAG, "onCreate: retailArgs: $it")
+                                    clothesList = it
+                                }
+                                val retailViewModel = hiltViewModel<ClothesListRetailViewModel>(navController.getBackStackEntry(Screen.ClothesListRetail.route))
+                                ClothesListRetailScreen(
+                                    viewModel = retailViewModel,
+                                    clothesList = clothesList,
+                                    onBackClick = {onBackPressed()},
+                                )
+                            }
+                            if (firstLaunch) {
+                                    navigationManager.navigate(Screen.FavoriteClothesList)
+                                    navigationManager.navigate(Screen.FeedList)
+                                    clothesListRetail?.let {
+                                        val screen = Screen.ClothesListRetail.apply {
+                                            arguments = arrayListOf<Parcelable>().apply {
+                                                addAll(it)
+                                            }
+                                        }
+                                        navigationManager.navigate(screen)
+                                    }
+                                    firstLaunch = false
                             }
                         }
                     }
@@ -255,10 +289,25 @@ class MainActivity : AppCompatActivity() {
                         )
                     }
                 }
+                navigationManager.commands.value.also { pairScreenNavBuider ->
+                    if (pairScreenNavBuider.first is Screen.Default) {
+                        return@also
+                    }
+                    Log.d(TAG, "onCreate: arguments: ${pairScreenNavBuider.first.arguments}")
+                    if (pairScreenNavBuider.first.arguments != null) {
+                        navController.currentBackStackEntry?.arguments?.putParcelableArrayList(
+                            "args",
+                            pairScreenNavBuider.first.arguments
+                        )
+                    }
+                    try {
+                        navController.navigate(route = pairScreenNavBuider.first.route, builder = pairScreenNavBuider.second)
+                    }catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
             }
-
         }
-
     }
 
     private fun launchMediaProjection() {

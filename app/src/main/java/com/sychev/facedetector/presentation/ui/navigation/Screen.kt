@@ -3,7 +3,7 @@ package com.sychev.facedetector.presentation.ui.navigation
 import android.os.Parcelable
 import androidx.navigation.compose.NamedNavArgument
 
-sealed class Screen(val route: String, var arguments: Parcelable?) {
+sealed class Screen(val route: String, var arguments: ArrayList<Parcelable>?) {
     object Default: Screen(route = "default_screen", arguments = null)
     object ClothesListRetail: Screen(route = "clothes_screen_retail", arguments = null)
     object FavoriteClothesList: Screen(route = "favorite_clothes_list", arguments = null)

@@ -1,5 +1,6 @@
 package com.sychev.facedetector.presentation.ui.screen.clothes_list_retail
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -9,6 +10,9 @@ import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
 import com.sychev.facedetector.interactors.clothes_list.ProcessClothesForRetail
+import com.sychev.facedetector.presentation.activity.main.MainActivity
+import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
+import com.sychev.facedetector.presentation.ui.navigation.Screen
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -21,7 +25,8 @@ class ClothesListRetailViewModel
 constructor(
     private val insertClothesToFavorite: InsertClothesToFavorite,
     private val removeFromFavoriteClothes: RemoveFromFavoriteClothes,
-    private val processClothesForRetail: ProcessClothesForRetail
+    private val processClothesForRetail: ProcessClothesForRetail,
+    private val navigationManager: NavigationManager,
 ): ViewModel() {
 
     val clothesList = mutableStateListOf<Clothes>()
@@ -39,16 +44,8 @@ constructor(
                             }
                         }
                         if (clothesChips.isNotEmpty()) {
-                            onTriggerEvent(ClothesListRetailEvent.OnSelectChipEvent(clothesChips.last()))
+                            onTriggerEvent(ClothesListRetailEvent.OnSelectChipEvent(clothesChips.first()))
                         }
-                        if (event.selectedClothes.isNotEmpty()) {
-                            clothesChips.forEach { pair ->
-                                if (pair.second[0].clothesUrl == event.selectedClothes[0].clothesUrl) {
-                                    onTriggerEvent(ClothesListRetailEvent.OnSelectChipEvent(pair))
-                                }
-                            }
-                        }
-
                     }
                 }.launchIn(viewModelScope)
 //                CoroutineScope(IO).launch {
@@ -63,6 +60,12 @@ constructor(
             }
             is ClothesListRetailEvent.RemoveFromFavoriteClothesEvent -> {
                 removeFromFavorite(event.clothes)
+            }
+            is ClothesListRetailEvent.GoToDetailScreen -> {
+                val detailScreen = Screen.ClothesDetail.apply {
+                    arguments = arrayListOf(event.clothes)
+                }
+                navigationManager.navigate(detailScreen)
             }
         }
     }

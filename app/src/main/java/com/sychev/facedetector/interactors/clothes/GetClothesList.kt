@@ -54,4 +54,17 @@ class GetClothesList(
             emit(DataState.error("error: ${e.message}"))
         }
     }
+    fun execute(clothes: Clothes): Flow<DataState<Clothes>> = flow <DataState<Clothes>>{
+        try {
+            emit(DataState.loading())
+
+            val result = detectedClothesRepository.getClothesByUrl(clothes.clothesUrl)
+
+            emit(DataState.success(result))
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(DataState.error("error: ${e.message}"))
+        }
+    }
 }

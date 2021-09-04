@@ -4,6 +4,8 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
+import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.hardware.display.DisplayManager
@@ -492,13 +494,18 @@ class PhotoDetector
             additionalDetectedClothesViews.forEach { addedView ->
                 removeViewFromWM(addedView)
             }
-            val intent = Intent(context, ClothesRetailActivity::class.java)
+//            val intent = Intent(context, ClothesRetailActivity::class.java)
+//            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+////            intent.putExtra("from_assistant_launch", true)
+//            val arrayClothes = ArrayList<Clothes>()
+//            arrayClothes.addAll(selectedClothesList)
+//            intent.putExtra("clothes_list", clothesList)
+//            intent.putExtra("selected_clothes", arrayClothes)
+//            context.startActivity(intent)
+            val intent = Intent(context, MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-//            intent.putExtra("from_assistant_launch", true)
-            val arrayClothes = ArrayList<Clothes>()
-            arrayClothes.addAll(selectedClothesList)
+
             intent.putExtra("clothes_list", clothesList)
-            intent.putExtra("selected_clothes", arrayClothes)
             context.startActivity(intent)
         }
         detectedClothesCard.findViewById<Button>(R.id.clothes_card_close_button).apply {

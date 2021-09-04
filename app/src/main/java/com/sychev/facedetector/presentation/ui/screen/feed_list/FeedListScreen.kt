@@ -244,12 +244,13 @@ fun FeedListScreen(
                                     foundedClothes = foundedClothes,
                                     onClick = {
                                         try {
-                                            val intent = Intent(context, ClothesRetailActivity::class.java)
-                                            val selectedClothes = ArrayList<Clothes>()
-                                            selectedClothes.addAll(foundedClothes.clothes)
-                                            intent.putExtra("clothes_list", clothesList)
-                                            intent.putExtra("selected_clothes", selectedClothes)
-                                            context.startActivity(intent)
+//                                            val intent = Intent(context, ClothesRetailActivity::class.java)
+//                                            val selectedClothes = ArrayList<Clothes>()
+//                                            selectedClothes.addAll(foundedClothes.clothes)
+//                                            intent.putExtra("clothes_list", clothesList)
+//                                            intent.putExtra("selected_clothes", selectedClothes)
+//                                            context.startActivity(intent)
+                                            viewModel.onTriggerEvent(FeedEvent.GoToRetailScreen(clothesList))
                                         }catch (e: Exception){
                                             e.printStackTrace()
                                         }

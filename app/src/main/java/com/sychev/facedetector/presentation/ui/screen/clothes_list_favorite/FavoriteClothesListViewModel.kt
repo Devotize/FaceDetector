@@ -34,10 +34,6 @@ class FavoriteClothesListViewModel
     val favoriteClothesList = mutableStateListOf<Clothes>()
     val loading = mutableStateOf(false)
 
-    init {
-        onTriggerEvent(FavoriteClothesListEvent.GetAllFavoriteClothes)
-    }
-
     fun onTriggerEvent(event: FavoriteClothesListEvent) {
         when (event) {
             is FavoriteClothesListEvent.GetAllFavoriteClothes -> {
@@ -51,7 +47,7 @@ class FavoriteClothesListViewModel
             }
             is FavoriteClothesListEvent.NavigateToDetailClothesScreen -> {
                 val screen = Screen.ClothesDetail.apply {
-                    arguments = event.clothes
+                    arguments = arrayListOf(event.clothes, event.clothes)
                 }
                     navigationManager.navigate(screen)
 

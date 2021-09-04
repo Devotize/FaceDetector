@@ -25,6 +25,7 @@ import com.gowtham.ratingbar.RatingBarStyle
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.utils.loadPicture
+import com.sychev.facedetector.utils.toMoneyString
 
 @Composable
 fun ClothesItem(
@@ -74,7 +75,7 @@ fun ClothesItem(
                 Text(
                     modifier = Modifier
                         .padding(top = 4.dp),
-                    text = "${clothes.price} р.",
+                    text = "${clothes.price.toString().toMoneyString()} ₽",
                     color = MaterialTheme.colors.onPrimary,
                     style = MaterialTheme.typography.h2,
                 )

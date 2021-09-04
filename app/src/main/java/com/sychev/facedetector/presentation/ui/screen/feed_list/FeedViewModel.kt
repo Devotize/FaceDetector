@@ -3,6 +3,7 @@ package com.sychev.facedetector.presentation.ui.screen.feed_list
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
+import android.os.Parcelable
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -15,6 +16,8 @@ import com.sychev.facedetector.interactors.clothes_list.DetectClothesLocal
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
 import com.sychev.facedetector.interactors.pics.GetCelebPics
 import com.sychev.facedetector.interactors.pics.GetRandomPics
+import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
+import com.sychev.facedetector.presentation.ui.navigation.Screen
 import com.sychev.facedetector.utils.MessageDialog
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,6 +35,7 @@ constructor(
     private val detectClothesLocal: DetectClothesLocal,
     private val searchClothes: SearchClothes,
     private val getCelebPics: GetCelebPics,
+    private val navigationManager: NavigationManager,
 ): ViewModel() {
     val urls = mutableStateListOf<String>()
     val pictures = mutableStateListOf<Bitmap>()
@@ -91,6 +95,14 @@ constructor(
                         page++
                     }
                 }.launchIn(viewModelScope)
+            }
+            is FeedEvent.GoToRetailScreen -> {
+                val retailScreen = Screen.ClothesListRetail.apply {
+                    arguments = arrayListOf<Parcelable>().apply {
+                        addAll(event.clothesList)
+                    }
+                }
+                navigationManager.navigate(retailScreen)
             }
         }
     }

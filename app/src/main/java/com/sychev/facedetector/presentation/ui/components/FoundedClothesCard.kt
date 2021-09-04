@@ -17,6 +17,7 @@ import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
+import com.sychev.facedetector.utils.toMoneyString
 
 @ExperimentalMaterialApi
 @Composable
@@ -73,7 +74,7 @@ fun FoundedClothesCard(
                     color = Color.Black
                 )
                 Text(
-                    text = "${clothes.price} ₽",
+                    text = "${clothes.price.toString().toMoneyString()} ₽",
                     style = MaterialTheme.typography.h2,
                 )
 

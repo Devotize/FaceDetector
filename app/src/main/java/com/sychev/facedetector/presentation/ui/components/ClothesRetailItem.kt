@@ -1,5 +1,7 @@
 package com.sychev.facedetector.presentation.ui.components
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -15,12 +17,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarStyle
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.utils.loadPicture
+import com.sychev.facedetector.utils.toMoneyString
 
 @Composable
 fun ClothesRetailItem(
@@ -30,6 +35,7 @@ fun ClothesRetailItem(
     onRemoveFromFavoriteClick: (Clothes) -> Unit,
 ) {
     val rating = remember{ mutableStateOf(clothes.rating.toFloat())}
+    val context = LocalContext.current
     Card(
         modifier = modifier,
         shape = MaterialTheme.shapes.large
@@ -103,7 +109,7 @@ fun ClothesRetailItem(
                     Text(
                         modifier = Modifier
                             .padding(top = 4.dp),
-                        text = "${clothes.price} р.",
+                        text = "${clothes.price.toString().toMoneyString()} ₽",
                         color = MaterialTheme.colors.onPrimary,
                         style = MaterialTheme.typography.h2,
                     )
@@ -139,7 +145,8 @@ fun ClothesRetailItem(
                     modifier = Modifier
                         .size(56.dp),
                     onClick = {
-
+                        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(clothes.clothesUrl))
+                        ContextCompat.startActivity(context, browserIntent, null)
                     },
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary),
