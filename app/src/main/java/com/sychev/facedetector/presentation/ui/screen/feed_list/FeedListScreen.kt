@@ -213,8 +213,31 @@ fun FeedListScreen(
                         )
                         detectedClothes.forEach { pair ->
                             if (pair.first == page) {
+//                                var isSearching by remember{mutableStateOf(true)}
+//                                if (isSearching) {
+//                                viewModel.onTriggerEvent(FeedEvent.FindMultiplyClothes(
+//                                    detectedClothesList = pair.second,
+//                                    context = context,
+//                                    page = page,
+//                                    location = pair.second[0].location,
+//                                    onLoaded = {
+//                                        isSearching = it
+//                                    }
+//                                ))
+//                                    isSearching = false
+//                                }
                                 pair.second.forEach { item ->
                                     var isSearching by remember{mutableStateOf(false)}
+//                                    viewModel.onTriggerEvent(FeedEvent.FindClothes(
+//                                        detectedClothes = item,
+//                                        context = context,
+//                                        page = page,
+//                                        location = item.location,
+//                                        onLoaded = {
+//                                            isSearching = it
+//                                        }
+//                                    ))
+
                                     ClothesPointer(
                                         location = item.location,
                                         onPointerClick = {
@@ -224,9 +247,10 @@ fun FeedListScreen(
                                                 page = page,
                                                 location = item.location,
                                                 onLoaded = {
-                                                    isSearching = it
-                                                }
-                                            ))
+                                                        isSearching = it
+                                                    }
+                                                ))
+
                                         },
                                         loading = isSearching
                                     )
@@ -236,7 +260,9 @@ fun FeedListScreen(
 
                         val clothesList = ArrayList<Clothes>()
                         foundedClothesList.forEach { foundedClothes ->
-                            clothesList.addAll(foundedClothes.clothes)
+                            if (foundedClothes.page == page) {
+                                clothesList.addAll(foundedClothes.clothes)
+                            }
                         }
                         foundedClothesList.forEach { foundedClothes ->
                             if (foundedClothes.page == page) {

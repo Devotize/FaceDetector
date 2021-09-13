@@ -86,6 +86,15 @@ constructor(
                     callback = event.onLoaded
                 )
             }
+            is FeedEvent.FindMultiplyClothes -> {
+                searchMultiplyClothes(
+                    detectedClothesList = event.detectedClothesList,
+                    context = event.context,
+                    page = event.page,
+                    location = event.location,
+                    callback = event.onLoaded
+                )
+            }
             is FeedEvent.GetCelebPicsEvent -> {
                 getCelebPics.execute(page).onEach { dataState ->
                     loading.value = dataState.loading
@@ -105,6 +114,45 @@ constructor(
                 navigationManager.navigate(retailScreen)
             }
         }
+    }
+
+    private fun searchMultiplyClothes(
+        detectedClothesList: List<DetectedClothes>,
+        context: Context,
+        page: Int,
+        location: RectF,
+        callback: (Boolean) -> Unit
+    ) {
+        searchClothes.execute(detectedClothesList = detectedClothesList, context = context)
+            .onEach { dataState ->
+                callback(dataState.loading)
+                dataState.data?.let {
+                    val fc = FoundedClothes(
+                        page = page,
+                        location = location,
+                        clothes = it
+                    )
+                    if (!foundedClothes.contains(fc)){
+                        foundedClothes.add(fc)
+                        Log.d(TAG, "searchClothes: clothesList = $it")
+                    }
+                }
+//                dataState.error?.let { message ->
+//                    Log.d(TAG, "searchClothes: error: $message")
+//                    MessageDialog.dialogMessages.add(
+//                        MessageDialog.Builder()
+//                            .message(message)
+//                            .title("Alert")
+//                            .onDismiss {
+//                                MessageDialog.dialogMessages.removeLast()
+//                            }
+//                            .onPositiveAction {
+//                                MessageDialog.dialogMessages.removeLast()
+//                            }
+//                            .build()
+//                    )
+//                }
+            }.launchIn(CoroutineScope(IO))
     }
 
     private fun detectClothes(context: Context, bitmap: Bitmap, page: Int, callback: (Boolean) -> Unit) {

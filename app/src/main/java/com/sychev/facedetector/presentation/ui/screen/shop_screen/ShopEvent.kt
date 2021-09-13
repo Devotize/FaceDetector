@@ -21,6 +21,8 @@ sealed class ShopEvent {
 
     object GotBackToShopScreen: ShopEvent()
 
+    class GoToDetailClothesScreen(val clothes: Clothes): ShopEvent()
+
     class ChangeCustomFilters(val newFilters: ClothesFilters): ShopEvent()
 
     object SaveCustomClothesFilter: ShopEvent()

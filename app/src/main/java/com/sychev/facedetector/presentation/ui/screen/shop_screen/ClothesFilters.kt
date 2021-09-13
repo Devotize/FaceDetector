@@ -16,6 +16,7 @@ open class ClothesFilters {
     open var novice: ArrayList<Novice> = ArrayList()
     open var popularFlags: ArrayList<PopularFlags> = ArrayList()
     open var providers: ArrayList<Providers> = ArrayList()
+    open var fullTextQuery: String? = null
 
     var clothes: List<Clothes>? = null
 

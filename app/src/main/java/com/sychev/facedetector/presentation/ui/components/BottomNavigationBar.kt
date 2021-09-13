@@ -16,8 +16,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sychev.facedetector.R
-import com.sychev.facedetector.presentation.ui.detectorAssitant.PhotoDetector
-import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
+import com.sychev.facedetector.presentation.ui.detectorAssitant.AssistantDetector
 import com.sychev.facedetector.presentation.ui.navigation.Screen
 
 @Composable
@@ -93,7 +92,7 @@ fun BottomNavigationBar(
         Image(
             modifier = Modifier
                 .clickable {
-                    if (!PhotoDetector.isShown) {
+                    if (!AssistantDetector.isShown) {
                         launchAssistant()
                     }
                 }

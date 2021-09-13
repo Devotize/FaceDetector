@@ -248,6 +248,9 @@ class DetectedClothesRepositoryImpl(
                 hm.put("providers", valueList)
             }
         }
+        filters.fullTextQuery?.let {
+            hm.put("full_text_query", it)
+        }
 
         val result = clothesDetectionApi.searchClothesByFilters(hm)
         return clothesDtoConverter.toDomainClothesList(result)

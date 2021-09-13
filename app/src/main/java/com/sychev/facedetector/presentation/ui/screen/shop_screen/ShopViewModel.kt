@@ -13,6 +13,7 @@ import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
 import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.navigation.Screen
+import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailEvent
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -78,6 +79,12 @@ class ShopViewModel
             }
             is ShopEvent.SaveCustomClothesFilter -> {
                 onSaveCustomFilters()
+            }
+            is ShopEvent.GoToDetailClothesScreen -> {
+                val screen = Screen.ClothesDetail.apply {
+                    arguments = arrayListOf(event.clothes)
+                }
+                navigationManager.navigate(screen)
             }
         }
     }
@@ -146,8 +153,14 @@ class ShopViewModel
 
     private fun performSearch(query: String, size: Int) {
         if (query.isEmpty()) return
-        val queryWithGender = if (gender.value != null) query.plus(" ${gender.value?.title}") else query
-        searchClothes.execute(queryWithGender, size)
+        val filter = ClothesFilters().apply {
+            fullTextQuery = query
+            this@ShopViewModel.gender.value?.let {
+                gender = arrayListOf(it)
+            }
+            this.size = size
+        }
+        searchClothes.execute(filter)
             .onEach { dataState ->
                 loading.value = dataState.loading
                 dataState.data?.let {

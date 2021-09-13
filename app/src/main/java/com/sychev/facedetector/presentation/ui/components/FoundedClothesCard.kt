@@ -29,8 +29,8 @@ fun FoundedClothesCard(
     val clothes = foundedClothes.clothes[0]
     val x = with(LocalDensity.current) {foundedClothes.location.centerX().toDp()}
     val y = with(LocalDensity.current) {foundedClothes.location.centerY().toDp()}
-    val width = 240.dp
-    val height = 90.dp
+    val width = 280.dp
+    val height = 95.dp
     Surface(
         modifier = Modifier
             .width(width)
@@ -49,8 +49,9 @@ fun FoundedClothesCard(
         ) {
             Image(
                 modifier = Modifier
-                    .width(75.dp)
-                    .fillMaxHeight(),
+                    .width(68.dp)
+                    .fillMaxHeight()
+                    .padding(4.dp),
                 painter = rememberImagePainter(
                     data = clothes.picUrl,
                     builder = {
@@ -63,9 +64,9 @@ fun FoundedClothesCard(
             )
             Column(
                 modifier = Modifier
-                    .widthIn(max = 90.dp)
+                    .widthIn(max = 190.dp)
                     .fillMaxHeight()
-                    .padding(start = 4.dp),
+                    .padding(start = 4.dp, top = 4.dp, bottom = 4.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(

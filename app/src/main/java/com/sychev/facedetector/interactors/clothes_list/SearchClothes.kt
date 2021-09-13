@@ -43,6 +43,38 @@ class SearchClothes(
         }
     }
 
+    fun execute(
+        detectedClothesList: List<DetectedClothes>,
+        context: Context,
+    ): Flow<DataState<List<Clothes>>> = flow<DataState<List<Clothes>>> {
+        try {
+            emit(DataState.loading())
+            val clothesList = ArrayList<Clothes>()
+            detectedClothesList.forEach { detectedClothes ->
+                clothesList.addAll(detectedClothesRepository.searchClothes(detectedClothes = detectedClothes, context))
+            }
+
+            detectedClothesRepository.insertClothesOrIgnoreIfFavorite(clothesList)
+
+            val result = detectedClothesRepository.getClothesList(clothesList)
+
+            if (result.isEmpty()) {
+                throw Exception("Nothing found")
+            }
+
+//            val result = listOf<Clothes>(
+//                Clothes(brand="MONOCEROS", gender="men", itemCategory="бордшорты", itemId="14060327", picUrl="https://images.wbstatic.net/c246x328/new/14060000/14060327-1.jpg", price=100, priceDiscount=90, provider="wildberries", rating=5, url="https://wildberries.ru/catalog/14060327/detail.aspx?targetUrl=ST", isFavorite=true),
+//                Clothes(brand="Reebok Classic", gender="men", itemCategory="велосипедки", itemId="RTLAAI852401", picUrl="https://a.lmcdn.ru/img236x341/R/T/RTLAAI852401_14309112_1_v1_2x.jpg", price=100, priceDiscount=90, provider="lamoda", rating=5, url="https://lamoda.ru/p/rtlaai852401/clothes-reebokclassic-velosipedki/", isFavorite=true),
+//            )
+
+            emit(DataState.success(result))
+
+        }catch (e: Exception) {
+            emit(DataState.error("${e.message}"))
+            e.printStackTrace()
+        }
+    }
+
     fun execute(query: String, size: Int): Flow<DataState<List<Clothes>>> = flow<DataState<List<Clothes>>>{
         try {
             emit(DataState.loading())
@@ -74,5 +106,7 @@ class SearchClothes(
             emit(DataState.error("${e.message}"))
         }
     }
+
+
 
 }

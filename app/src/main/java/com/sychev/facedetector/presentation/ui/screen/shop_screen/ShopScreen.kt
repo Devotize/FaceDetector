@@ -5,13 +5,16 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -111,94 +114,137 @@ fun ShopScreen(
                         }
                     )
                 )
-
-                Row(
+                var selectedTabIndex by remember{ mutableStateOf(2)}
+                TabRow(
+                    selectedTabIndex = selectedTabIndex,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp)
+                        .padding()
                         .wrapContentHeight(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    divider = {
+                        TabRowDefaults.Divider(
+                            color = MaterialTheme.colors.primary
+                        )
+                    }
                 ) {
-                    Button(
+                    Tab(
+                        modifier = Modifier
+                            .padding(bottom = 8.dp),
+                        selected = selectedTabIndex == 0,
                         onClick = {
-                            if (gender != ClothesFilters.Gender.MALE) {
-                                viewModel.onTriggerEvent(ShopEvent.OnGenderChange(ClothesFilters.Gender.MALE))
-                            } else {
-                                viewModel.onTriggerEvent(ShopEvent.OnGenderChange(null))
-                            }
+                            selectedTabIndex = 0
+                            viewModel.onTriggerEvent(ShopEvent.OnGenderChange(ClothesFilters.Gender.MALE))
                         },
-                        elevation = ButtonDefaults.elevation(0.dp, 0.dp)
                     ) {
                         Text(
                             text = "Men",
                             style = MaterialTheme.typography.h3,
-                            color = if (gender == ClothesFilters.Gender.MALE)
-                                MaterialTheme.colors.onPrimary
-                            else
-                                MaterialTheme.colors.primaryVariant
+                            color = MaterialTheme.colors.onPrimary
+
                         )
                     }
-                    Button(
+                    Tab(
+                        selected = selectedTabIndex == 1,
                         onClick = {
-                            if (gender != ClothesFilters.Gender.FEMALE) {
+                            selectedTabIndex = 1
                                 viewModel.onTriggerEvent(ShopEvent.OnGenderChange(ClothesFilters.Gender.FEMALE))
-                            } else {
-                                viewModel.onTriggerEvent(ShopEvent.OnGenderChange(null))
-                            }
-                        },
-                        elevation = ButtonDefaults.elevation(0.dp, 0.dp)
 
+                        },
                     ) {
                         Text(
                             text = "Women",
                             style = MaterialTheme.typography.h3,
-                            color = if (gender == ClothesFilters.Gender.FEMALE)
-                                MaterialTheme.colors.onPrimary
-                            else
-                                MaterialTheme.colors.primaryVariant
+                            color = MaterialTheme.colors.onPrimary
                         )
                     }
-                    Button(
+                    Tab(
+                        selected = selectedTabIndex == 2,
                         onClick = {
-//                        viewModel.onTriggerEvent(ShopEvent.OnGenderChange(ClothesFilter.Gender.MALE))
+                            selectedTabIndex = 2
+                        viewModel.onTriggerEvent(ShopEvent.OnGenderChange(null))
                         },
-                        elevation = ButtonDefaults.elevation(0.dp, 0.dp)
-
                     ) {
                         Text(
-                            text = "Children",
+                            text = "Together",
                             style = MaterialTheme.typography.h3,
-                            color = MaterialTheme.colors.primaryVariant
+                            color = MaterialTheme.colors.onPrimary
                         )
                     }
                 }
             }
         }
         if (clothesList.isNotEmpty()) {
-            LazyColumn(
-                modifier = Modifier,
-                flingBehavior = StockFlingBehaviours.smoothScroll()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 6.dp)
             ) {
-                itemsIndexed(clothesList) { index, item ->
-                    ClothesItem(
-                        clothes = item,
-                        shape = RectangleShape,
-                        onAddToFavoriteClick = {
-                            viewModel.onTriggerEvent(
-                                ShopEvent.AddToFavoriteClothesEvent(
-                                    item
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(bottom = 2.dp, start = 8.dp, end = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Sorting: ",
+                            style = MaterialTheme.typography.h4,
+                            color = MaterialTheme.colors.onBackground
+                        )
+                        Text(
+                            text = "Price low first",
+                            style = MaterialTheme.typography.h4,
+                            color = MaterialTheme.colors.onPrimary
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                        viewModel.clothesList.clear()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = null,
+                            tint = MaterialTheme.colors.onPrimary
+                        )
+                    }
+                }
+                Spacer(
+                    modifier = Modifier
+                        .height(1.dp)
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colors.primaryVariant, CircleShape)
+                )
+                LazyColumn(
+                    modifier = Modifier,
+                    flingBehavior = StockFlingBehaviours.smoothScroll()
+                ) {
+                    itemsIndexed(clothesList) { index, item ->
+                        ClothesItem(
+                            modifier = Modifier
+                                .clickable {
+                                    viewModel.onTriggerEvent(ShopEvent.GoToDetailClothesScreen(item))
+                                },
+                            clothes = item,
+                            shape = RectangleShape,
+                            onAddToFavoriteClick = {
+                                viewModel.onTriggerEvent(
+                                    ShopEvent.AddToFavoriteClothesEvent(
+                                        item
+                                    )
                                 )
-                            )
-                        },
-                        onRemoveFromFavoriteClick = {
-                            viewModel.onTriggerEvent(
-                                ShopEvent.RemoveFromFavoriteClothesEvent(
-                                    item
+                            },
+                            onRemoveFromFavoriteClick = {
+                                viewModel.onTriggerEvent(
+                                    ShopEvent.RemoveFromFavoriteClothesEvent(
+                                        item
+                                    )
                                 )
-                            )
-                        }
-                    )
+                            }
+                        )
+                    }
                 }
             }
         } else {

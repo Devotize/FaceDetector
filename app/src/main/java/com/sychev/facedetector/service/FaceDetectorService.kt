@@ -10,7 +10,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.sychev.facedetector.presentation.ui.detectorAssitant.PhotoDetector
+import com.sychev.facedetector.presentation.ui.detectorAssitant.AssistantDetector
 import com.sychev.facedetector.utils.TAG
 
 
@@ -25,15 +25,15 @@ class FaceDetectorService: Service() {
         const val EXIT_VALUE = "command_exit"
     }
 
-    private var photoDetector: PhotoDetector? = null
+    private var assistantDetector: AssistantDetector? = null
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     private fun stopService() {
-        photoDetector?.close()
-        photoDetector = null
+        assistantDetector?.close()
+        assistantDetector = null
         stopForeground(true)
         stopSelf()
     }
@@ -42,7 +42,7 @@ class FaceDetectorService: Service() {
         val command = intent?.getStringExtra(EXIT_NAME)
         if (command == EXIT_VALUE){
             Log.d(TAG, "onStartCommand: trying to stop service")
-            photoDetector?.let{
+            assistantDetector?.let{
                 stopService().also { return START_NOT_STICKY }
             }
             return START_NOT_STICKY
@@ -67,7 +67,7 @@ class FaceDetectorService: Service() {
             val projectionManager = applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             val mediaProjection = projectionManager.getMediaProjection(RESULT_OK, data)
 //            VideoFaceDetector(applicationContext, mediaProjection)
-            photoDetector = PhotoDetector(applicationContext, mediaProjection)
+            assistantDetector = AssistantDetector(applicationContext, mediaProjection)
         }
 
         return START_STICKY
@@ -75,8 +75,8 @@ class FaceDetectorService: Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        photoDetector?.close()
-        photoDetector = null
+        assistantDetector?.close()
+        assistantDetector = null
     }
 
     private fun createNotification(): Notification {

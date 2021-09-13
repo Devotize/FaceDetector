@@ -62,7 +62,7 @@ fun ClothesItem(
                 }
 
             Column(
-                modifier = Modifier.padding(start = 4.dp)
+                modifier = Modifier.padding(start = 6.dp)
             ) {
                 Text(
                     modifier = Modifier

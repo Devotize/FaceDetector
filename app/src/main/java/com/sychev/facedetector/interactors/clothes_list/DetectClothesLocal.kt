@@ -120,8 +120,6 @@ class DetectClothesLocal {
             }
             val score = maxClass
 
-
-
             if (score > MIN_SCORE) {
                 val xPos = bboxes!![0][i][0]
                 val yPos = bboxes[0][i][1]
@@ -133,18 +131,30 @@ class DetectClothesLocal {
                     Math.min((transformedBitmap.width - 1).toFloat(), xPos + w / 2) * (scaleX),
                     Math.min((transformedBitmap.height - 1).toFloat(), yPos + h / 2) * (scaleY)
                 )
-//                Log.d(TAG, "detectClothes: rect: $rectF, label: ${labels[detectedClass]}")
+                Log.d(TAG, "detectClothes: rect: $rectF, label: ${labels[detectedClass]}")
                 val croppedBitmap = Bitmap.createBitmap(bitmap, rectF.left.toInt(), rectF.top.toInt(), rectF.width().toInt(), rectF.height().toInt())
-                detections.add(DetectedClothes(
-                    id = i.toString(),
-                    title = labels[detectedClass],
-                    confidence = score,
-                    location = rectF,
-                    detectedClass = detectedClass,
-                    sourceBitmap = bitmap,
-                    croppedBitmap = croppedBitmap,
-                    gender = gender,
-                ))
+                var addToDetections = true
+                detections.forEach {
+                    if (it.title == labels[detectedClass] && it.detectedClass == detectedClass) {
+                        if (it.location.centerX() <= rectF.centerX() + 150 || it.location.centerX() >= rectF.centerX() - 150) {
+                            if (it.location.centerY() <= rectF.centerY() +  150f || it.location.centerY() >= rectF.centerY() - 150f) {
+                                addToDetections = false
+                            }
+                        }
+                    }
+                }
+                if (addToDetections) {
+                    detections.add(DetectedClothes(
+                        id = i.toString(),
+                        title = labels[detectedClass],
+                        confidence = score,
+                        location = rectF,
+                        detectedClass = detectedClass,
+                        sourceBitmap = bitmap,
+                        croppedBitmap = croppedBitmap,
+                        gender = gender,
+                    ))
+                }
             }
         }
         return detections

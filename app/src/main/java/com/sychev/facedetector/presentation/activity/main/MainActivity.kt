@@ -1,6 +1,5 @@
 package com.sychev.facedetector.presentation.activity.main
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
@@ -14,38 +13,28 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navArgument
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.gson.Gson
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.presentation.ui.components.BottomNavigationBar
 import com.sychev.facedetector.presentation.ui.components.GenericDialog
-import com.sychev.facedetector.presentation.ui.detectorAssitant.PhotoDetector
+import com.sychev.facedetector.presentation.ui.detectorAssitant.AssistantDetector
+import com.sychev.facedetector.presentation.ui.detectorAssitant.AssistantManager
 import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.screen.FavoriteClothesListScreen
 import com.sychev.facedetector.presentation.ui.navigation.Screen
 import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailScreen
 import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailViewModel
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.FavoriteClothesListViewModel
-import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailEvent
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailScreen
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailViewModel
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedListScreen
@@ -57,13 +46,7 @@ import com.sychev.facedetector.presentation.ui.theme.AppTheme
 import com.sychev.facedetector.service.FaceDetectorService
 import com.sychev.facedetector.utils.MessageDialog
 import com.sychev.facedetector.utils.TAG
-import com.sychev.facedetector.utils.toMoneyString
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import java.lang.StringBuilder
 import javax.inject.Inject
 
 const val OVERLAY_PERMISSION_REQUEST_CODE = 2001
@@ -78,6 +61,8 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var navigationManager: NavigationManager
+    @Inject
+    lateinit var assistantManager: AssistantManager
 
     private val getDrawOverlays =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -107,6 +92,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 //        val stopIntent = Intent(applicationContext, FaceDetectorService::class.java)
 //        stopService(stopIntent)
+        assistantManager.onActiveStatusChange(false)
         val bundle = intent.extras
         mainViewModel.launchFromAssistant.value =
             bundle?.getBoolean("from_assistant_launch") ?: false
@@ -229,6 +215,7 @@ class MainActivity : AppCompatActivity() {
                             composable(
                                 route = Screen.ClothesDetail.route,
                             ) { backStackEntry ->
+                                hasNavBottomBar = true
                                 Log.d(TAG, "onCreate: destination: DetailScreen")
                                 navController.previousBackStackEntry?.arguments?.getParcelableArrayList<Clothes>(
                                     "args"
@@ -274,19 +261,19 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                     }
-                }
-                if (dialogMessages.isNotEmpty()) {
-                    dialogMessages.forEach {
-                        GenericDialog(
-                            title = it.title,
-                            message = it.message,
-                            onDismiss = {
-                                it.onDismiss()
-                            },
-                            onPositiveAction = {
-                                it.onPositiveAction()
-                            }
-                        )
+                    if (dialogMessages.isNotEmpty()) {
+                        dialogMessages.forEach {
+                            GenericDialog(
+                                title = it.title,
+                                message = it.message,
+                                onDismiss = {
+                                    it.onDismiss()
+                                },
+                                onPositiveAction = {
+                                    it.onPositiveAction()
+                                }
+                            )
+                        }
                     }
                 }
                 navigationManager.commands.value.also { pairScreenNavBuider ->
@@ -329,9 +316,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        assistantManager.onActiveStatusChange(true)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        assistantManager.onActiveStatusChange(false)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        PhotoDetector.insideApp = false
+        AssistantDetector.insideApp = false
+        assistantManager.onActiveStatusChange(true)
     }
 
 }

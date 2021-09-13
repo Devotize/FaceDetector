@@ -49,7 +49,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlin.collections.ArrayList
 
 
-class PhotoDetector
+class AssistantDetector
     (
     private val context: Context,
     private val mediaProjection: MediaProjection,
@@ -65,12 +65,14 @@ class PhotoDetector
     interface PhotoDetectorEntryPoint{
         fun provideRepository(): SavedScreenshotRepo
         fun provideViewModel(): DetectorViewModel
+        fun provideAssistantManager(): AssistantManager
     }
 
 
 
     private val entryPoint = EntryPointAccessors.fromApplication(context, PhotoDetectorEntryPoint::class.java)
     private val viewModel = entryPoint.provideViewModel()
+    private val assistantManager = entryPoint.provideAssistantManager()
     private val detectedClothesList = DetectedClothesListItem(context)
     private val bottomGallerySheet = BottomGallerySheet(context)
     private val bottomFavoriteSheet = BottomFavoriteSheet(context)
@@ -571,6 +573,15 @@ class PhotoDetector
     }
 
     private fun onDetectorCreated() {
+        assistantManager.isAssistantActive.onEach { isActive ->
+            if (isActive) {
+                viewModel.setIsActive(true)
+                showButton.isClickable = true
+            } else {
+                showButton.isClickable = false
+            }
+        }.launchIn(CoroutineScope(Main))
+
         viewModel.clothesList.onEach { pair: Pair<View?, List<Clothes>> ->
             pair.first?.let{ circle ->
                 if (pair.second.isNotEmpty()) {
