@@ -75,6 +75,7 @@ class SearchClothes(
         }
     }
 
+    @Deprecated(message = "api is deprecated", replaceWith = ReplaceWith("fun execute(filters: ClothesFilters)"))
     fun execute(query: String, size: Int): Flow<DataState<List<Clothes>>> = flow<DataState<List<Clothes>>>{
         try {
             emit(DataState.loading())

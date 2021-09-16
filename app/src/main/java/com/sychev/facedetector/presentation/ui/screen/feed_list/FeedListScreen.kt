@@ -7,8 +7,13 @@ import android.util.Log
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -45,6 +50,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.absoluteValue
 
 
@@ -59,30 +66,43 @@ fun FeedListScreen(
     val loading = viewModel.loading.value
     val urls = viewModel.urls
     val pictures = viewModel.pictures
-    val pagerState = rememberPagerState(
-        pageCount = pictures.size,
-        initialOffscreenLimit = 2
-    )
+    val scrollState = rememberLazyListState()
     val detectedClothes = viewModel.detectedClothes
     val foundedClothesList = viewModel.foundedClothes
     val scope = rememberCoroutineScope()
-
-    if (pagerState.currentPage == pictures.lastIndex) {
+    val filteredPictures = pictures.filterIndexed { index, bitmap -> index % 2 != 0 }
+    
+    if (scrollState.firstVisibleItemIndex == filteredPictures.lastIndex - 1) {
         viewModel.onTriggerEvent(FeedEvent.GetCelebPicsEvent())
+    }
+    var isScrollDelayPassed by remember{mutableStateOf(false)}
+
+    var onStopScrollTimer: Timer? = null
+    if (!scrollState.isScrollInProgress) {
+        isScrollDelayPassed = false
+        onStopScrollTimer = Timer()
+        onStopScrollTimer.schedule(
+            object : TimerTask(){
+                override fun run() {
+                    isScrollDelayPassed = true
+                }
+            },
+            2500,
+        )
+    } else {
+        onStopScrollTimer?.cancel()
+        onStopScrollTimer = null
+        isScrollDelayPassed = false
     }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         if (pictures.isNotEmpty()) {
-            VerticalPager(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize(),
-                state = pagerState,
-                flingBehavior = PagerDefaults.defaultPagerFlingConfig(
-                    state = pagerState,
-                    decayAnimationSpec = FloatExponentialDecaySpec().generateDecayAnimationSpec(),
-                    snapAnimationSpec = tween(easing = LinearOutSlowInEasing)
-                ),
-            ) { page: Int ->
+                state = scrollState,
+            ) { itemsIndexed(filteredPictures) { index: Int, item: Bitmap ->
+                var isShown by remember{mutableStateOf(false)}
                 var processing by remember{mutableStateOf(false)}
                 var scale by remember { mutableStateOf(1f) }
                 var offsetX by remember { mutableStateOf(0f) }
@@ -116,22 +136,6 @@ fun FeedListScreen(
                                 }
                             }
                         }
-                        .graphicsLayer {
-                            val pageOffset = calculateCurrentOffsetForPage(page).absoluteValue
-                            lerp(
-                                start = 0.90f,
-                                stop = 1f,
-                                fraction = 1f - pageOffset
-                            ).also { scale ->
-                                scaleX = scale
-                                scaleY = scale
-                            }
-                            alpha = lerp(
-                                start = 0.5f,
-                                stop = 1f,
-                                fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                            )
-                        }
                 ) {
                     var imageWidthPx by remember{mutableStateOf(.0f)}
                     var imageHeightPx by remember{mutableStateOf(.0f)}
@@ -139,7 +143,7 @@ fun FeedListScreen(
 //                    Log.d(TAG, "FeedListScreen: detectedClothesList ${detectedClothesList.value}")
                     val imageLoader = ImageLoader(LocalContext.current)
                     val request = ImageRequest.Builder(LocalContext.current)
-                        .data(pictures[page])
+                        .data(item)
                         .crossfade(true)
                         .transformations(RoundedCornersTransformation(12.dp.value))
                         .fallback(R.drawable.clothes_default_icon_gray)
@@ -149,6 +153,7 @@ fun FeedListScreen(
                         imageLoader = imageLoader
                     )
                     val bitmapState = remember{mutableStateOf<Bitmap?>(null)}
+                    val resizedBitmapState = remember{mutableStateOf<Bitmap?>(null)}
                     scope.launch {
                         try {
                             val result =
@@ -163,56 +168,69 @@ fun FeedListScreen(
 //                                    "FeedListScreen: processedPages:${viewModel.processedPages.toList()}"
 //                                )
 //                                Log.d(TAG, "FeedListScreen: currentPage: ${pagerState.currentPage}")
-                            delay(1000)
-                            if (!viewModel.processedPages.contains(page) && pagerState.currentPage == page) {
-                                viewModel.onTriggerEvent(FeedEvent.DetectClothesEvent(
-                                    context = context,
-                                    bitmap = resizedBitmap,
-                                    page = page,
-                                    onLoaded = { loaded ->
-                                        processing= loaded
-                                    },
-                                ))
-                            }
+//                            delay(2000)
+//                            if (!viewModel.processedPages.contains(index) && scrollState.firstVisibleItemIndex == index) {
+//                                viewModel.onTriggerEvent(FeedEvent.DetectClothesEvent(
+//                                    context = context,
+//                                    bitmap = resizedBitmap,
+//                                    page = index,
+//                                    onLoaded = { loaded ->
+//                                        processing= loaded
+//                                    },
+//                                ))
+//                            }
                             bitmapState.value = bitmap
+                            resizedBitmapState.value = resizedBitmap
                         } catch (e: Exception) {
                             Log.d(TAG, "FeedListScreen: exception: ${e.message}")
                             processing = false
                             e.printStackTrace()
                         }
                     }
+                    isShown = true
+                    if (
+                        isScrollDelayPassed && !viewModel.processedPages.contains(index)
+                    ) {
+                        if (scrollState.firstVisibleItemIndex == index || scrollState.firstVisibleItemIndex + 1 == index) {
+                            scope.launch {
+                                resizedBitmapState.value?.let { resizedBitmap ->
+                                    viewModel.onTriggerEvent(FeedEvent.DetectClothesEvent(
+                                        context = context,
+                                        bitmap = resizedBitmap,
+                                        page = index,
+                                        onLoaded = { loaded ->
+                                            processing = loaded
+                                        },
+                                    ))
+                                }
+                                isShown = false
+                                isScrollDelayPassed = false
+                        }
+                        }
+                    }
 
 //                    bitmapState.value?.let{bitmap ->
-                    BoxWithConstraints(modifier = Modifier
+                    BoxWithConstraints(
+                        modifier = Modifier
 //                        .background(
 //                            color = MaterialTheme.colors.primaryVariant,
 //                            shape = RoundedCornerShape(12.dp.value),
 //                        )
-                        .fillMaxWidth()
-                        .height(this@BoxWithConstraints.maxHeight - 150.dp)
-                        .graphicsLayer {
-                            scaleX = maxOf(1f, minOf(3f, scale))
-                            scaleY = maxOf(1f, minOf(3f, scale))
-                            translationX = offsetX
-                            translationY = offsetY
-                        }) {
+                            .fillMaxWidth()
+                            .padding(28.dp)
+                            .height(320.dp)
+                    ) {
                         imageWidthPx = with(LocalDensity.current) { (maxWidth).toPx() }
                         imageHeightPx = with(LocalDensity.current) { (maxHeight).toPx() }
                         Image(
                             modifier = Modifier
-                                .fillMaxSize()
-                                .graphicsLayer {
-                                    scaleX = maxOf(1f, minOf(3f, scale))
-                                    scaleY = maxOf(1f, minOf(3f, scale))
-                                    translationX = offsetX
-                                    translationY = offsetY
-                                },
+                                .fillMaxSize(),
                             painter = imagePainter,
                             contentDescription = null,
                             contentScale = ContentScale.FillBounds
                         )
                         detectedClothes.forEach { pair ->
-                            if (pair.first == page) {
+                            if (pair.first == index) {
 //                                var isSearching by remember{mutableStateOf(true)}
 //                                if (isSearching) {
 //                                viewModel.onTriggerEvent(FeedEvent.FindMultiplyClothes(
@@ -244,12 +262,12 @@ fun FeedListScreen(
                                             viewModel.onTriggerEvent(FeedEvent.FindClothes(
                                                 detectedClothes = item,
                                                 context = context,
-                                                page = page,
+                                                page = index,
                                                 location = item.location,
                                                 onLoaded = {
-                                                        isSearching = it
-                                                    }
-                                                ))
+                                                    isSearching = it
+                                                }
+                                            ))
 
                                         },
                                         loading = isSearching
@@ -260,12 +278,12 @@ fun FeedListScreen(
 
                         val clothesList = ArrayList<Clothes>()
                         foundedClothesList.forEach { foundedClothes ->
-                            if (foundedClothes.page == page) {
+                            if (foundedClothes.page == index) {
                                 clothesList.addAll(foundedClothes.clothes)
                             }
                         }
                         foundedClothesList.forEach { foundedClothes ->
-                            if (foundedClothes.page == page) {
+                            if (foundedClothes.page == index) {
                                 FoundedClothesCard(
                                     foundedClothes = foundedClothes,
                                     onClick = {
@@ -344,6 +362,7 @@ fun FeedListScreen(
                     }
                 }
 
+            }
             }
         }
 

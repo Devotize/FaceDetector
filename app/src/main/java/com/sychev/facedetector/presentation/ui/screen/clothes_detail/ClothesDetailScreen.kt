@@ -146,11 +146,12 @@ fun ClothesDetailScreen(
                             modifier = Modifier
                                 .wrapContentSize(),
                             onClick = {
-                                val i = Intent(Intent.ACTION_SEND)
-                                i.type = "text/plain"
-                                i.putExtra(Intent.EXTRA_SUBJECT, "Sharing URL")
-                                i.putExtra(Intent.EXTRA_TEXT, cl.clothesUrl)
-                                context.startActivity(Intent.createChooser(i, "Share URL"))
+//                                val i = Intent(Intent.ACTION_SEND)
+//                                i.type = "text/plain"
+//                                i.putExtra(Intent.EXTRA_SUBJECT, "Sharing URL")
+//                                i.putExtra(Intent.EXTRA_TEXT, cl.clothesUrl)
+//                                context.startActivity(Intent.createChooser(i, "Share URL"))
+                                      viewModel.onTriggerEvent(ClothesDetailEvent.ShareClothesEvent(context, cl))
                             },
                         ) {
                             Icon(

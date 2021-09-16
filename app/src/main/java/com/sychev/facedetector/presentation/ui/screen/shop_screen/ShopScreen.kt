@@ -179,6 +179,8 @@ fun ShopScreen(
                     .fillMaxSize()
                     .padding(top = 6.dp)
             ) {
+                
+
                 Row(
                     modifier = Modifier.fillMaxWidth()
                         .padding(bottom = 2.dp, start = 8.dp, end = 8.dp),

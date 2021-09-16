@@ -1,10 +1,20 @@
 package com.sychev.facedetector.presentation.ui.screen.clothes_detail
 
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.interactors.clothes.GetClothesList
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
@@ -12,11 +22,14 @@ import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
 import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.navigation.Screen
+import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import java.io.ByteArrayOutputStream
 import javax.inject.Inject
+
 
 @HiltViewModel
 class ClothesDetailViewModel
@@ -51,7 +64,41 @@ class ClothesDetailViewModel
             is ClothesDetailEvent.RemoveFromFavoriteClothesEvent -> {
                 removeFromFavoriteClothes(event.clothes)
             }
+            is ClothesDetailEvent.ShareClothesEvent -> {
+                shareClothes(event.context, event.clothes)
+            }
         }
+    }
+
+    private fun shareClothes(context: Context, clothes: Clothes) {
+        Glide.with(context)
+            .asBitmap()
+            .load(clothes.picUrl)
+            .into(object : CustomTarget<Bitmap>(){
+                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                    val bytes = ByteArrayOutputStream()
+                    resource.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+                    val path: String = MediaStore.Images.Media.insertImage(
+                        context.contentResolver,
+                        resource,
+                        clothes.brand.plus(" ${clothes.itemCategory}"),
+                        null
+                    )
+                    val imageUri = Uri.parse(path)
+                    val shareIntent = Intent()
+                    shareIntent.action = Intent.ACTION_SEND
+                    shareIntent.putExtra(Intent.EXTRA_TEXT, clothes.clothesUrl)
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri)
+                    shareIntent.type = "image/jpeg"
+                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    context.startActivity(Intent.createChooser(shareIntent, "send"))
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {
+
+                }
+
+            })
     }
 
     private fun removeFromFavoriteClothes(clothes: Clothes) {
@@ -87,7 +134,10 @@ class ClothesDetailViewModel
     }
 
     private fun searchClothesByQuery(query: String, size: Int) {
-        searchClothes.execute(query, size)
+        val filters = ClothesFilters()
+        filters.fullTextQuery = query
+        filters.size = size
+        searchClothes.execute(filters)
             .onEach { dataState ->
             loadingSimilarClothes.value = dataState.loading
                 dataState.data?.let {
