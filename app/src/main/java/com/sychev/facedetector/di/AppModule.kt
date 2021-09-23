@@ -1,6 +1,7 @@
 package com.sychev.facedetector.di
 
 import android.content.Context
+import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.presentation.BaseApplication
 import com.sychev.facedetector.presentation.ui.detectorAssitant.AssistantManager
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorViewModel
@@ -35,4 +36,8 @@ object AppModule {
     @Singleton
     @Provides
     fun provideAssistantManager() = AssistantManager()
+
+    @Singleton
+    @Provides
+    fun provideFilterValues() = FilterValues()
 }

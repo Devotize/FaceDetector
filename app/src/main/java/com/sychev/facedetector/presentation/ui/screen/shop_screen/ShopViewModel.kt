@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.data.DataState
+import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.interactors.clothes.GetClothesList
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
@@ -27,18 +28,21 @@ class ShopViewModel
     private val removeFromFavoriteClothes: RemoveFromFavoriteClothes,
     private val insertClothesToFavorite: InsertClothesToFavorite,
     private val getClothesList: GetClothesList,
-    private val navigationManager: NavigationManager
+    private val navigationManager: NavigationManager,
 ) : ViewModel() {
     private val defaultSearchSize = 40
     val loading = mutableStateOf(false)
     val query = mutableStateOf("")
-    val gender = mutableStateOf<ClothesFilters.Gender?>(null)
+    val gender = mutableStateOf<String?>(null)
     val clothesList = mutableStateListOf<Clothes>()
-    val filters = mutableStateListOf<ClothesFilters>().apply {
-        addAll(ClothesFilters.defaultFilters())
+    val filters = mutableStateListOf<TestClothesFilter>().apply {
+        addAll(TestClothesFilter.Filters.defaultFilters)
     }
-    private val selectedFilter = mutableStateOf<ClothesFilters?>(null)
-    val customFilter = mutableStateOf<ClothesFilters>(ClothesFilters())
+    val selectedFilter = mutableStateOf<TestClothesFilter?>(null)
+    val customFilter = mutableStateOf<TestClothesFilter>(TestClothesFilter())
+
+    @Inject
+    lateinit var filterValues: FilterValues
 
     init {
         findClothesForFilters()
@@ -109,13 +113,16 @@ class ShopViewModel
             .launchIn(viewModelScope)
     }
 
-    private fun onGenderChange(gender: ClothesFilters.Gender?) {
+    private fun onGenderChange(gender: String?) {
         this.gender.value = gender
         filters.forEach {
             if (gender == null) {
-                it.gender = ArrayList()
+//                it.gender = ArrayList()
+                it.genders.clear()
             } else {
-                it.gender = arrayListOf(gender)
+//                it.gender = arrayListOf(gender)
+                it.genders.clear()
+                it.genders.add(gender)
             }
         }
         if (clothesList.isEmpty()) {
@@ -131,18 +138,39 @@ class ShopViewModel
     }
 
     private fun performSearchByFilters(
-        filters: ClothesFilters
+        filters: TestClothesFilter
     ) {
         searchClothes.execute(
             filters.apply {
-                size = this@ShopViewModel.defaultSearchSize
+                searchSize = this@ShopViewModel.defaultSearchSize
             }
         ).onEach { dataState ->
             loading.value = dataState.loading
             dataState.data?.let {
                 clothesList.clear()
                 clothesList.addAll(it)
-                selectedFilter.value = filters
+                selectedFilter.value = null
+                val newFilter = TestClothesFilter()
+                newFilter.apply {
+                    filters.let { filter ->
+                        title = filter.title
+                        genders.addAll(filter.genders)
+                        itemCategories.addAll(filter.itemCategories)
+                        itemSubcategories.addAll(filter.itemSubcategories)
+                        brands.addAll(filter.brands)
+                        itemSizes.addAll(filter.itemSizes)
+                        colors.addAll(filter.colors)
+                        providers.addAll(filter.providers)
+                        price = filter.price
+                        novice = filter.novice
+                        popular = filter.popular
+                        searchSize = filter.searchSize
+                        fullTextQuery = filter.fullTextQuery
+                        clothes = filter.clothes
+                    }
+
+                }
+                selectedFilter.value = newFilter
             }
         }.launchIn(viewModelScope)
     }
@@ -153,12 +181,13 @@ class ShopViewModel
 
     private fun performSearch(query: String, size: Int) {
         if (query.isEmpty()) return
-        val filter = ClothesFilters().apply {
+        val filter = TestClothesFilter().apply {
             fullTextQuery = query
+            searchSize = defaultSearchSize
             this@ShopViewModel.gender.value?.let {
-                gender = arrayListOf(it)
+                genders.clear()
+                genders.add(it)
             }
-            this.size = size
         }
         searchClothes.execute(filter)
             .onEach { dataState ->
@@ -184,15 +213,15 @@ class ShopViewModel
         var multiIndex = 0
         filters.forEachIndexed { index, filter ->
             if (index == multiIndex) {
-                filter.size = 4
+                filter.searchSize = 4
                 multiIndex += 3
             }
             searchClothes.execute(filter)
                 .onEach { dataState: DataState<List<Clothes>> ->
                     loading.value = dataState.loading
-                        dataState.data?.let {
+                    dataState.data?.let {
                         filter.clothes = it
-                        val clothesFilters = ArrayList<ClothesFilters>()
+                        val clothesFilters = ArrayList<TestClothesFilter>()
                         clothesFilters.addAll(filters)
                         filters.clear()
                         filters.addAll(clothesFilters)
@@ -201,14 +230,14 @@ class ShopViewModel
         }
     }
 
-    private fun onCustomFilterChange(newFilters: ClothesFilters) {
-        customFilter.value = ClothesFilters()
+    private fun onCustomFilterChange(newFilters: TestClothesFilter) {
+        customFilter.value = TestClothesFilter()
         customFilter.value = newFilters
     }
 
     private fun onSaveCustomFilters() {
         filters.add(customFilter.value)
-        customFilter.value = ClothesFilters()
+        customFilter.value = TestClothesFilter()
         onTriggerEvent(ShopEvent.GotBackToShopScreen)
         findClothesForFilters()
     }

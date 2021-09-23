@@ -1,5 +1,6 @@
 package com.sychev.facedetector.data.remote
 
+import com.sychev.facedetector.data.remote.model.FilterValuesDtoItem
 import com.sychev.facedetector.data.remote.model.SearchClothesResult
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -34,5 +35,8 @@ interface ClothesDetectionApi {
     suspend fun searchClothesByFilters(
         @Body body: HashMap<String, Any>
     ): List<SearchClothesResult.SearchResult.ClothesDto>
+
+    @GET("getFilterValues")
+    suspend fun getFilterValues(): List<FilterValuesDtoItem>
 
 }

@@ -84,7 +84,6 @@ fun String.toMoneyString(): String {
         val numOfSpaces = (reversed.length / 3).toInt()
         val finalString = StringBuilder()
         for (i in 0 until numOfSpaces) {
-            Log.d(TAG, "toMoneyString: num of spaces; $numOfSpaces")
             finalString.append(reversed.substring(0..2))
             finalString.append(" ")
             reversed = reversed.removeRange(0..2)

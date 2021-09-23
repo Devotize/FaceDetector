@@ -4,14 +4,14 @@ import com.sychev.facedetector.domain.Clothes
 
 sealed class ShopEvent {
     class SearchByFilters(
-        val filters: ClothesFilters
+        val filters: TestClothesFilter
     ): ShopEvent()
 
     class OnQueryChange(val query: String): ShopEvent()
 
     object PerformSearchByQuery: ShopEvent()
 
-    class OnGenderChange(val gender: ClothesFilters.Gender?): ShopEvent()
+    class OnGenderChange(val gender: String?): ShopEvent()
 
     class AddToFavoriteClothesEvent(val clothes: Clothes): ShopEvent()
 
@@ -23,7 +23,7 @@ sealed class ShopEvent {
 
     class GoToDetailClothesScreen(val clothes: Clothes): ShopEvent()
 
-    class ChangeCustomFilters(val newFilters: ClothesFilters): ShopEvent()
+    class ChangeCustomFilters(val newFilters: TestClothesFilter): ShopEvent()
 
     object SaveCustomClothesFilter: ShopEvent()
 

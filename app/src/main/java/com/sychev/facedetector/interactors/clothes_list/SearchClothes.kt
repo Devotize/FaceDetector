@@ -5,6 +5,7 @@ import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.data.DataState
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
+import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 import com.sychev.facedetector.repository.DetectedClothesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -97,6 +98,24 @@ class SearchClothes(
             emit(DataState.loading())
             val clothesList = detectedClothesRepository.searchClothesByFilters(
                 filters
+            )
+            detectedClothesRepository.insertClothesOrIgnoreIfFavorite(clothesList)
+
+            val result = detectedClothesRepository.getClothesList(clothesList)
+            emit(DataState.success(result))
+        }catch (e: Exception) {
+            e.printStackTrace()
+            emit(DataState.error("${e.message}"))
+        }
+    }
+
+    fun execute(
+        testClothesFilter: TestClothesFilter
+    ): Flow<DataState<List<Clothes>>> = flow<DataState<List<Clothes>>>{
+        try {
+            emit(DataState.loading())
+            val clothesList = detectedClothesRepository.searchClothesByFilters(
+                testClothesFilter
             )
             detectedClothesRepository.insertClothesOrIgnoreIfFavorite(clothesList)
 

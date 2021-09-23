@@ -92,6 +92,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 //        val stopIntent = Intent(applicationContext, FaceDetectorService::class.java)
 //        stopService(stopIntent)
+        mainViewModel.onTriggerEvent(MainEvent.GetFilterValues)
         assistantManager.onActiveStatusChange(false)
         val bundle = intent.extras
         mainViewModel.launchFromAssistant.value =

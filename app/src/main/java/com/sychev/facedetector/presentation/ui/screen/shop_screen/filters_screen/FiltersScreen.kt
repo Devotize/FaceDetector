@@ -29,9 +29,11 @@ import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.ShopEvent
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.ShopViewModel
+import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 import com.sychev.facedetector.utils.TAG
 import kotlin.concurrent.timerTask
 
@@ -44,6 +46,7 @@ fun FiltersScreen(
     val scrollState = rememberScrollState()
     var isTitleEmpty by remember { mutableStateOf(false) }
     var isMinPriceLowerThenMax by remember { mutableStateOf(true)}
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -109,17 +112,17 @@ fun FiltersScreen(
                     .padding(top = 12.dp, bottom = 12.dp)
                     .fillMaxWidth(),
                 title = "Women",
-                checked = customFilter.gender.contains(ClothesFilters.Gender.FEMALE),
+                checked = customFilter.genders.contains(FilterValues.Constants.Gender.female),
                 onCheckedChange = { checked ->
                     if (checked) {
                         val newFilters = customFilter.also {
-                            it.gender.add(ClothesFilters.Gender.FEMALE)
+                            it.genders.add(FilterValues.Constants.Gender.female)
                         }
                         viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
                     } else {
                         try {
                             val newFilters = customFilter.also {
-                                it.gender.remove(ClothesFilters.Gender.FEMALE)
+                                it.genders.remove(FilterValues.Constants.Gender.female)
                             }
                             viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
                         } catch (e: Exception) {
@@ -133,17 +136,17 @@ fun FiltersScreen(
                     .padding(top = 12.dp, bottom = 12.dp)
                     .fillMaxWidth(),
                 title = "Men",
-                checked = customFilter.gender.contains(ClothesFilters.Gender.MALE),
+                checked = customFilter.genders.contains(FilterValues.Constants.Gender.male),
                 onCheckedChange = { checked ->
                     if (checked) {
                         val newFilters = customFilter.also {
-                            it.gender.add(ClothesFilters.Gender.MALE)
+                            it.genders.add(FilterValues.Constants.Gender.male)
                         }
                         viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
                     } else {
                         try {
                             val newFilters = customFilter.also {
-                                it.gender.remove(ClothesFilters.Gender.MALE)
+                                it.genders.remove(FilterValues.Constants.Gender.male)
                             }
                             viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
                         } catch (e: Exception) {
@@ -157,17 +160,17 @@ fun FiltersScreen(
                     .padding(top = 12.dp, bottom = 12.dp)
                     .fillMaxWidth(),
                 title = "Only new",
-                checked = customFilter.novice.contains(ClothesFilters.Novice.NEW),
+                checked = customFilter.novice == FilterValues.Constants.Novice.new,
                 onCheckedChange = { checked ->
                     if (checked) {
                         val newFilters = customFilter.also {
-                            it.novice.add(ClothesFilters.Novice.NEW)
+                            it.novice = FilterValues.Constants.Novice.new
                         }
                         viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
                     } else {
                         try {
                             val newFilters = customFilter.also {
-                                it.novice.remove(ClothesFilters.Novice.NEW)
+                                it.novice = FilterValues.Constants.Novice.default
                             }
                             viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
                         } catch (e: Exception) {
@@ -181,17 +184,17 @@ fun FiltersScreen(
                     .padding(top = 12.dp, bottom = 12.dp)
                     .fillMaxWidth(),
                 title = "Only popular",
-                checked = customFilter.popularFlags.contains(ClothesFilters.PopularFlags.POPULAR),
+                checked = customFilter.popular == FilterValues.Constants.Popular.popular,
                 onCheckedChange = { checked ->
                     if (checked) {
                         val newFilters = customFilter.also {
-                            it.popularFlags.add(ClothesFilters.PopularFlags.POPULAR)
+                            customFilter.popular = FilterValues.Constants.Popular.popular
                         }
                         viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
                     } else {
                         try {
                             val newFilters = customFilter.also {
-                                it.popularFlags.remove(ClothesFilters.PopularFlags.POPULAR)
+                                customFilter.popular = FilterValues.Constants.Popular.default
                             }
                             viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
                         } catch (e: Exception) {
@@ -235,7 +238,7 @@ fun FiltersScreen(
                     LazyRow(
                         modifier = Modifier.padding(bottom = 6.dp)
                     ) {
-                        itemsIndexed(ClothesFilters.ItemCategories.values()) { index: Int, category ->
+                        itemsIndexed(viewModel.filterValues.itemCategories) { index: Int, category ->
                             OutlinedButton(
                                 modifier = Modifier
                                     .padding(end = 6.dp),
@@ -267,9 +270,7 @@ fun FiltersScreen(
                                 border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
                                 shape = CircleShape,
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = if (customFilter.itemCategories.contains(
-                                            category
-                                        )
+                                    backgroundColor = if (customFilter.itemCategories.contains(category)
                                     ) {
                                         MaterialTheme.colors.secondary
                                     } else {
@@ -280,7 +281,7 @@ fun FiltersScreen(
                             ) {
                                 Text(
                                     modifier = Modifier,
-                                    text = category.title,
+                                    text = category,
                                     style = MaterialTheme.typography.h6,
                                 )
                             }
@@ -329,15 +330,15 @@ fun FiltersScreen(
                     LazyRow(
                         modifier = Modifier.padding(bottom = 6.dp)
                     ) {
-                        itemsIndexed(ClothesFilters.ClothesColors.values()) { index: Int, category ->
+                        itemsIndexed(viewModel.filterValues.colors) { index: Int, ct ->
                             OutlinedButton(
                                 modifier = Modifier
                                     .padding(end = 6.dp),
                                 onClick = {
-                                    if (customFilter.colors.contains(category)) {
+                                    if (customFilter.colors.contains(ct)) {
                                         try {
                                             val newFilters = customFilter.also {
-                                                it.colors.remove(category)
+                                                it.colors.remove(ct)
                                             }
                                             viewModel.onTriggerEvent(
                                                 ShopEvent.ChangeCustomFilters(
@@ -349,7 +350,7 @@ fun FiltersScreen(
                                         }
                                     } else {
                                         val newFilters = customFilter.also {
-                                            it.colors.add(category)
+                                            it.colors.add(ct)
                                         }
                                         viewModel.onTriggerEvent(
                                             ShopEvent.ChangeCustomFilters(
@@ -361,7 +362,7 @@ fun FiltersScreen(
                                 border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
                                 shape = CircleShape,
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = if (customFilter.colors.contains(category)) {
+                                    backgroundColor = if (customFilter.colors.contains(ct)) {
                                         MaterialTheme.colors.secondary
                                     } else {
                                         MaterialTheme.colors.primary
@@ -371,7 +372,7 @@ fun FiltersScreen(
                             ) {
                                 Text(
                                     modifier = Modifier,
-                                    text = category.title,
+                                    text = ct,
                                     style = MaterialTheme.typography.h6,
                                 )
                             }
@@ -420,15 +421,15 @@ fun FiltersScreen(
                     LazyRow(
                         modifier = Modifier.padding(bottom = 6.dp)
                     ) {
-                        itemsIndexed(ClothesFilters.Brands.values()) { index: Int, category ->
+                        itemsIndexed(viewModel.filterValues.brands) { index: Int, ct ->
                             OutlinedButton(
                                 modifier = Modifier
                                     .padding(end = 6.dp),
                                 onClick = {
-                                    if (customFilter.brands.contains(category)) {
+                                    if (customFilter.brands.contains(ct)) {
                                         try {
                                             val newFilters = customFilter.also {
-                                                it.brands.remove(category)
+                                                it.brands.remove(ct)
                                             }
                                             viewModel.onTriggerEvent(
                                                 ShopEvent.ChangeCustomFilters(
@@ -440,7 +441,7 @@ fun FiltersScreen(
                                         }
                                     } else {
                                         val newFilters = customFilter.also {
-                                            it.brands.add(category)
+                                            it.brands.add(ct)
                                         }
                                         viewModel.onTriggerEvent(
                                             ShopEvent.ChangeCustomFilters(
@@ -452,7 +453,7 @@ fun FiltersScreen(
                                 border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
                                 shape = CircleShape,
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = if (customFilter.brands.contains(category)) {
+                                    backgroundColor = if (customFilter.brands.contains(ct)) {
                                         MaterialTheme.colors.secondary
                                     } else {
                                         MaterialTheme.colors.primary
@@ -462,7 +463,7 @@ fun FiltersScreen(
                             ) {
                                 Text(
                                     modifier = Modifier,
-                                    text = category.title,
+                                    text = ct,
                                     style = MaterialTheme.typography.h6,
                                 )
                             }
@@ -509,7 +510,8 @@ fun FiltersScreen(
                 }
                 if (showItemsRow) {
                     Row(
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
                             .padding(bottom = 6.dp),
                         horizontalArrangement = Arrangement.SpaceAround ,
                         verticalAlignment = Alignment.CenterVertically
@@ -519,19 +521,19 @@ fun FiltersScreen(
                             modifier = Modifier.width(130.dp),
                             singleLine = true,
                             isError = !isMinPriceLowerThenMax,
-                            value = if (customFilter.prices.isEmpty() || customFilter.prices[0] == 0) {
+                            value = if (customFilter.price.first == 0) {
                                 ""
                             } else {
-                                customFilter.prices[0].toString()
+                                customFilter.price.first.toString()
                                    },
                             onValueChange = { str ->
                                 val newFilter = if (str.isNotEmpty()) {
                                     customFilter.also {
-                                        it.prices[0] = str.toInt()
+                                        it.price = Pair(str.toInt(), it.price.second)
                                     }
                                 } else {
                                     customFilter.also {
-                                        it.prices[0] = 0
+                                        it.price = Pair(0, it.price.second)
                                     }
                                 }
                                 viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilter))
@@ -560,19 +562,19 @@ fun FiltersScreen(
                             modifier = Modifier.width(130.dp),
                             singleLine = true,
                             isError = !isMinPriceLowerThenMax,
-                            value = if (customFilter.prices.isEmpty() || customFilter.prices[1] == 1000000000) {
+                            value = if (customFilter.price.second == 1000000000) {
                                 ""
                             } else {
-                                customFilter.prices[1].toString()
+                                customFilter.price.second.toString()
                             },
                             onValueChange = { str ->
                                 val newFilter = if (str.isNotEmpty()) {
                                     customFilter.also {
-                                        it.prices[1] = str.toInt()
+                                        it.price = Pair(it.price.first, str.toInt())
                                     }
                                 } else {
                                     customFilter.also {
-                                        it.prices[1] = 1000000000
+                                        it.price = Pair(it.price.first, 1000000000)
                                     }
                                 }
                                 viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilter))
@@ -640,15 +642,15 @@ fun FiltersScreen(
                     LazyRow(
                         modifier = Modifier.padding(bottom = 6.dp)
                     ) {
-                        itemsIndexed(ClothesFilters.ItemSizes.values()) { index: Int, category ->
+                        itemsIndexed(viewModel.filterValues.itemSizes) { index: Int, ct ->
                             OutlinedButton(
                                 modifier = Modifier
                                     .padding(end = 6.dp),
                                 onClick = {
-                                    if (customFilter.itemSizes.contains(category)) {
+                                    if (customFilter.itemSizes.contains(ct)) {
                                         try {
                                             val newFilters = customFilter.also {
-                                                it.itemSizes.remove(category)
+                                                it.itemSizes.remove(ct)
                                             }
                                             viewModel.onTriggerEvent(
                                                 ShopEvent.ChangeCustomFilters(
@@ -660,7 +662,7 @@ fun FiltersScreen(
                                         }
                                     } else {
                                         val newFilters = customFilter.also {
-                                            it.itemSizes.add(category)
+                                            it.itemSizes.add(ct)
                                         }
                                         viewModel.onTriggerEvent(
                                             ShopEvent.ChangeCustomFilters(
@@ -672,7 +674,7 @@ fun FiltersScreen(
                                 border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
                                 shape = CircleShape,
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = if (customFilter.itemSizes.contains(category)) {
+                                    backgroundColor = if (customFilter.itemSizes.contains(ct)) {
                                         MaterialTheme.colors.secondary
                                     } else {
                                         MaterialTheme.colors.primary
@@ -682,7 +684,7 @@ fun FiltersScreen(
                             ) {
                                 Text(
                                     modifier = Modifier,
-                                    text = category.size.toString(),
+                                    text = ct,
                                     style = MaterialTheme.typography.h6,
                                 )
                             }
@@ -710,7 +712,7 @@ fun FiltersScreen(
                         MaterialTheme.colors.primary
                     ),
                     onClick = {
-                        val emptyFilters = ClothesFilters()
+                        val emptyFilters = TestClothesFilter()
                         viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(emptyFilters))
                     },
                     shape = CircleShape,
@@ -729,7 +731,7 @@ fun FiltersScreen(
                     ),
                     onClick = {
                         isTitleEmpty = customFilter.title.isEmpty()
-                        isMinPriceLowerThenMax = customFilter.prices[0] < customFilter.prices[1]
+                        isMinPriceLowerThenMax = customFilter.price.first < customFilter.price.second
                         if (!isTitleEmpty && isMinPriceLowerThenMax) {
                             viewModel.onTriggerEvent(ShopEvent.SaveCustomClothesFilter)
                         }

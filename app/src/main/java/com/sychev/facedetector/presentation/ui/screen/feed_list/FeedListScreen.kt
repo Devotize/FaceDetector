@@ -159,26 +159,7 @@ fun FeedListScreen(
                             val result =
                                 (imageLoader.execute(request) as SuccessResult).drawable
                             val bitmap = (result as BitmapDrawable).bitmap
-//                                Log.d(TAG, "FeedListScreen: bitmap: $bitmap, page: $page")
-//                                Log.d(TAG, "FeedListScreen: btimapheight: ${bitmap.height}, bitmapWidth: ${bitmap.width}")
-//                                Log.d(TAG, "FeedListScreen: imageWidth: ${imageWidthPx}, imageHeightPx: ${imageHeightPx}")
                             val resizedBitmap = Bitmap.createScaledBitmap(bitmap, imageWidthPx.toInt(), imageHeightPx.toInt(), false)
-//                                Log.d(
-//                                    TAG,
-//                                    "FeedListScreen: processedPages:${viewModel.processedPages.toList()}"
-//                                )
-//                                Log.d(TAG, "FeedListScreen: currentPage: ${pagerState.currentPage}")
-//                            delay(2000)
-//                            if (!viewModel.processedPages.contains(index) && scrollState.firstVisibleItemIndex == index) {
-//                                viewModel.onTriggerEvent(FeedEvent.DetectClothesEvent(
-//                                    context = context,
-//                                    bitmap = resizedBitmap,
-//                                    page = index,
-//                                    onLoaded = { loaded ->
-//                                        processing= loaded
-//                                    },
-//                                ))
-//                            }
                             bitmapState.value = bitmap
                             resizedBitmapState.value = resizedBitmap
                         } catch (e: Exception) {
@@ -231,30 +212,8 @@ fun FeedListScreen(
                         )
                         detectedClothes.forEach { pair ->
                             if (pair.first == index) {
-//                                var isSearching by remember{mutableStateOf(true)}
-//                                if (isSearching) {
-//                                viewModel.onTriggerEvent(FeedEvent.FindMultiplyClothes(
-//                                    detectedClothesList = pair.second,
-//                                    context = context,
-//                                    page = page,
-//                                    location = pair.second[0].location,
-//                                    onLoaded = {
-//                                        isSearching = it
-//                                    }
-//                                ))
-//                                    isSearching = false
-//                                }
                                 pair.second.forEach { item ->
                                     var isSearching by remember{mutableStateOf(false)}
-//                                    viewModel.onTriggerEvent(FeedEvent.FindClothes(
-//                                        detectedClothes = item,
-//                                        context = context,
-//                                        page = page,
-//                                        location = item.location,
-//                                        onLoaded = {
-//                                            isSearching = it
-//                                        }
-//                                    ))
 
                                     ClothesPointer(
                                         location = item.location,
@@ -265,7 +224,9 @@ fun FeedListScreen(
                                                 page = index,
                                                 location = item.location,
                                                 onLoaded = {
-                                                    isSearching = it
+                                                    if (it != null) {
+                                                        isSearching = it
+                                                    }
                                                 }
                                             ))
 
@@ -277,30 +238,58 @@ fun FeedListScreen(
                         }
 
                         val clothesList = ArrayList<Clothes>()
+                        val clothesToRemoveList = ArrayList<FeedViewModel.FoundedClothes>()
                         foundedClothesList.forEach { foundedClothes ->
                             if (foundedClothes.page == index) {
+                                clothesToRemoveList.add(foundedClothes)
                                 clothesList.addAll(foundedClothes.clothes)
                             }
                         }
                         foundedClothesList.forEach { foundedClothes ->
                             if (foundedClothes.page == index) {
                                 FoundedClothesCard(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .background(Color.Transparent)
+                                        .padding(bottom = 6.dp)
+                                        .fillMaxWidth(),
                                     foundedClothes = foundedClothes,
                                     onClick = {
                                         try {
-//                                            val intent = Intent(context, ClothesRetailActivity::class.java)
-//                                            val selectedClothes = ArrayList<Clothes>()
-//                                            selectedClothes.addAll(foundedClothes.clothes)
-//                                            intent.putExtra("clothes_list", clothesList)
-//                                            intent.putExtra("selected_clothes", selectedClothes)
-//                                            context.startActivity(intent)
                                             viewModel.onTriggerEvent(FeedEvent.GoToRetailScreen(clothesList))
                                         }catch (e: Exception){
                                             e.printStackTrace()
                                         }
                                     },
                                     onCloseClick = {
-                                        viewModel.removeFromFoundedClothes(foundedClothes)
+                                        viewModel.removeFromFoundedClothes(clothesToRemoveList)
+                                    },
+                                    onGenderChange = { newGender ->
+                                        detectedClothes.forEach { pair ->
+                                            if (pair.first == index) {
+                                                pair.second.forEach { dc ->
+                                                    if (dc.location == foundedClothes.location) {
+                                                        dc.gender = newGender
+                                                        viewModel.onTriggerEvent(FeedEvent.FindClothes(
+                                                            detectedClothes = dc,
+                                                            context = context,
+                                                            page = index,
+                                                            location = dc.location,
+                                                            onLoaded = {
+                                                                it?.let {
+                                                                    if (!it) {
+                                                                        viewModel.removeFromFoundedClothes(clothesToRemoveList)
+                                                                    }
+                                                                }
+                                                                if (it == null) {
+                                                                    viewModel.addToFoundedClothes(clothesToRemoveList)
+                                                                }
+                                                            }
+                                                        ))
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 )
                             }

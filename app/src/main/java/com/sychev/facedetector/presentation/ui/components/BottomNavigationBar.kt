@@ -97,7 +97,7 @@ fun BottomNavigationBar(
                     }
                 }
                 .graphicsLayer {
-                    rotationZ = transition
+//                    rotationZ = transition
                 },
             painter = painterResource(id = R.drawable.yellow_abstract_icon_final),
             contentDescription = null,

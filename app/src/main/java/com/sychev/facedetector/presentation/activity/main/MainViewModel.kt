@@ -13,6 +13,7 @@ import com.sychev.facedetector.domain.SavedScreenshot
 import com.sychev.facedetector.interactors.clothes.GetClothesList
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
+import com.sychev.facedetector.interactors.filter.GetFilterValues
 import com.sychev.facedetector.repository.SavedScreenshotRepo
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,6 +32,7 @@ class MainViewModel
     private val getClothesList: GetClothesList,
     private val insertClothesToFavorite: InsertClothesToFavorite,
     private val removeFromFavoriteClothes: RemoveFromFavoriteClothes,
+    private val getFilterValues: GetFilterValues,
 ): ViewModel() {
 
     val screenshotList: MutableState<List<SavedScreenshot>?> = mutableStateOf(null);
@@ -66,6 +68,9 @@ class MainViewModel
             }
             is MainEvent.GetAllFavoriteClothes -> {
                 getAllFavoriteClothes()
+            }
+            is MainEvent.GetFilterValues -> {
+                getFilterValues.execute().launchIn(viewModelScope)
             }
         }
     }

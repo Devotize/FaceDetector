@@ -1,5 +1,6 @@
 package com.sychev.facedetector.presentation.ui.screen.shop_screen
 
+import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
@@ -29,7 +30,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.presentation.ui.components.ClothesItem
+import com.sychev.facedetector.utils.TAG
 import io.iamjosephmj.flinger.bahaviours.StockFlingBehaviours
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -41,7 +44,11 @@ fun ShopScreen(
     val gender = viewModel.gender.value
     val clothesList = viewModel.clothesList
     val filters = viewModel.filters
+    filters.forEach {
+        Log.d(TAG, "ShopScreen: colors: ${it.colors}")
+    }
     val loading = viewModel.loading.value
+    val selectedFilter = viewModel.selectedFilter.value
 
     Column(
         modifier = Modifier
@@ -114,7 +121,7 @@ fun ShopScreen(
                         }
                     )
                 )
-                var selectedTabIndex by remember{ mutableStateOf(2)}
+                var selectedTabIndex by remember { mutableStateOf(2) }
                 TabRow(
                     selectedTabIndex = selectedTabIndex,
                     modifier = Modifier
@@ -133,7 +140,7 @@ fun ShopScreen(
                         selected = selectedTabIndex == 0,
                         onClick = {
                             selectedTabIndex = 0
-                            viewModel.onTriggerEvent(ShopEvent.OnGenderChange(ClothesFilters.Gender.MALE))
+                            viewModel.onTriggerEvent(ShopEvent.OnGenderChange(FilterValues.Constants.Gender.male))
                         },
                     ) {
                         Text(
@@ -147,7 +154,7 @@ fun ShopScreen(
                         selected = selectedTabIndex == 1,
                         onClick = {
                             selectedTabIndex = 1
-                                viewModel.onTriggerEvent(ShopEvent.OnGenderChange(ClothesFilters.Gender.FEMALE))
+                            viewModel.onTriggerEvent(ShopEvent.OnGenderChange(FilterValues.Constants.Gender.female))
 
                         },
                     ) {
@@ -161,7 +168,7 @@ fun ShopScreen(
                         selected = selectedTabIndex == 2,
                         onClick = {
                             selectedTabIndex = 2
-                        viewModel.onTriggerEvent(ShopEvent.OnGenderChange(null))
+                            viewModel.onTriggerEvent(ShopEvent.OnGenderChange(null))
                         },
                     ) {
                         Text(
@@ -179,10 +186,34 @@ fun ShopScreen(
                     .fillMaxSize()
                     .padding(top = 6.dp)
             ) {
-                
-
+                selectedFilter?.let { selectedFilter ->
+                    LazyVerticalGrid(
+                        cells = GridCells.Adaptive(110.dp),
+                        contentPadding = PaddingValues(6.dp)
+                    ) {
+                        itemsIndexed(selectedFilter.genders) { index, parameter ->
+                            FilterBubble(
+                                text = parameter,
+                                onCloseClick = {
+                                    selectedFilter.genders.remove(parameter)
+                                    viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
+                                }
+                            )
+                        }
+                        itemsIndexed(selectedFilter.colors) { index: Int, item: String ->
+                            FilterBubble(
+                                text = item,
+                                onCloseClick = {
+                                    selectedFilter.colors.remove(item)
+                                    viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
+                                }
+                            )
+                        }
+                    }
+                }
                 Row(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .padding(bottom = 2.dp, start = 8.dp, end = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
@@ -204,8 +235,8 @@ fun ShopScreen(
 
                     IconButton(
                         onClick = {
-                        viewModel.clothesList.clear()
-                    }) {
+                            viewModel.clothesList.clear()
+                        }) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = null,
@@ -251,8 +282,10 @@ fun ShopScreen(
             }
         } else {
             val scrollState = rememberScrollState()
-            Column(modifier = Modifier
-                .scrollable(state = scrollState, orientation = Orientation.Vertical),) {
+            Column(
+                modifier = Modifier
+                    .scrollable(state = scrollState, orientation = Orientation.Vertical),
+            ) {
 
                 Row(
                     modifier = Modifier
@@ -281,21 +314,27 @@ fun ShopScreen(
                 }
                 LazyVerticalGrid(
                     cells = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 0.dp),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 16.dp,
+                        top = 0.dp
+                    ),
                 ) {
-                    itemsIndexed(filters) { index: Int, item: ClothesFilters ->
+                    itemsIndexed(filters) { index: Int, item: TestClothesFilter ->
                         Column(modifier = Modifier.wrapContentSize()) {
                             BoxWithConstraints(
                                 modifier = Modifier
                                     .padding(start = 12.dp, end = 12.dp, top = 4.dp)
                                     .size((LocalConfiguration.current.screenWidthDp / 2 - 28).dp)
                                     .clickable {
+                                        Log.d(TAG, "ShopScreen: item.colors: ${item.colors}")
                                         viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = item))
                                     }
                             ) {
                                 if (item.clothes?.size == 1) {
-                                    item.clothes?.get(0)?.let{ clothes ->
-                                        val painter = rememberImagePainter(data = clothes.picUrl){
+                                    item.clothes?.get(0)?.let { clothes ->
+                                        val painter = rememberImagePainter(data = clothes.picUrl) {
                                             crossfade(true)
                                             error(R.drawable.clothes_default_icon_gray)
                                         }
@@ -307,7 +346,7 @@ fun ShopScreen(
                                         )
 
                                     }
-                                }else {
+                                } else {
                                     item.clothes?.let {
                                         val cellWidth = this.maxHeight.div(2)
                                         LazyVerticalGrid(
@@ -315,7 +354,7 @@ fun ShopScreen(
                                                 .fillMaxSize(),
                                             cells = GridCells.Fixed(2)
                                         ) {
-                                            itemsIndexed(it) {index: Int, item: Clothes ->
+                                            itemsIndexed(it) { index: Int, item: Clothes ->
                                                 Box(
                                                     modifier = Modifier
                                                         .size(cellWidth)
@@ -327,10 +366,11 @@ fun ShopScreen(
                                                         )
                                                         .background(MaterialTheme.colors.primary),
                                                 ) {
-                                                    val painter = rememberImagePainter(data = item.picUrl){
-                                                        crossfade(true)
-                                                        error(R.drawable.clothes_default_icon_gray)
-                                                    }
+                                                    val painter =
+                                                        rememberImagePainter(data = item.picUrl) {
+                                                            crossfade(true)
+                                                            error(R.drawable.clothes_default_icon_gray)
+                                                        }
                                                     Image(
                                                         modifier = Modifier
                                                             .fillMaxSize(),
@@ -346,7 +386,11 @@ fun ShopScreen(
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                modifier = Modifier.padding(start = 12.dp, top = 4.dp, bottom = 4.dp),
+                                modifier = Modifier.padding(
+                                    start = 12.dp,
+                                    top = 4.dp,
+                                    bottom = 4.dp
+                                ),
                                 text = item.title,
                                 style = MaterialTheme.typography.h6,
                                 color = MaterialTheme.colors.onPrimary
@@ -369,4 +413,39 @@ fun ShopScreen(
         }
     }
 
+}
+
+@Composable
+fun FilterBubble(
+    text: String,
+    onCloseClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
+            .wrapContentSize(),
+        border = BorderStroke(1.dp, MaterialTheme.colors.primaryVariant),
+        color = MaterialTheme.colors.background,
+        shape = CircleShape
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .wrapContentSize(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.h5,
+                color = MaterialTheme.colors.onPrimary,
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            IconButton(
+                modifier = Modifier,
+                onClick = onCloseClick,
+            ) {
+                Icon(imageVector = Icons.Default.Close, contentDescription = null)
+            }
+        }
+    }
 }

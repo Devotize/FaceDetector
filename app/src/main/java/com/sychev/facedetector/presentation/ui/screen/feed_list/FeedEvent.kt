@@ -23,7 +23,7 @@ sealed class FeedEvent() {
         val context: Context,
         val page: Int,
         val location: RectF,
-        val onLoaded: (Boolean) -> Unit,
+        val onLoaded: (Boolean?) -> Unit,
         ): FeedEvent()
     class FindMultiplyClothes(
         val detectedClothesList: List<DetectedClothes>,

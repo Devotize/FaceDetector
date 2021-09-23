@@ -25,6 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -166,7 +167,7 @@ constructor(
             }.launchIn(CoroutineScope(IO))
     }
 
-    private fun searchClothes(detectedClothes: DetectedClothes, context: Context, page: Int, location: RectF, callback: (Boolean) -> Unit) {
+    private fun searchClothes(detectedClothes: DetectedClothes, context: Context, page: Int, location: RectF, callback: (Boolean?) -> Unit) {
         searchClothes.execute(detectedClothes = detectedClothes, context = context)
             .onEach { dataState ->
                 callback(dataState.loading)
@@ -183,6 +184,7 @@ constructor(
                 }
                 dataState.error?.let { message ->
                     Log.d(TAG, "searchClothes: error: $message")
+                    callback(null)
                     MessageDialog.dialogMessages.add(
                         MessageDialog.Builder()
                             .message(message)
@@ -199,9 +201,19 @@ constructor(
             }.launchIn(CoroutineScope(IO))
     }
 
-    fun removeFromFoundedClothes(fc: FoundedClothes) {
-        foundedClothes.remove(fc)
+    fun removeFromFoundedClothes(vararg fc: FoundedClothes) {
+        foundedClothes.removeAll(fc)
     }
+
+    fun removeFromFoundedClothes(fc: List<FoundedClothes>) {
+        foundedClothes.removeAll(fc)
+    }
+
+    fun addToFoundedClothes(fc: List<FoundedClothes>) {
+        foundedClothes.addAll(fc)
+    }
+
+
 
     data class FoundedClothes(
         val page: Int,

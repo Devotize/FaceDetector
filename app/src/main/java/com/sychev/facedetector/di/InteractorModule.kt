@@ -1,9 +1,11 @@
 package com.sychev.facedetector.di
 
+import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.interactors.clothes.*
 import com.sychev.facedetector.interactors.clothes_list.DetectClothesLocal
 import com.sychev.facedetector.interactors.clothes_list.ProcessClothesForRetail
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
+import com.sychev.facedetector.interactors.filter.GetFilterValues
 import com.sychev.facedetector.interactors.gender.DefineGender
 import com.sychev.facedetector.interactors.pics.GetCelebPics
 import com.sychev.facedetector.interactors.pics.GetRandomPics
@@ -83,5 +85,11 @@ object InteractorModule {
     fun provideProcessClothesOfrRetail(
         detectedClothesRepository: DetectedClothesRepository
     ): ProcessClothesForRetail = ProcessClothesForRetail(detectedClothesRepository)
+
+    @Provides
+    fun provideGetFilterValues(
+        clothesRepository: DetectedClothesRepository,
+        filterValues: FilterValues
+    ): GetFilterValues = GetFilterValues(clothesRepository, filterValues)
 
 }
