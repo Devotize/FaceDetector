@@ -46,6 +46,13 @@ fun FiltersScreen(
     val scrollState = rememberScrollState()
     var isTitleEmpty by remember { mutableStateOf(false) }
     var isMinPriceLowerThenMax by remember { mutableStateOf(true)}
+    var filterIndex by remember{ mutableStateOf<Int?>(null)}
+    viewModel.filters.forEachIndexed() { index, it ->
+        if (it == customFilter) {
+            Log.d(TAG, "FiltersScreen: customFilterAlreadyExists")
+            filterIndex = index
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -733,7 +740,13 @@ fun FiltersScreen(
                         isTitleEmpty = customFilter.title.isEmpty()
                         isMinPriceLowerThenMax = customFilter.price.first < customFilter.price.second
                         if (!isTitleEmpty && isMinPriceLowerThenMax) {
-                            viewModel.onTriggerEvent(ShopEvent.SaveCustomClothesFilter)
+                            if (filterIndex != null) {
+                                filterIndex?.let {
+                                    viewModel.onTriggerEvent(ShopEvent.ReplaceFilterByIndex(it))
+                                }
+                            } else {
+                                viewModel.onTriggerEvent(ShopEvent.SaveCustomClothesFilter)
+                            }
                         }
                     },
                     shape = CircleShape,

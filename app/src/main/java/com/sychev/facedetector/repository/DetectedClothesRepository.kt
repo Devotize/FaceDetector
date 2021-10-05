@@ -3,9 +3,9 @@ package com.sychev.facedetector.repository
 import android.content.Context
 import android.graphics.Bitmap
 import com.sychev.facedetector.data.remote.model.FilterValuesDtoItem
+import com.sychev.facedetector.data.remote.model.FilterValuesDtoItemOld
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
-import com.sychev.facedetector.ml.ClothesTestModel
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 

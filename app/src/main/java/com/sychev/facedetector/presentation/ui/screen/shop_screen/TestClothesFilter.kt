@@ -2,36 +2,35 @@ package com.sychev.facedetector.presentation.ui.screen.shop_screen
 
 import com.sychev.facedetector.domain.Clothes
 
-class TestClothesFilter() {
-
-    var title: String = ""
-    val genders: ArrayList<String> = arrayListOf()
-    val itemCategories: ArrayList<String> = arrayListOf()
-    val itemSubcategories: ArrayList<String> = arrayListOf()
-    val brands: ArrayList<String> = arrayListOf()
-    val itemSizes: ArrayList<String> = arrayListOf()
-    val colors: ArrayList<String> = arrayListOf()
-    val providers: ArrayList<String> = arrayListOf()
-    var price: Pair<Int, Int> = Pair(0, 1000000000)
-    var novice: Int = 0
-    var popular: Int = 0
-    var searchSize: Int = 1
-    var fullTextQuery: String = ""
+data class TestClothesFilter(
+    var title: String = "",
+    val genders: ArrayList<String> = arrayListOf(),
+    val itemCategories: ArrayList<String> = arrayListOf(),
+    val itemSubcategories: ArrayList<String> = arrayListOf(),
+    val brands: ArrayList<String> = arrayListOf(),
+    val itemSizes: ArrayList<String> = arrayListOf(),
+    val colors: ArrayList<String> = arrayListOf(),
+    val providers: ArrayList<String> = arrayListOf(),
+    var price: Pair<Int, Int> = Pair(0, 1000000000),
+    var novice: Int = 0,
+    var popular: Int = 0,
+    var searchSize: Int = 1,
+    var fullTextQuery: String = "",
 
     var clothes: List<Clothes>? = null
-
+) {
     object Titles {
-        val gender: String = "genders"
+        val gender: String = "gender"
         val size: String = "size"
-        val itemCategories: String = "item_categories"
-        val itemSubcategories: String = "item_subcategories"
-        val brands: String = "brands"
-        val prices: String = "prices"
-        val itemSizes: String = "item_sizes"
-        val colors: String = "colours"
-        val novice: String = "novice_flgs"
-        val popularFlags: String = "popular_flgs"
-        val providers: String = "providers"
+        val itemCategories: String = "category"
+        val itemSubcategories: String = "subcategory"
+        val brands: String = "brand"
+        val prices: String = "price"
+        val itemSizes: String = "size"
+        val colors: String = "colour"
+        val novice: String = "novice_flg"
+        val popularFlags: String = "popular_flg"
+        val providers: String = "provider"
         val fullTextQuery: String = "full_text_query"
     }
 

@@ -24,7 +24,7 @@ data class SearchClothesResult(
             val brand: String,
             @SerializedName("gender")
             val gender: String,
-            @SerializedName("item_category")
+            @SerializedName("category")
             val itemCategory: String,
             @SerializedName("item_id")
             val itemId: String,

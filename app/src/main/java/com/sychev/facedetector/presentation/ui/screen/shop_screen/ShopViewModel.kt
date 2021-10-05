@@ -71,6 +71,9 @@ class ShopViewModel
                 removeFromFavoriteClothes(event.clothes)
             }
             is ShopEvent.GoToFiltersScreen -> {
+                event.customFilter?.let {
+                    customFilter.value = it
+                }
                 navigationManager.navigate(Screen.FiltersScreen)
             }
             is ShopEvent.GotBackToShopScreen -> {
@@ -89,6 +92,9 @@ class ShopViewModel
                     arguments = arrayListOf(event.clothes)
                 }
                 navigationManager.navigate(screen)
+            }
+            is ShopEvent.ReplaceFilterByIndex -> {
+                replaceFilterByIndex(event.index)
             }
         }
     }
@@ -132,7 +138,13 @@ class ShopViewModel
             if (selectedFilter.value == null) {
                 performSearch(query = query.value, size = defaultSearchSize)
             } else {
-                selectedFilter.value?.let { performSearchByFilters(it) }
+                selectedFilter.value?.let {
+                    it.genders.clear()
+                    if (gender != null) {
+                        it.genders.add(gender)
+                    }
+                    performSearchByFilters(it)
+                }
             }
         }
     }
@@ -168,7 +180,6 @@ class ShopViewModel
                         fullTextQuery = filter.fullTextQuery
                         clothes = filter.clothes
                     }
-
                 }
                 selectedFilter.value = newFilter
             }
@@ -237,6 +248,13 @@ class ShopViewModel
 
     private fun onSaveCustomFilters() {
         filters.add(customFilter.value)
+        customFilter.value = TestClothesFilter()
+        onTriggerEvent(ShopEvent.GotBackToShopScreen)
+        findClothesForFilters()
+    }
+
+    private fun replaceFilterByIndex(index: Int) {
+        filters[index] = customFilter.value
         customFilter.value = TestClothesFilter()
         onTriggerEvent(ShopEvent.GotBackToShopScreen)
         findClothesForFilters()

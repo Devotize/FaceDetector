@@ -1,10 +1,10 @@
 package com.sychev.facedetector.data.remote
 
 import com.sychev.facedetector.data.remote.model.FilterValuesDtoItem
+import com.sychev.facedetector.data.remote.model.FilterValuesDtoItemOld
 import com.sychev.facedetector.data.remote.model.SearchClothesResult
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
-import retrofit2.Call
 import retrofit2.http.*
 
 

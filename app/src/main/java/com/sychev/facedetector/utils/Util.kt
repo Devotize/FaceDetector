@@ -94,3 +94,24 @@ fun String.toMoneyString(): String {
         return this
     }
 }
+
+fun String.toWordsList(): List<String> {
+    val words: ArrayList<String> = ArrayList()
+    val originalString = StringBuilder()
+    originalString.append(this)
+    val stringBuilder = StringBuilder()
+    while (originalString.isNotEmpty()) {
+        if (originalString[0] != ' ') {
+            stringBuilder.append(originalString[0])
+        } else {
+            words.add(stringBuilder.toString())
+            stringBuilder.clear()
+        }
+        if (originalString.length == 1) {
+            words.add(stringBuilder.toString())
+        }
+        originalString.deleteAt(0)
+    }
+
+    return words
+}

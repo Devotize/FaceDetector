@@ -17,7 +17,7 @@ sealed class ShopEvent {
 
     class RemoveFromFavoriteClothesEvent(val clothes: Clothes): ShopEvent()
 
-    object GoToFiltersScreen: ShopEvent()
+    class GoToFiltersScreen(val customFilter: TestClothesFilter? = null): ShopEvent()
 
     object GotBackToShopScreen: ShopEvent()
 
@@ -26,5 +26,7 @@ sealed class ShopEvent {
     class ChangeCustomFilters(val newFilters: TestClothesFilter): ShopEvent()
 
     object SaveCustomClothesFilter: ShopEvent()
+
+    class ReplaceFilterByIndex(val index: Int): ShopEvent()
 
 }

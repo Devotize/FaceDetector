@@ -23,6 +23,7 @@ import com.sychev.facedetector.interactors.clothes_list.SearchClothes
 import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.navigation.Screen
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
+import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -134,9 +135,9 @@ class ClothesDetailViewModel
     }
 
     private fun searchClothesByQuery(query: String, size: Int) {
-        val filters = ClothesFilters()
+        val filters = TestClothesFilter()
         filters.fullTextQuery = query
-        filters.size = size
+        filters.searchSize = size
         searchClothes.execute(filters)
             .onEach { dataState ->
             loadingSimilarClothes.value = dataState.loading

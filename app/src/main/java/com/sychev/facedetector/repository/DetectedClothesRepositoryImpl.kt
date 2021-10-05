@@ -11,6 +11,7 @@ import com.sychev.facedetector.data.remote.ClothesDetectionApi
 import com.sychev.facedetector.data.remote.UnsplashApi
 import com.sychev.facedetector.data.remote.converter.ClothesDtoConverter
 import com.sychev.facedetector.data.remote.model.FilterValuesDtoItem
+import com.sychev.facedetector.data.remote.model.FilterValuesDtoItemOld
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.filter.FilterValues
@@ -271,7 +272,7 @@ class DetectedClothesRepositoryImpl(
                 hm.put(TestClothesFilter.Titles.gender, valueList)
             }
         }
-        hm.put("size", filters.searchSize)
+        hm.put("search_size", filters.searchSize)
         if (filters.itemCategories.isNotEmpty()) {
             filters.itemCategories.let {
                 val valueList = ArrayList<String>()
