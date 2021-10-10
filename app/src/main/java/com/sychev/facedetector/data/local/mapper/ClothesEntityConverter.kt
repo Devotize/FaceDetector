@@ -15,11 +15,20 @@ class ClothesEntityConverter: DomainMapper<Clothes, DetectedClothesEntity> {
             isFavorite = model.isFavorite,
             brand = model.brand,
             itemId = model.itemId,
-            price = model.price,
+            price = model.price.toDouble(),
             rating = model.rating,
             priceDiscount = model.priceDiscount,
             provider = model.provider,
-            color = model.color
+            color = model.color,
+            brandLogo = model.brandLogo,
+            description = model.description,
+            material = model.material,
+            noviceFlg = model.noviceFlg,
+            numReviews = model.numReviews,
+            popularFlg = model.popularFlg,
+            premium = model.premium,
+            size = model.size,
+            subcategory = model.subcategory,
         )
     }
 
@@ -32,11 +41,20 @@ class ClothesEntityConverter: DomainMapper<Clothes, DetectedClothesEntity> {
             isFavorite = model.isFavorite,
             brand = model.brand,
             itemId = model.itemId,
-            price = model.price,
+            price = model.price.toInt(),
             rating = model.rating,
             priceDiscount = model.priceDiscount,
             provider = model.provider,
             color = model.color,
+            brandLogo = model.brandLogo,
+            description = model.description,
+            material = model.material,
+            noviceFlg = model.noviceFlg,
+            numReviews = model.numReviews,
+            popularFlg = model.popularFlg,
+            premium = model.premium,
+            size = model.size,
+            subcategory = model.subcategory,
         )
     }
 

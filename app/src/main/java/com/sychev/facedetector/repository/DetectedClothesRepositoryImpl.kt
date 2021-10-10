@@ -9,13 +9,14 @@ import com.sychev.facedetector.data.local.dao.ClothesDao
 import com.sychev.facedetector.data.local.mapper.ClothesEntityConverter
 import com.sychev.facedetector.data.remote.ClothesDetectionApi
 import com.sychev.facedetector.data.remote.UnsplashApi
+import com.sychev.facedetector.data.remote.converter.BrandDtoConverter
 import com.sychev.facedetector.data.remote.converter.ClothesDtoConverter
 import com.sychev.facedetector.data.remote.model.FilterValuesDtoItem
-import com.sychev.facedetector.data.remote.model.FilterValuesDtoItemOld
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.domain.ClothesWithBubbles
 import com.sychev.facedetector.domain.DetectedClothes
+import com.sychev.facedetector.domain.brand.Brand
 import com.sychev.facedetector.domain.filter.FilterValues
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 import com.sychev.facedetector.utils.TAG
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -32,9 +33,10 @@ class DetectedClothesRepositoryImpl(
     private val unsplashApi: UnsplashApi,
     private val clothesEntityConverter: ClothesEntityConverter,
     private val clothesDtoConverter: ClothesDtoConverter,
+    private val brandDtoConverter: BrandDtoConverter,
 ): DetectedClothesRepository {
 
-    override suspend fun searchClothes(detectedClothes: DetectedClothes, context: Context): List<Clothes> {
+    override suspend fun searchClothes(detectedClothes: DetectedClothes, context: Context, size: Int): List<Clothes> {
         val stream = ByteArrayOutputStream()
         detectedClothes.croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 0, stream)
         val byteArrayBitmap = stream.toByteArray()
@@ -57,13 +59,15 @@ class DetectedClothesRepositoryImpl(
         val result = clothesDetectionApi.searchClothesByCrop(
             imgType = detectedClothes.title,
             gender = detectedClothes.gender,
-            size = 1,
+            size = size,
             requestBody = requestBody,
         )
+//        Log.d(TAG, "searchClothes: result: $result")
 
-        val wildberriesClothes = result.searchResult.wildberries
-        val lamodaClothes = result.searchResult.lamoda
+        val wildberriesClothes = result.globalSearchResult.wildberries.searchResult
+        val lamodaClothes = result.globalSearchResult.lamoda.searchResult
         val allClothes = wildberriesClothes.plus(lamodaClothes)
+        Log.d(TAG, "searchClothes: allClothes size: ${allClothes.size}")
 
         return clothesDtoConverter.toDomainClothesList(allClothes)
     }
@@ -158,110 +162,11 @@ class DetectedClothesRepositoryImpl(
         hm.put("query", query)
         hm.put("size", size)
         val result = clothesDetectionApi.searchClothesByText(body = hm)
-        return clothesDtoConverter.toDomainClothesList(result)
+
+        return clothesDtoConverter.toDomainClothesList(result.searchResult)
     }
 
-    @Deprecated(message = "")
-    override suspend fun searchClothesByFilters(
-        filters: ClothesFilters,
-    ): List<Clothes> {
-        val hm = HashMap<String, Any>()
-        if (filters.gender.isNotEmpty()) {
-            filters.gender.let {
-                val valueList = ArrayList<String>()
-                it.forEach { item ->
-                    valueList.add(item.title)
-                }
-                hm.put("genders", valueList)
-            }
-        }
-        hm.put("size", filters.size)
-        if (filters.itemCategories.isNotEmpty()) {
-            filters.itemCategories.let {
-                val valueList = ArrayList<String>()
-                it.forEach { item ->
-                    valueList.add(item.title)
-                }
-                hm.put("item_categories", valueList)
-            }
-        }
-        if (filters.itemCategories.isNotEmpty()) {
-            filters.itemSubcategories.let {
-                val valueList = ArrayList<String>()
-                it.forEach { item ->
-                    valueList.add(item.title)
-                }
-                hm.put("item_subcategories", valueList)
-            }
-        }
-        if (filters.brands.isNotEmpty()) {
-            filters.brands?.let {
-                val valueList = ArrayList<String>()
-                it.forEach { item ->
-                    valueList.add(item.title)
-                }
-                hm.put("brands", valueList)
-            }
-        }
-        if (filters.prices.isNotEmpty()) {
-            filters.prices.let {
-                hm.put("prices", it)
-            }
-        }
-        if (filters.itemSizes.isNotEmpty()) {
-            filters.itemSizes.let {
-                val valueList = ArrayList<Int>()
-                it.forEach { item ->
-                    valueList.add(item.size)
-                }
-                hm.put("item_sizes", valueList)
-            }
-        }
-        if (filters.colors.isNotEmpty()) {
-            filters.colors.let {
-                val valueList = ArrayList<String>()
-                it.forEach { item ->
-                    valueList.add(item.title)
-                }
-                hm.put("colours", valueList)
-            }
-        }
-        if (filters.novice.isNotEmpty()) {
-            filters.novice.let {
-                val valueList = ArrayList<Int>()
-                it.forEach { item ->
-                    valueList.add(item.index)
-                }
-                hm.put("novice_flgs", valueList)
-            }
-        }
-        if (filters.popularFlags.isNotEmpty()) {
-            filters.popularFlags.let {
-                val valueList = ArrayList<Int>()
-                it.forEach { item ->
-                    valueList.add(item.index)
-                }
-                hm.put("popular_flgs", valueList)
-            }
-        }
-        if (filters.providers.isNotEmpty()) {
-            filters.providers.let {
-                val valueList = ArrayList<String>()
-                it.forEach { item ->
-                    valueList.add(item.title)
-                }
-                hm.put("providers", valueList)
-            }
-        }
-        filters.fullTextQuery?.let {
-            hm.put("full_text_query", it)
-        }
-
-        val result = clothesDetectionApi.searchClothesByFilters(hm)
-        return clothesDtoConverter.toDomainClothesList(result)
-    }
-
-    override suspend fun searchClothesByFilters(filters: TestClothesFilter): List<Clothes> {
+    override suspend fun searchClothesByFilters(filters: TestClothesFilter): ClothesWithBubbles {
         val hm = HashMap<String, Any>()
         if (filters.genders.isNotEmpty()) {
             filters.genders.let {
@@ -300,12 +205,12 @@ class DetectedClothesRepositoryImpl(
                 hm.put(TestClothesFilter.Titles.brands, valueList)
             }
         }
-        if (filters.price.first != 0 || filters.price.second != 1000000000) {
+
             filters.price.let {
-                val prices = arrayOf(it.first, it.second)
+                val prices = arrayOf(it.min, it.max)
                 hm.put(TestClothesFilter.Titles.prices, prices)
             }
-        }
+
         if (filters.itemSizes.isNotEmpty()) {
             filters.itemSizes.let {
                 val valueList = ArrayList<Int>()
@@ -328,14 +233,14 @@ class DetectedClothesRepositoryImpl(
             filters.novice.let {
                 val valueList = ArrayList<Int>()
                 valueList.add(it)
-                hm.put(TestClothesFilter.Titles.novice, valueList)
+                hm.put(TestClothesFilter.Titles.novice, true)
             }
         }
         if (filters.popular == FilterValues.Constants.Popular.popular) {
             filters.popular.let {
                 val valueList = ArrayList<Int>()
                 valueList.add(it)
-                hm.put(TestClothesFilter.Titles.popularFlags, valueList)
+                hm.put(TestClothesFilter.Titles.popularFlags, true)
             }
         }
         if (filters.providers.isNotEmpty()) {
@@ -352,14 +257,24 @@ class DetectedClothesRepositoryImpl(
                 hm.put(TestClothesFilter.Titles.fullTextQuery, it)
             }
         }
+        Log.d(TAG, "searchClothesByFilters: hm: $hm")
         val result = clothesDetectionApi.searchClothesByFilters(hm)
-        return clothesDtoConverter.toDomainClothesList(result)
+        val clothesWithBubbles = ClothesWithBubbles(
+            clothes = clothesDtoConverter.toDomainClothesList(result.searchResult),
+            bubbles = result.bubbles
+        )
+        return clothesWithBubbles
     }
 
     override suspend fun getFilterValues(): List<FilterValuesDtoItem> {
         val result = clothesDetectionApi.getFilterValues()
         Log.d(TAG, "getFilterValues: $result")
         return result
+    }
+
+    override suspend fun getTopBrands(): List<Brand> {
+        val result = clothesDetectionApi.getTopBrands()
+        return brandDtoConverter.toDomainModelList(result)
     }
 }
 

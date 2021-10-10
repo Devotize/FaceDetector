@@ -72,13 +72,14 @@ fun FoundedClothesCard(
                 )
                 Column(
                     modifier = Modifier
-                        .widthIn(max = 175.dp)
+                        .widthIn(max = 135.dp)
                         .fillMaxHeight()
                         .padding(start = 4.dp, top = 4.dp, bottom = 4.dp),
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "${clothes.brand} ${clothes.itemCategory}",
+                        modifier = Modifier.heightIn(max = 50.dp),
+                        text = "${clothes.brand} ${clothes.itemCategory} sflgkjglgflkvklfkjlfsdjkldsfjklsdfjkldfskljdsfljkdsfjkldfsljkfdsjklfsjklsfdljksjlfgsjlkfgjklsgfljkgfslkjsflkgdk",
                         style = MaterialTheme.typography.subtitle2,
                         color = Color.Black
                     )

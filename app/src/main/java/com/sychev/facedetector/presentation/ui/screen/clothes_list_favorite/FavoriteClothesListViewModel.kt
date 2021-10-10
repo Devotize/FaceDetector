@@ -60,6 +60,7 @@ class FavoriteClothesListViewModel
             .onEach { dataState ->
                 loading.value = dataState.loading
                 dataState.data?.let{
+                    favoriteClothesList.clear()
                     favoriteClothesList.addAll(it.reversed())
                 }
             }.launchIn(viewModelScope)

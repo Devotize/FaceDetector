@@ -4,24 +4,21 @@ import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.DoneOutline
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,14 +27,14 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.sychev.facedetector.domain.filter.FilterValues
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
+import com.sychev.facedetector.domain.filter.Price
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.ShopEvent
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.ShopViewModel
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 import com.sychev.facedetector.utils.TAG
-import kotlin.concurrent.timerTask
+import com.sychev.facedetector.utils.color
 
-@OptIn(ExperimentalUnitApi::class)
+@OptIn(ExperimentalUnitApi::class, androidx.compose.material.ExperimentalMaterialApi::class)
 @Composable
 fun FiltersScreen(
     viewModel: ShopViewModel
@@ -52,6 +49,13 @@ fun FiltersScreen(
             Log.d(TAG, "FiltersScreen: customFilterAlreadyExists")
             filterIndex = index
         }
+    }
+
+    var firsLaunch by remember{ mutableStateOf(true)}
+
+    if (firsLaunch) {
+        viewModel.customFilter.value.price = viewModel.filterValues.price
+        firsLaunch = false
     }
 
     Box(
@@ -82,7 +86,7 @@ fun FiltersScreen(
                 }
                 Spacer(modifier = Modifier.width(2.dp))
                 Text(
-                    text = "Create own compilation",
+                    text = "Создать свю подборку",
                     style = MaterialTheme.typography.h6,
                     color = MaterialTheme.colors.onPrimary
                 )
@@ -100,7 +104,7 @@ fun FiltersScreen(
                     viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
                 },
                 label = {
-                    Text(text = "Title")
+                    Text(text = "Название")
                 },
                 singleLine = true,
                 shape = CircleShape,
@@ -118,7 +122,7 @@ fun FiltersScreen(
                 modifier = Modifier
                     .padding(top = 12.dp, bottom = 12.dp)
                     .fillMaxWidth(),
-                title = "Women",
+                title = "Женщинам",
                 checked = customFilter.genders.contains(FilterValues.Constants.Gender.female),
                 onCheckedChange = { checked ->
                     if (checked) {
@@ -142,7 +146,7 @@ fun FiltersScreen(
                 modifier = Modifier
                     .padding(top = 12.dp, bottom = 12.dp)
                     .fillMaxWidth(),
-                title = "Men",
+                title = "Мужчинам",
                 checked = customFilter.genders.contains(FilterValues.Constants.Gender.male),
                 onCheckedChange = { checked ->
                     if (checked) {
@@ -166,7 +170,7 @@ fun FiltersScreen(
                 modifier = Modifier
                     .padding(top = 12.dp, bottom = 12.dp)
                     .fillMaxWidth(),
-                title = "Only new",
+                title = "Только новинки",
                 checked = customFilter.novice == FilterValues.Constants.Novice.new,
                 onCheckedChange = { checked ->
                     if (checked) {
@@ -190,7 +194,7 @@ fun FiltersScreen(
                 modifier = Modifier
                     .padding(top = 12.dp, bottom = 12.dp)
                     .fillMaxWidth(),
-                title = "Only popular",
+                title = "Только популярные",
                 checked = customFilter.popular == FilterValues.Constants.Popular.popular,
                 onCheckedChange = { checked ->
                     if (checked) {
@@ -225,7 +229,7 @@ fun FiltersScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Clothes Category",
+                        text = "Категоря одежды",
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary,
                     )
@@ -245,7 +249,7 @@ fun FiltersScreen(
                     LazyRow(
                         modifier = Modifier.padding(bottom = 6.dp)
                     ) {
-                        itemsIndexed(viewModel.filterValues.itemCategories) { index: Int, category ->
+                        itemsIndexed(viewModel.filterValues.itemCategories.second) { index: Int, category ->
                             OutlinedButton(
                                 modifier = Modifier
                                     .padding(end = 6.dp),
@@ -317,7 +321,7 @@ fun FiltersScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Colors",
+                        text = "Цвет",
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary,
                     )
@@ -335,17 +339,26 @@ fun FiltersScreen(
                 }
                 if (showItemsRow) {
                     LazyRow(
-                        modifier = Modifier.padding(bottom = 6.dp)
+                        modifier = Modifier.padding(bottom = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        itemsIndexed(viewModel.filterValues.colors) { index: Int, ct ->
+                        itemsIndexed(viewModel.filterValues.colors.second) { index: Int, ct ->
+                            var isAlreadySelected by remember{mutableStateOf(false)}
+                            isAlreadySelected = customFilter.colors.contains(ct.colorName)
+                            val buttonSize = if (isAlreadySelected) 46.dp else 36.dp
+                            val borderStroke = if (isAlreadySelected)
+                                BorderStroke(2.dp, MaterialTheme.colors.secondary)
+                            else
+                                BorderStroke(1.dp, MaterialTheme.colors.onPrimary)
                             OutlinedButton(
                                 modifier = Modifier
-                                    .padding(end = 6.dp),
+                                    .size(buttonSize),
                                 onClick = {
-                                    if (customFilter.colors.contains(ct)) {
+                                    Log.d(TAG, "FiltersScreen: colors filters: ${isAlreadySelected}")
+                                    if (isAlreadySelected) {
                                         try {
                                             val newFilters = customFilter.also {
-                                                it.colors.remove(ct)
+                                                    it.colors.remove(ct.colorName)
                                             }
                                             viewModel.onTriggerEvent(
                                                 ShopEvent.ChangeCustomFilters(
@@ -357,7 +370,7 @@ fun FiltersScreen(
                                         }
                                     } else {
                                         val newFilters = customFilter.also {
-                                            it.colors.add(ct)
+                                            it.colors.add(ct.colorName)
                                         }
                                         viewModel.onTriggerEvent(
                                             ShopEvent.ChangeCustomFilters(
@@ -366,23 +379,24 @@ fun FiltersScreen(
                                         )
                                     }
                                 },
-                                border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
-                                shape = CircleShape,
+                                border = borderStroke,
+                                shape = MaterialTheme.shapes.medium,
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = if (customFilter.colors.contains(ct)) {
-                                        MaterialTheme.colors.secondary
-                                    } else {
-                                        MaterialTheme.colors.primary
-                                    },
+                                    backgroundColor = ("#" + ct.colorHex).color,
                                     contentColor = MaterialTheme.colors.onPrimary
-                                )
+                                ),
+                                contentPadding = PaddingValues(1.dp)
                             ) {
-                                Text(
-                                    modifier = Modifier,
-                                    text = ct,
-                                    style = MaterialTheme.typography.h6,
-                                )
+                                if (isAlreadySelected) {
+                                    Icon(
+                                        modifier = Modifier.fillMaxSize(),
+                                        imageVector = Icons.Default.Done,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colors.primary
+                                    )
+                                }
                             }
+                            Spacer(modifier = Modifier.width(16.dp))
                         }
                     }
                 }
@@ -408,7 +422,7 @@ fun FiltersScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Brand",
+                        text = "Бренд",
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary,
                     )
@@ -428,7 +442,7 @@ fun FiltersScreen(
                     LazyRow(
                         modifier = Modifier.padding(bottom = 6.dp)
                     ) {
-                        itemsIndexed(viewModel.filterValues.brands) { index: Int, ct ->
+                        itemsIndexed(viewModel.filterValues.brands.second) { index: Int, ct ->
                             OutlinedButton(
                                 modifier = Modifier
                                     .padding(end = 6.dp),
@@ -499,7 +513,7 @@ fun FiltersScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Price",
+                        text = "Цена",
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary,
                     )
@@ -516,97 +530,124 @@ fun FiltersScreen(
                     }
                 }
                 if (showItemsRow) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceAround ,
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        //min value
-                        OutlinedTextField(
-                            modifier = Modifier.width(130.dp),
-                            singleLine = true,
-                            isError = !isMinPriceLowerThenMax,
-                            value = if (customFilter.price.first == 0) {
-                                ""
-                            } else {
-                                customFilter.price.first.toString()
-                                   },
-                            onValueChange = { str ->
-                                val newFilter = if (str.isNotEmpty()) {
-                                    customFilter.also {
-                                        it.price = Pair(str.toInt(), it.price.second)
-                                    }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceAround ,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            //min value
+                            OutlinedTextField(
+                                modifier = Modifier.width(130.dp),
+                                singleLine = true,
+                                isError = !isMinPriceLowerThenMax,
+                                value = if (customFilter.price.min == viewModel.filterValues.price.min) {
+                                    ""
                                 } else {
-                                    customFilter.also {
-                                        it.price = Pair(0, it.price.second)
+                                    customFilter.price.min.toString()
+                                },
+                                onValueChange = { str ->
+                                    val newFilter = if (str.isNotEmpty()) {
+                                        customFilter.also {
+                                            it.price = Price(str.toInt(), it.price.max)
+                                        }
+                                    } else {
+                                        customFilter.also {
+                                            it.price = Price(viewModel.filterValues.price.min, it.price.max)
+                                        }
                                     }
-                                }
-                                viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilter))
-                            },
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Done,
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onDone = {
-                                    focusManager.clearFocus()
-                                }
-                            ),
-                            label = {
-                                Text(text = "Min price")
-                            },
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                cursorColor = MaterialTheme.colors.onPrimary,
-                                textColor = MaterialTheme.colors.onPrimary,
-                                focusedBorderColor = MaterialTheme.colors.secondary,
-                                focusedLabelColor = MaterialTheme.colors.secondary,
+                                    viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilter))
+                                },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Done,
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onDone = {
+                                        focusManager.clearFocus()
+                                    }
+                                ),
+                                label = {
+                                    Text(text = "Мин")
+                                },
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    cursorColor = MaterialTheme.colors.onPrimary,
+                                    textColor = MaterialTheme.colors.onPrimary,
+                                    focusedBorderColor = MaterialTheme.colors.secondary,
+                                    focusedLabelColor = MaterialTheme.colors.secondary,
+                                )
                             )
-                        )
-                        //max value
-                        OutlinedTextField(
-                            modifier = Modifier.width(130.dp),
-                            singleLine = true,
-                            isError = !isMinPriceLowerThenMax,
-                            value = if (customFilter.price.second == 1000000000) {
-                                ""
-                            } else {
-                                customFilter.price.second.toString()
-                            },
-                            onValueChange = { str ->
-                                val newFilter = if (str.isNotEmpty()) {
-                                    customFilter.also {
-                                        it.price = Pair(it.price.first, str.toInt())
-                                    }
+                            //max value
+                            OutlinedTextField(
+                                modifier = Modifier.width(130.dp),
+                                singleLine = true,
+                                isError = !isMinPriceLowerThenMax,
+                                value = if (customFilter.price.max == viewModel.filterValues.price.max) {
+                                    ""
                                 } else {
-                                    customFilter.also {
-                                        it.price = Pair(it.price.first, 1000000000)
+                                    customFilter.price.max.toString()
+                                },
+                                onValueChange = { str ->
+                                    val newFilter = if (str.isNotEmpty()) {
+                                        customFilter.also {
+                                            it.price = Price(it.price.min, str.toInt())
+                                        }
+                                    } else {
+                                        customFilter.also {
+                                            it.price = Price(it.price.min, viewModel.filterValues.price.max)
+                                        }
                                     }
-                                }
-                                viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilter))
-                            },
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Done
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onDone = {
-                                    focusManager.clearFocus()
-                                }
-                            ),
-                            label = {
-                                Text(text = "Max price")
-                            },
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                cursorColor = MaterialTheme.colors.onPrimary,
-                                textColor = MaterialTheme.colors.onPrimary,
-                                focusedBorderColor = MaterialTheme.colors.secondary,
-                                focusedLabelColor = MaterialTheme.colors.secondary,
+                                    viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilter))
+                                },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Done
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onDone = {
+                                        focusManager.clearFocus()
+                                    }
+                                ),
+                                label = {
+                                    Text(text = "Макс")
+                                },
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    cursorColor = MaterialTheme.colors.onPrimary,
+                                    textColor = MaterialTheme.colors.onPrimary,
+                                    focusedBorderColor = MaterialTheme.colors.secondary,
+                                    focusedLabelColor = MaterialTheme.colors.secondary,
+                                )
                             )
-                        )
+                        }
                     }
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        RangeSlider(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            values = customFilter.price.min.toFloat()..customFilter.price.max.toFloat(),
+                            onValueChange = { floatRange ->
+                                Log.d(TAG, "FiltersScreen: onValueCange floatRange = ${floatRange.endInclusive.toInt()}")
+                                val newFilter = customFilter.also {
+                                    it.price = Price(floatRange.start.toInt(), floatRange.endInclusive.toInt())
+                                }
+                                viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilter))
+                            },
+                            valueRange = viewModel.filterValues.price.min.toFloat()..viewModel.filterValues.price.max.toFloat(),
+                            colors = SliderDefaults.colors(
+                                activeTrackColor = MaterialTheme.colors.secondary
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+
                 }
+
+
             }
             Spacer(
                 modifier = Modifier
@@ -629,7 +670,7 @@ fun FiltersScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Size",
+                        text = "Размер",
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary,
                     )
@@ -719,13 +760,15 @@ fun FiltersScreen(
                         MaterialTheme.colors.primary
                     ),
                     onClick = {
-                        val emptyFilters = TestClothesFilter()
+                        val emptyFilters = TestClothesFilter().apply {
+                            price = viewModel.filterValues.price
+                        }
                         viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(emptyFilters))
                     },
                     shape = CircleShape,
                 ) {
                     Text(
-                        text = "Reset",
+                        text = "Сбросить",
                         fontSize = TextUnit(value = 24f, TextUnitType.Sp),
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary
@@ -738,7 +781,7 @@ fun FiltersScreen(
                     ),
                     onClick = {
                         isTitleEmpty = customFilter.title.isEmpty()
-                        isMinPriceLowerThenMax = customFilter.price.first < customFilter.price.second
+                        isMinPriceLowerThenMax = customFilter.price.min < customFilter.price.max
                         if (!isTitleEmpty && isMinPriceLowerThenMax) {
                             if (filterIndex != null) {
                                 filterIndex?.let {
@@ -755,7 +798,7 @@ fun FiltersScreen(
                     )
                 ) {
                     Text(
-                        text = "Save",
+                        text = "Сохранить",
                         fontSize = TextUnit(value = 24f, TextUnitType.Sp),
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary,

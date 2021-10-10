@@ -1,5 +1,7 @@
 package com.sychev.facedetector.presentation.ui.components
 
+import android.graphics.drawable.Drawable
+import android.util.Base64
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -25,6 +27,7 @@ import com.gowtham.ratingbar.RatingBarStyle
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.utils.loadPicture
+import com.sychev.facedetector.utils.toBitmap
 import com.sychev.facedetector.utils.toMoneyString
 
 @Composable
@@ -52,9 +55,13 @@ fun ClothesItem(
                     .height(140.dp),
                     shape = MaterialTheme.shapes.medium
                 ) {
+                    val imagePainter = rememberImagePainter(data = clothes.picUrl){
+                        crossfade(true)
+                        error(R.drawable.clothes_default_icon_gray)
+                    }
                     Image(
                         modifier = Modifier.fillMaxSize(),
-                        painter = rememberImagePainter(clothes.picUrl),
+                        painter = imagePainter,
                         contentDescription = null,
                         alignment = Alignment.Center,
                         contentScale = ContentScale.Crop
@@ -117,7 +124,7 @@ fun ClothesItem(
                 Text(
                     modifier = Modifier
                         .padding(top = 4.dp),
-                    text = "32 comments",
+                    text = "32 комментрия",
                     color = MaterialTheme.colors.primaryVariant,
                     style = MaterialTheme.typography.subtitle2
                 )
@@ -129,26 +136,46 @@ fun ClothesItem(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.Bottom
             ) {
-                IconButton(
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .align(Alignment.Bottom),
-                    onClick = {
-                        if (clothes.isFavorite) {
-                            onRemoveFromFavoriteClick(clothes)
-                        } else {
-                            onAddToFavoriteClick(clothes)
-                        }
-                    },
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.End
                 ) {
-                    Icon(
+                    if (clothes.brandLogo.isNotBlank()) {
+                        val logoBytes = Base64.decode(clothes.brandLogo, 0)
+                        val logoImagePainter = rememberImagePainter(data = logoBytes.toBitmap()){
+                            crossfade(true)
+                            error(R.drawable.default_logo_icon)
+                        }
+                        Image(
+                            modifier = Modifier
+                                .fillMaxWidth(0.8f)
+                                .height(40.dp),
+                            painter = logoImagePainter,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                    }
+                    IconButton(
                         modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp),
-                        imageVector = if (clothes.isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
-                        contentDescription = null,
-                        tint = if (clothes.isFavorite) Color.Red else MaterialTheme.colors.primaryVariant
-                    )
+                            .wrapContentSize(),
+                        onClick = {
+                            if (clothes.isFavorite) {
+                                onRemoveFromFavoriteClick(clothes)
+                            } else {
+                                onAddToFavoriteClick(clothes)
+                            }
+                        },
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .width(30.dp)
+                                .height(30.dp),
+                            imageVector = if (clothes.isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = null,
+                            tint = if (clothes.isFavorite) Color.Red else MaterialTheme.colors.primaryVariant
+                        )
+                    }
                 }
             }
         }

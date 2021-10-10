@@ -29,4 +29,6 @@ sealed class ShopEvent {
 
     class ReplaceFilterByIndex(val index: Int): ShopEvent()
 
+    object GetTopBrandsEvent: ShopEvent()
+
 }

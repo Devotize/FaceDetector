@@ -6,8 +6,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.domain.brand.Brand
 import com.sychev.facedetector.domain.data.DataState
 import com.sychev.facedetector.domain.filter.FilterValues
+import com.sychev.facedetector.interactors.brand.GetTopBrands
 import com.sychev.facedetector.interactors.clothes.GetClothesList
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
@@ -29,6 +31,7 @@ class ShopViewModel
     private val insertClothesToFavorite: InsertClothesToFavorite,
     private val getClothesList: GetClothesList,
     private val navigationManager: NavigationManager,
+    private val getTopBrands: GetTopBrands,
 ) : ViewModel() {
     private val defaultSearchSize = 40
     val loading = mutableStateOf(false)
@@ -39,14 +42,20 @@ class ShopViewModel
         addAll(TestClothesFilter.Filters.defaultFilters)
     }
     val selectedFilter = mutableStateOf<TestClothesFilter?>(null)
+    val queryBubbles = mutableStateListOf<String>()
+    val topBrands = mutableStateListOf<Brand>()
     val customFilter = mutableStateOf<TestClothesFilter>(TestClothesFilter())
+
 
     @Inject
     lateinit var filterValues: FilterValues
 
+
     init {
         findClothesForFilters()
+        onTriggerEvent(ShopEvent.GetTopBrandsEvent)
     }
+
 
     fun onTriggerEvent(event: ShopEvent) {
         when (event) {
@@ -95,6 +104,9 @@ class ShopViewModel
             }
             is ShopEvent.ReplaceFilterByIndex -> {
                 replaceFilterByIndex(event.index)
+            }
+            is ShopEvent.GetTopBrandsEvent -> {
+                getTopBrands()
             }
         }
     }
@@ -160,7 +172,9 @@ class ShopViewModel
             loading.value = dataState.loading
             dataState.data?.let {
                 clothesList.clear()
-                clothesList.addAll(it)
+                clothesList.addAll(it.clothes)
+                queryBubbles.clear()
+                queryBubbles.addAll(it.bubbles)
                 selectedFilter.value = null
                 val newFilter = TestClothesFilter()
                 newFilter.apply {
@@ -205,7 +219,9 @@ class ShopViewModel
                 loading.value = dataState.loading
                 dataState.data?.let {
                     clothesList.clear()
-                    clothesList.addAll(it)
+                    clothesList.addAll(it.clothes)
+                    queryBubbles.clear()
+                    queryBubbles.addAll(it.bubbles)
                     selectedFilter.value = null
                 }
             }.launchIn(viewModelScope)
@@ -228,10 +244,10 @@ class ShopViewModel
                 multiIndex += 3
             }
             searchClothes.execute(filter)
-                .onEach { dataState: DataState<List<Clothes>> ->
+                .onEach { dataState ->
                     loading.value = dataState.loading
                     dataState.data?.let {
-                        filter.clothes = it
+                        filter.clothes = it.clothes
                         val clothesFilters = ArrayList<TestClothesFilter>()
                         clothesFilters.addAll(filters)
                         filters.clear()
@@ -258,6 +274,16 @@ class ShopViewModel
         customFilter.value = TestClothesFilter()
         onTriggerEvent(ShopEvent.GotBackToShopScreen)
         findClothesForFilters()
+    }
+
+    private fun getTopBrands() {
+        getTopBrands.execute().onEach { dataState ->
+            loading.value = dataState.loading
+            dataState.data?.let {
+                topBrands.clear()
+                topBrands.addAll(it)
+            }
+        }.launchIn(viewModelScope)
     }
 
 }

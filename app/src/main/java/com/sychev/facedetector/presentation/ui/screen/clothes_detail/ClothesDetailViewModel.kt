@@ -3,26 +3,27 @@ package com.sychev.facedetector.presentation.ui.screen.clothes_detail
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.ImageView
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.interactors.clothes.GetClothesList
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
 import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.navigation.Screen
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -48,7 +49,7 @@ class ClothesDetailViewModel
     fun onTriggerEvent(event: ClothesDetailEvent) {
         when (event){
             is ClothesDetailEvent.SearchSimilarClothesEvent -> {
-                searchClothesByQuery(event.query, event.size)
+                searchSimilarClothes(event.clothes, event.context)
             }
             is ClothesDetailEvent.GoToDetailScreen -> {
                 val screen = Screen.ClothesDetail.apply {
@@ -143,10 +144,44 @@ class ClothesDetailViewModel
             loadingSimilarClothes.value = dataState.loading
                 dataState.data?.let {
                     Log.d(TAG, "searchClothesByQuery: similarClothes: $it")
-                    similarClothes.addAll(it)
+                    similarClothes.addAll(it.clothes)
                 }
 
             }.launchIn(viewModelScope)
+    }
+
+    private fun searchSimilarClothes(clothes: Clothes, context: Context) {
+        Glide.with(context)
+            .asBitmap()
+            .load(clothes.picUrl)
+            .into(object : CustomTarget<Bitmap>() {
+                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                    val detectedClothes = DetectedClothes(
+                        sourceBitmap = resource,
+                        croppedBitmap = resource,
+                        gender = clothes.gender,
+                        title = clothes.itemCategory,
+                        location = RectF()
+                    )
+                    searchClothes.execute(detectedClothes, context, size = 6).onEach { dataState ->
+                        similarClothes.clear()
+                        dataState.data?.let {
+                            val list = it.toMutableList()
+                            try {
+                                list.remove(clothes)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                            similarClothes.addAll(list.toList())
+                        }
+                    }.launchIn(viewModelScope)
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {
+
+                }
+            })
+
     }
 
 }

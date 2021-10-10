@@ -2,18 +2,21 @@ package com.sychev.facedetector.presentation.ui.screen.clothes_detail
 
 import android.content.Intent
 import android.net.Uri
+import android.util.Base64
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -24,6 +27,7 @@ import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarStyle
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.utils.toBitmap
 import com.sychev.facedetector.utils.toMoneyString
 
 
@@ -31,6 +35,7 @@ import com.sychev.facedetector.utils.toMoneyString
 fun ClothesDetailScreen(
     clothes: Clothes,
     viewModel: ClothesDetailViewModel,
+    onBackClick: () -> Unit
 ){
     val clothesFromCache = viewModel.clothes.value
     val scrollState = rememberScrollState()
@@ -40,8 +45,8 @@ fun ClothesDetailScreen(
 
         viewModel.onTriggerEvent(
             ClothesDetailEvent.SearchSimilarClothesEvent(
-                query = "${clothes.itemCategory} ${clothes.gender} ${clothes.color}",
-                size = 10,
+                clothes = clothes,
+                context = LocalContext.current,
             )
         )
         firstLaunch = false
@@ -58,6 +63,26 @@ fun ClothesDetailScreen(
                 )
                 .padding(top = 8.dp, start = 16.dp),
         ) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)
+            ) {
+                IconButton(
+                    modifier = Modifier
+                        .size(30.dp),
+                    onClick = {
+                        onBackClick()
+                    },
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBackIos,
+                        contentDescription = null,
+                        tint = MaterialTheme.colors.onBackground
+                    )
+                }
+            }
+
             Text(
                 text = cl.brand.plus(" ${cl.itemCategory}"),
                 style = MaterialTheme.typography.h2,
@@ -92,12 +117,32 @@ fun ClothesDetailScreen(
                     modifier = Modifier
                         .height(224.dp)
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(start = 16.dp, bottom = 2.dp, top = 2.dp,),
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
+                    if (cl.brandLogo.isNotEmpty()) {
+                        val byteString = Base64.decode(cl.brandLogo, 0)
+                        val bitmap = byteString.toBitmap()
+                        val logoPainter = rememberImagePainter(data = bitmap){
+                            crossfade(true)
+                            error(R.drawable.default_logo_icon)
+                        }
+                        Image(
+                            modifier = Modifier
+                                .width(90.dp)
+                                .height(40.dp),
+                            painter = logoPainter,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop
+                        )
+
+                        Spacer(modifier = Modifier.height(2.dp))
+                    }
+
+
                     Text(
                         text = cl.price.toString().toMoneyString().plus(" ₽"),
-                        style = MaterialTheme.typography.h2,
+                        style = MaterialTheme.typography.h3,
                         color = MaterialTheme.colors.onPrimary
                     )
                     RatingBar(
@@ -174,9 +219,9 @@ fun ClothesDetailScreen(
                         )
                     ) {
                         Text(
-                            text = "Buy",
+                            text = "Купить",
                             style = MaterialTheme.typography.button,
-                            color = MaterialTheme.colors.primary
+                            color = MaterialTheme.colors.onPrimary
                         )
 
                     }
@@ -186,7 +231,7 @@ fun ClothesDetailScreen(
                 .width(2.dp)
                 .height(16.dp))
             Text(
-                text = "Similar clothes",
+                text = "Похожие товары",
                 style = MaterialTheme.typography.h3,
                 color = MaterialTheme.colors.onPrimary,
             )

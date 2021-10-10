@@ -1,6 +1,7 @@
 package com.sychev.facedetector.di
 
 import com.sychev.facedetector.domain.filter.FilterValues
+import com.sychev.facedetector.interactors.brand.GetTopBrands
 import com.sychev.facedetector.interactors.clothes.*
 import com.sychev.facedetector.interactors.clothes_list.DetectClothesLocal
 import com.sychev.facedetector.interactors.clothes_list.ProcessClothesForRetail
@@ -91,5 +92,10 @@ object InteractorModule {
         clothesRepository: DetectedClothesRepository,
         filterValues: FilterValues
     ): GetFilterValues = GetFilterValues(clothesRepository, filterValues)
+
+    @Provides
+    fun provideGetTopBrands(
+        clothesRepository: DetectedClothesRepository
+    ) = GetTopBrands(clothesRepository)
 
 }

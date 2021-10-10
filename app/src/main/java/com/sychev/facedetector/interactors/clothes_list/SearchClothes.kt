@@ -2,9 +2,9 @@ package com.sychev.facedetector.interactors.clothes_list
 
 import android.content.Context
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.domain.ClothesWithBubbles
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.data.DataState
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 import com.sychev.facedetector.repository.DetectedClothesRepository
 import kotlinx.coroutines.flow.Flow
@@ -17,11 +17,12 @@ class SearchClothes(
     fun execute(
         detectedClothes: DetectedClothes,
         context: Context,
+        size: Int = 1,
     ): Flow<DataState<List<Clothes>>> = flow<DataState<List<Clothes>>> {
         try {
             emit(DataState.loading())
 
-            val clothesList = detectedClothesRepository.searchClothes(detectedClothes = detectedClothes, context)
+            val clothesList = detectedClothesRepository.searchClothes(detectedClothes = detectedClothes, context = context, size = size)
 
             detectedClothesRepository.insertClothesOrIgnoreIfFavorite(clothesList)
 
@@ -47,12 +48,13 @@ class SearchClothes(
     fun execute(
         detectedClothesList: List<DetectedClothes>,
         context: Context,
+        size: Int = 1
     ): Flow<DataState<List<Clothes>>> = flow<DataState<List<Clothes>>> {
         try {
             emit(DataState.loading())
             val clothesList = ArrayList<Clothes>()
             detectedClothesList.forEach { detectedClothes ->
-                clothesList.addAll(detectedClothesRepository.searchClothes(detectedClothes = detectedClothes, context))
+                clothesList.addAll(detectedClothesRepository.searchClothes(detectedClothes = detectedClothes, context, size))
             }
 
             detectedClothesRepository.insertClothesOrIgnoreIfFavorite(clothesList)
@@ -92,35 +94,17 @@ class SearchClothes(
     }
 
     fun execute(
-        filters: ClothesFilters
-    ): Flow<DataState<List<Clothes>>> = flow<DataState<List<Clothes>>>{
-        try {
-            emit(DataState.loading())
-            val clothesList = detectedClothesRepository.searchClothesByFilters(
-                filters
-            )
-            detectedClothesRepository.insertClothesOrIgnoreIfFavorite(clothesList)
-
-            val result = detectedClothesRepository.getClothesList(clothesList)
-            emit(DataState.success(result))
-        }catch (e: Exception) {
-            e.printStackTrace()
-            emit(DataState.error("${e.message}"))
-        }
-    }
-
-    fun execute(
         testClothesFilter: TestClothesFilter
-    ): Flow<DataState<List<Clothes>>> = flow<DataState<List<Clothes>>>{
+    ): Flow<DataState<ClothesWithBubbles>> = flow<DataState<ClothesWithBubbles>>{
         try {
             emit(DataState.loading())
-            val clothesList = detectedClothesRepository.searchClothesByFilters(
+            val clothesWithBubbles = detectedClothesRepository.searchClothesByFilters(
                 testClothesFilter
             )
-            detectedClothesRepository.insertClothesOrIgnoreIfFavorite(clothesList)
+            detectedClothesRepository.insertClothesOrIgnoreIfFavorite(clothesWithBubbles.clothes)
 
-            val result = detectedClothesRepository.getClothesList(clothesList)
-            emit(DataState.success(result))
+            val result = detectedClothesRepository.getClothesList(clothesWithBubbles.clothes)
+            emit(DataState.success(ClothesWithBubbles(result, clothesWithBubbles.bubbles)))
         }catch (e: Exception) {
             e.printStackTrace()
             emit(DataState.error("${e.message}"))

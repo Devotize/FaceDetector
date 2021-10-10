@@ -1,15 +1,14 @@
 package com.sychev.facedetector.domain.filter
 
-import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
-
 data class FilterValues (
     var genders: List<String> = listOf(),
-    var itemCategories: List<String> = listOf(),
-    var itemSubcategories: List<String> = listOf(),
-    var brands: List<String> = listOf(),
+    var itemCategories: Pair<FilterValue, List<String>> = Pair(FilterValue(), listOf()),
+    var itemSubcategories: Pair<FilterValue, List<String>> = Pair(FilterValue(), listOf()),
+    var brands: Pair<FilterValue, List<String>> = Pair(FilterValue(), listOf()),
     var itemSizes: List<String> = listOf(),
-    var colors: List<String> = listOf(),
+    var colors: Pair<FilterValue, List<ColorsFilterValue>> = Pair(FilterValue(), listOf()),
     var providers: List<String> = listOf(),
+    var price: Price = Price()
 ) {
     object Constants{
         object Gender{
@@ -26,3 +25,23 @@ data class FilterValues (
         }
     }
 }
+
+
+data class ColorsFilterValue(
+    val colorName: String,
+    val colorHex: String,
+)
+
+data class FilterValue(
+    val id: String = "",
+    val name: String = "",
+)
+
+data class Price(
+    var min: Int = 0,
+    var max: Int = 100000000,
+)
+
+
+
+

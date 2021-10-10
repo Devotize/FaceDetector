@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder
 import com.sychev.facedetector.data.remote.CelebDetectionApi
 import com.sychev.facedetector.data.remote.ClothesDetectionApi
 import com.sychev.facedetector.data.remote.UnsplashApi
+import com.sychev.facedetector.data.remote.converter.BrandDtoConverter
 import com.sychev.facedetector.data.remote.converter.ClothesDtoConverter
 import com.sychev.facedetector.data.remote.model.UnsplashDto
 import dagger.Module
@@ -86,6 +87,10 @@ object NetworkModule {
     @Singleton
     @Provides
     fun provideDetectedClothesConverter(): ClothesDtoConverter = ClothesDtoConverter()
+
+    @Singleton
+    @Provides
+    fun provideBrandDtoConverter(): BrandDtoConverter = BrandDtoConverter()
 
     @Singleton
     @Provides

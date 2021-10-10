@@ -3,15 +3,15 @@ package com.sychev.facedetector.repository
 import android.content.Context
 import android.graphics.Bitmap
 import com.sychev.facedetector.data.remote.model.FilterValuesDtoItem
-import com.sychev.facedetector.data.remote.model.FilterValuesDtoItemOld
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.domain.ClothesWithBubbles
 import com.sychev.facedetector.domain.DetectedClothes
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
+import com.sychev.facedetector.domain.brand.Brand
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 
 interface DetectedClothesRepository {
 
-    suspend fun searchClothes(detectedClothes: DetectedClothes, context: Context): List<Clothes>
+    suspend fun searchClothes(detectedClothes: DetectedClothes, context: Context, size: Int): List<Clothes>
 
     suspend fun getClothesByUrl(url: String): Clothes
 
@@ -44,13 +44,11 @@ interface DetectedClothesRepository {
     suspend fun searchClothesByQuery(query: String, size: Int): List<Clothes>
 
     suspend fun searchClothesByFilters(
-        filters: ClothesFilters,
-    ): List<Clothes>
-
-    suspend fun searchClothesByFilters(
         testClothesFilter: TestClothesFilter,
-    ): List<Clothes>
+    ): ClothesWithBubbles
 
     suspend fun getFilterValues(): List<FilterValuesDtoItem>
+
+    suspend fun getTopBrands(): List<Brand>
 
 }

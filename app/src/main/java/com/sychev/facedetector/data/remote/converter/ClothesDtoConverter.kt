@@ -1,44 +1,62 @@
 package com.sychev.facedetector.data.remote.converter
 
-import com.sychev.facedetector.data.remote.model.SearchClothesResult.SearchResult.ClothesDto
+import com.sychev.facedetector.data.remote.model.ClothesDtoItem
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DomainMapper
 
-class ClothesDtoConverter: DomainMapper<Clothes, ClothesDto> {
+class ClothesDtoConverter: DomainMapper<Clothes, ClothesDtoItem> {
 
-    override fun fromDomainModel(model: Clothes): ClothesDto {
-        return ClothesDto(
+    override fun fromDomainModel(model: Clothes): ClothesDtoItem {
+        return ClothesDtoItem(
             brand = model.brand,
             gender = model.gender,
-            itemCategory = model.itemCategory,
+            category = model.itemCategory,
             itemId = model.itemId,
             picUrl = model.picUrl,
-            price = model.price,
+            price = model.price.toDouble(),
             priceDiscount = model.priceDiscount,
             provider = model.provider,
             rating = model.rating,
             url = model.clothesUrl,
-            color = model.color
+            colour = model.color,
+            brandLogo = model.brandLogo,
+            description = model.description,
+            material = model.material,
+            noviceFlg = model.noviceFlg,
+            numReviews = model.numReviews,
+            popularFlg = model.popularFlg,
+            premium = model.premium,
+            size = model.size,
+            subcategory = model.subcategory,
         )
     }
 
-    override fun toDomainModel(model: ClothesDto): Clothes {
+    override fun toDomainModel(model: ClothesDtoItem): Clothes {
         return Clothes(
             brand = model.brand,
             gender = model.gender,
-            itemCategory = model.itemCategory,
+            itemCategory = model.category,
             itemId = model.itemId,
             picUrl = model.picUrl,
-            price = model.price,
+            price = model.price.toInt(),
             priceDiscount = model.priceDiscount,
             provider = model.provider,
             rating = model.rating,
             clothesUrl = model.url,
-            color = model.color
+            color = model.colour,
+            brandLogo = model.brandLogo,
+            description = model.description,
+            material = model.material,
+            noviceFlg = model.noviceFlg,
+            numReviews = model.numReviews,
+            popularFlg = model.popularFlg,
+            premium = model.premium,
+            size = model.size,
+            subcategory = model.subcategory,
         )
     }
 
-    fun toDomainClothesList(dtoList: List<ClothesDto>): List<Clothes> {
+    fun toDomainClothesList(dtoList: List<ClothesDtoItem>): List<Clothes> {
         return dtoList.map {
             toDomainModel(it)
         }

@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import com.sychev.facedetector.domain.data.DataState
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
+import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.utils.TAG
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -53,7 +53,7 @@ class DefineGender {
                     maxScoreIdx = i
                 }
             }
-            val result: String = if (maxScoreIdx == 0) ClothesFilters.Gender.MALE.title else ClothesFilters.Gender.FEMALE.title
+            val result: String = if (maxScoreIdx == 0) FilterValues.Constants.Gender.male else FilterValues.Constants.Gender.female
             Log.d(TAG, "defineGender: result: $result")
             return result
         }

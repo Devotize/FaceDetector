@@ -4,8 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
-import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.hardware.display.DisplayManager
@@ -35,15 +33,15 @@ import androidx.core.graphics.toRectF
 import com.bumptech.glide.Glide
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
+import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.presentation.activity.CameraActivity
-import com.sychev.facedetector.presentation.activity.ClothesRetailActivity
 import com.sychev.facedetector.presentation.activity.main.MainActivity
 import com.sychev.facedetector.presentation.ui.items.BottomFavoriteSheet
 import com.sychev.facedetector.presentation.ui.items.BottomGallerySheet
 import com.sychev.facedetector.presentation.ui.items.DetectedClothesListItem
 import com.sychev.facedetector.presentation.ui.items.FrameDrawItem
+import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 import com.sychev.facedetector.service.FaceDetectorService
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.ClothesFilters
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlin.collections.ArrayList
@@ -84,7 +82,7 @@ class AssistantDetector
                     location = rect.toRectF(),
                     sourceBitmap = screenshot,
                     croppedBitmap = croppedBitmap,
-                    gender = ClothesFilters.Gender.FEMALE.title
+                    gender = FilterValues.Constants.Gender.female
                 )
                 addClothesPointer(detectedClothes)
             }

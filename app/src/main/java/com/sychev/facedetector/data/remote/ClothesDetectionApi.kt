@@ -1,8 +1,6 @@
 package com.sychev.facedetector.data.remote
 
-import com.sychev.facedetector.data.remote.model.FilterValuesDtoItem
-import com.sychev.facedetector.data.remote.model.FilterValuesDtoItemOld
-import com.sychev.facedetector.data.remote.model.SearchClothesResult
+import com.sychev.facedetector.data.remote.model.*
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.http.*
@@ -17,7 +15,7 @@ interface ClothesDetectionApi {
     suspend fun searchClothesByCrop(
         @Query("img_type") imgType: String,
         @Query("gender") gender: String,
-        @Query("size") size: Int = 1,
+        @Query("search_size") size: Int,
         @Body requestBody: RequestBody,
     ): SearchClothesResult
 
@@ -29,14 +27,17 @@ interface ClothesDetectionApi {
     @POST("searchFullText")
     suspend fun searchClothesByText(
         @Body body: HashMap<String, Any>,
-    ): List<SearchClothesResult.SearchResult.ClothesDto>
+    ): SearchResult
 
     @POST("searchByFilters")
     suspend fun searchClothesByFilters(
         @Body body: HashMap<String, Any>
-    ): List<SearchClothesResult.SearchResult.ClothesDto>
+    ): SearchResult
 
     @GET("getFilterValues")
     suspend fun getFilterValues(): List<FilterValuesDtoItem>
+
+    @GET("getTopBrands")
+    suspend fun getTopBrands(): List<BrandDto>
 
 }

@@ -7,6 +7,7 @@ import com.sychev.facedetector.data.local.mapper.SavedScreenshotConverter
 import com.sychev.facedetector.data.remote.CelebDetectionApi
 import com.sychev.facedetector.data.remote.ClothesDetectionApi
 import com.sychev.facedetector.data.remote.UnsplashApi
+import com.sychev.facedetector.data.remote.converter.BrandDtoConverter
 import com.sychev.facedetector.data.remote.converter.ClothesDtoConverter
 import com.sychev.facedetector.repository.DetectedClothesRepository
 import com.sychev.facedetector.repository.DetectedClothesRepositoryImpl
@@ -46,6 +47,7 @@ object RepoModule {
         unsplashApi: UnsplashApi,
         clothesEntityConverter: ClothesEntityConverter,
         clothesDtoConverter: ClothesDtoConverter,
+        brandDtoConverter: BrandDtoConverter,
     ): DetectedClothesRepository {
         return DetectedClothesRepositoryImpl(
             clothesDetectionApi,
@@ -53,6 +55,7 @@ object RepoModule {
             unsplashApi,
             clothesEntityConverter,
             clothesDtoConverter,
+            brandDtoConverter,
         )
     }
 

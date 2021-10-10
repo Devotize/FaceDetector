@@ -13,6 +13,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -138,7 +139,9 @@ class MainActivity : AppCompatActivity() {
                     ),
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .background(MaterialTheme.colors.primary)
+                            .fillMaxSize()
                     ) {
 //                        Row(
 //                            modifier = Modifier
@@ -225,6 +228,7 @@ class MainActivity : AppCompatActivity() {
                                     ClothesDetailScreen(
                                         clothes = it[0],
                                         viewModel = detailViewModel,
+                                        onBackClick = {onBackPressed()}
                                     )
                                 }
                             }

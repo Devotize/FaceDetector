@@ -1,6 +1,7 @@
 package com.sychev.facedetector.presentation.ui.screen.shop_screen
 
 import android.util.Log
+import android.widget.Space
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.*
@@ -24,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Measurable
@@ -37,7 +39,9 @@ import androidx.compose.ui.util.fastForEachIndexed
 import coil.compose.rememberImagePainter
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.domain.brand.Brand
 import com.sychev.facedetector.domain.filter.FilterValues
+import com.sychev.facedetector.domain.filter.Price
 import com.sychev.facedetector.presentation.ui.components.ClothesItem
 import com.sychev.facedetector.utils.TAG
 import com.sychev.facedetector.utils.toWordsList
@@ -51,27 +55,28 @@ fun ShopScreen(
     viewModel: ShopViewModel
 ) {
     val query = viewModel.query.value
+    val queryBubbles = viewModel.queryBubbles
     val gender = viewModel.gender.value
     val clothesList = viewModel.clothesList
     val filters = viewModel.filters
-    filters.forEach {
-        Log.d(TAG, "ShopScreen: colors: ${it.colors}")
-    }
     val loading = viewModel.loading.value
     val selectedFilter = viewModel.selectedFilter.value
-    var selectedFilterIndex by remember{ mutableStateOf<Int?>(null)}
+    var selectedFilterIndex by remember { mutableStateOf<Int?>(null) }
     filters.fastForEachIndexed { i, testClothesFilter ->
         if (testClothesFilter == selectedFilter) {
             selectedFilterIndex = i
         }
     }
-    Log.d(TAG, "ShopScreen: filters: ${filters.toList().last()}")
+    val topBrands = viewModel.topBrands
+    Log.d(TAG, "ShopScreen: topBrands: ${topBrands.toList()}")
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colors.primary),
     ) {
+        val brandListScrollState = rememberLazyListState()
+
         Surface(elevation = 4.dp) {
             Column(
                 modifier = Modifier
@@ -117,7 +122,7 @@ fun ShopScreen(
                                     //hint
                                     if (query.isEmpty())
                                         Text(
-                                            text = "Product, brand or vendor code",
+                                            text = "Товар, бренд или артикул",
                                             color = MaterialTheme.colors.primaryVariant,
                                             style = MaterialTheme.typography.subtitle1
                                         )
@@ -134,7 +139,9 @@ fun ShopScreen(
                     keyboardActions = KeyboardActions(
                         onSearch = {
                             focusManager.clearFocus()
-                            viewModel.onTriggerEvent(ShopEvent.SearchByFilters(TestClothesFilter().apply {fullTextQuery = query}))
+                            viewModel.onTriggerEvent(ShopEvent.SearchByFilters(TestClothesFilter().apply {
+                                fullTextQuery = query
+                            }))
                         }
                     )
                 )
@@ -161,7 +168,7 @@ fun ShopScreen(
                         },
                     ) {
                         Text(
-                            text = "Men",
+                            text = "Мужчинам",
                             style = MaterialTheme.typography.h3,
                             color = MaterialTheme.colors.onPrimary
 
@@ -176,7 +183,7 @@ fun ShopScreen(
                         },
                     ) {
                         Text(
-                            text = "Women",
+                            text = "Женщинам",
                             style = MaterialTheme.typography.h3,
                             color = MaterialTheme.colors.onPrimary
                         )
@@ -189,7 +196,7 @@ fun ShopScreen(
                         },
                     ) {
                         Text(
-                            text = "Together",
+                            text = "Все вместе",
                             style = MaterialTheme.typography.h3,
                             color = MaterialTheme.colors.onPrimary
                         )
@@ -203,7 +210,7 @@ fun ShopScreen(
                     .fillMaxSize()
                     .padding(top = 6.dp)
             ) {
-                var isGridExpanded by remember{mutableStateOf(false)}
+                var isGridExpanded by remember { mutableStateOf(false) }
                 selectedFilter?.let { selectedFilter ->
                     Row(
                         modifier = Modifier
@@ -213,18 +220,19 @@ fun ShopScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(
-                            modifier = Modifier.clickable { 
+                            modifier = Modifier.clickable {
                                 viewModel.onTriggerEvent(ShopEvent.GoToFiltersScreen(selectedFilter))
                             },
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Icon(imageVector = Icons.Outlined.FilterAlt,
+                            Icon(
+                                imageVector = Icons.Outlined.FilterAlt,
                                 contentDescription = null,
                                 tint = MaterialTheme.colors.onPrimary
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Edit",
+                                text = "Выбрать",
                                 style = MaterialTheme.typography.subtitle1,
                                 color = MaterialTheme.colors.onPrimary
                             )
@@ -239,13 +247,14 @@ fun ShopScreen(
                                 },
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(imageVector = Icons.Outlined.Done,
+                                Icon(
+                                    imageVector = Icons.Outlined.Done,
                                     contentDescription = null,
                                     tint = MaterialTheme.colors.onPrimary
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Save",
+                                    text = "Сохранить",
                                     style = MaterialTheme.typography.subtitle1,
                                     color = MaterialTheme.colors.onPrimary
                                 )
@@ -256,26 +265,26 @@ fun ShopScreen(
                     ExpandableStaggeredHorizontalGrid(
                         modifier = Modifier.padding(4.dp),
                         isExpanded = isGridExpanded,
-                        expandButton = { 
-                        Button(                          
-                            modifier = Modifier
-                                .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
-                                .size(30.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = MaterialTheme.colors.onPrimary,
-                                contentColor = MaterialTheme.colors.primary
-                            ),
-                            onClick = {
-                                      isGridExpanded = !isGridExpanded
-                            },
-                            contentPadding = PaddingValues(0.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (isGridExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                contentDescription = null,
-                            )
+                        expandButton = {
+                            Button(
+                                modifier = Modifier
+                                    .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
+                                    .size(30.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = MaterialTheme.colors.onPrimary,
+                                    contentColor = MaterialTheme.colors.primary
+                                ),
+                                onClick = {
+                                    isGridExpanded = !isGridExpanded
+                                },
+                                contentPadding = PaddingValues(0.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (isGridExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                )
+                            }
                         }
-                    }
                     ) {
                         selectedFilter.genders.forEach {
                             FilterBubble(
@@ -289,7 +298,7 @@ fun ShopScreen(
                                 }
                             )
                         }
-                        
+
                         selectedFilter.colors.forEach {
                             FilterBubble(
                                 modifier = Modifier
@@ -314,14 +323,52 @@ fun ShopScreen(
                                 }
                             )
                         }
-                        selectedFilter.fullTextQuery.toWordsList().forEach { str ->
+                        selectedFilter.price.min.let { min ->
+                            if (min != viewModel.filterValues.price.min) {
+                                FilterBubble(
+                                    modifier = Modifier
+                                        .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
+                                        .wrapContentSize(),
+                                    text = "Одежда от $min ₽",
+                                    onCloseClick = {
+                                        selectedFilter.price = Price(
+                                            min = viewModel.filterValues.price.min,
+                                            max = selectedFilter.price.max
+                                        )
+                                        viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
+                                    }
+                                )
+                            }
+                        }
+                        selectedFilter.price.max.let { max ->
+                            if (max != viewModel.filterValues.price.max) {
+                                FilterBubble(
+                                    modifier = Modifier
+                                        .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
+                                        .wrapContentSize(),
+                                    text = "Одежда до $max ₽",
+                                    onCloseClick = {
+                                        selectedFilter.price = Price(
+                                            min = selectedFilter.price.min,
+                                            max = viewModel.filterValues.price.max,
+                                        )
+                                        viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
+                                    }
+                                )
+                            }
+                        }
+                        queryBubbles.forEach { str ->
                             FilterBubble(
                                 modifier = Modifier
                                     .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
                                     .wrapContentSize(),
                                 text = str,
                                 onCloseClick = {
-                                    val newQuery = selectedFilter.fullTextQuery.split(" ").filter { it != str }.joinToString(" ")
+                                    var newQuery = ""
+                                    queryBubbles.forEach {
+                                        if (it == str) return@forEach
+                                        newQuery += "$it "
+                                    }
                                     selectedFilter.fullTextQuery = newQuery
                                     viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
                                 }
@@ -363,12 +410,12 @@ fun ShopScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Sorting: ",
+                            text = "Сортировка: ",
                             style = MaterialTheme.typography.h4,
                             color = MaterialTheme.colors.onBackground
                         )
                         Text(
-                            text = "Price low first",
+                            text = "Сначала дешевле",
                             style = MaterialTheme.typography.h4,
                             color = MaterialTheme.colors.onPrimary
                         )
@@ -422,21 +469,76 @@ fun ShopScreen(
                 }
             }
         } else {
-            val scrollState = rememberScrollState()
             Column(
-                modifier = Modifier
-                    .scrollable(state = scrollState, orientation = Orientation.Vertical),
+                modifier = Modifier,
             ) {
+                //brands
+                if (topBrands.isNotEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .padding(top = 16.dp, start = 28.dp, end = 28.dp, bottom = 8.dp)
+                            .fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = "Бренды",
+                            style = MaterialTheme.typography.subtitle1,
+                            color = MaterialTheme.colors.onPrimary,)
+                        Spacer(modifier = Modifier.height(4.dp)
+                        )
+
+                        LazyRow(
+                            state = brandListScrollState,
+                        ) {
+                            itemsIndexed(topBrands) { index: Int, item: Brand ->
+                                item.image?.let {
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(end = 6.dp)
+                                            .clickable {
+                                                val newFilter = TestClothesFilter().apply {
+                                                    brands.add(item.name)
+                                                }
+                                                viewModel.onTriggerEvent(
+                                                    ShopEvent.SearchByFilters(
+                                                        newFilter
+                                                    )
+                                                )
+                                            },
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Surface(
+                                            modifier = Modifier
+                                                .size(62.dp),
+                                            shape = CircleShape,
+                                            border = BorderStroke(1.dp, MaterialTheme.colors.primaryVariant)
+                                        ) {
+                                            Image(
+                                                modifier = Modifier.fillMaxSize(),
+                                                bitmap = item.image.asImageBitmap(),
+                                                contentDescription = null,
+                                                contentScale = ContentScale.Crop
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(text = item.name)
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+
+                }
 
                 Row(
                     modifier = Modifier
-                        .padding(top = 28.dp, start = 28.dp, end = 28.dp, bottom = 0.dp)
+                        .padding(top = 8.dp, start = 28.dp, end = 28.dp, bottom = 0.dp)
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Compilations",
+                        text = "Подборки",
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary,
                     )
@@ -480,10 +582,11 @@ fun ShopScreen(
                                             error(R.drawable.clothes_default_icon_gray)
                                         }
                                         Image(
-                                            modifier = Modifier.fillMaxSize(),
+                                            modifier = Modifier
+                                                .fillMaxSize(),
                                             painter = painter,
                                             contentDescription = null,
-                                            contentScale = ContentScale.Crop
+                                            contentScale = ContentScale.Crop,
                                         )
 
                                     }
@@ -495,7 +598,7 @@ fun ShopScreen(
                                                 .fillMaxSize(),
                                             cells = GridCells.Fixed(2)
                                         ) {
-                                            itemsIndexed(it) { index: Int, item: Clothes ->
+                                            itemsIndexed(it.subList(0,4)) { index: Int, item: Clothes ->
                                                 Box(
                                                     modifier = Modifier
                                                         .size(cellWidth)
@@ -522,6 +625,15 @@ fun ShopScreen(
                                                 }
                                             }
                                         }
+                                    }
+                                }
+                                if (item.clothes == null || item.clothes?.isEmpty() == true) {
+                                    Surface(
+                                        modifier = Modifier
+                                            .fillMaxSize(),
+                                        color = MaterialTheme.colors.background
+                                    ) {
+
                                     }
                                 }
                             }
@@ -666,7 +778,7 @@ private fun StaggeredHorizontalGrid(
         measurables.forEach {
             val placeable = it.measure(constrains)
             width += placeable.width
-             if (width >= screenMaxWidth) {
+            if (width >= screenMaxWidth) {
                 rowIndex++
                 width = 0
                 rowPlaceablesArrayList.add(arrayListOf())
@@ -677,7 +789,7 @@ private fun StaggeredHorizontalGrid(
             height = placeable.height * (rowIndex + 1)
 
             rowPlaceablesArrayList[rowIndex].add(placeable)
-            coordinatesArrayList[rowIndex].add(Pair(x,y))
+            coordinatesArrayList[rowIndex].add(Pair(x, y))
             x += placeable.width
         }
         layout(width, height) {
@@ -713,7 +825,7 @@ private fun ExpandableStaggeredHorizontalGrid(
         }
     ) { measurables, constrains ->
         if (measurables.size == 1) {
-            return@Layout layout(0,0){
+            return@Layout layout(0, 0) {
 
             }
         }
@@ -734,7 +846,7 @@ private fun ExpandableStaggeredHorizontalGrid(
                 width += placeable.width
                 if (!isExpanded && width >= screenMaxWidth - 200) {
                     rowPlaceablesArrayList[rowIndex].add(measurables.last().measure(constrains))
-                    coordinatesArrayList[rowIndex].add(Pair(x,y))
+                    coordinatesArrayList[rowIndex].add(Pair(x, y))
                     return@lit
                 }
                 if (width >= screenMaxWidth - 200) {
@@ -748,12 +860,12 @@ private fun ExpandableStaggeredHorizontalGrid(
                 height = placeable.height * (rowIndex + 1)
 
                 rowPlaceablesArrayList[rowIndex].add(placeable)
-                coordinatesArrayList[rowIndex].add(Pair(x,y))
+                coordinatesArrayList[rowIndex].add(Pair(x, y))
                 x += placeable.width
             }
 
         }
-                layout(width, height) {
+        layout(width, height) {
             for (i in 0..rowIndex) {
                 rowPlaceablesArrayList[i].forEachIndexed { index, placeable ->
                     placeable.place(
