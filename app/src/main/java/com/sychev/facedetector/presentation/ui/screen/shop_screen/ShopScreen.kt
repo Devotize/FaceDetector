@@ -1,12 +1,7 @@
 package com.sychev.facedetector.presentation.ui.screen.shop_screen
 
 import android.util.Log
-import android.widget.Space
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
@@ -23,18 +18,23 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.Measurable
-import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.fastForEachIndexed
 import coil.compose.rememberImagePainter
 import com.sychev.facedetector.R
@@ -44,9 +44,9 @@ import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.domain.filter.Price
 import com.sychev.facedetector.presentation.ui.components.ClothesItem
 import com.sychev.facedetector.utils.TAG
-import com.sychev.facedetector.utils.toWordsList
 import io.iamjosephmj.flinger.bahaviours.StockFlingBehaviours
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -68,15 +68,430 @@ fun ShopScreen(
         }
     }
     val topBrands = viewModel.topBrands
-    Log.d(TAG, "ShopScreen: topBrands: ${topBrands.toList()}")
+    val brandListScrollState = rememberLazyListState()
 
+    Box(modifier = Modifier.fillMaxSize()) {
+        var searchBarHeight by remember{mutableStateOf(0.dp)}
+        var searchBarHeightInPx by remember{ mutableStateOf(0f)}.also {
+            searchBarHeight = with(LocalDensity.current) {it.value.toDp()}
+        }
+        var brandsBubblesHeight by remember{mutableStateOf(0.dp)}
+        var brandsBubblesHeightInPx by remember{ mutableStateOf(0f)}.also {
+            brandsBubblesHeight = with(LocalDensity.current) {it.value.toDp()}
+        }
+        var brandsBubblesOffset by remember {mutableStateOf(0.dp)}
+        var brandsBubblesOffsetPx by remember {mutableStateOf(0f)}.also {
+            brandsBubblesOffset = with(LocalDensity.current){it.value.toDp()}
+        }
+
+        val nestedScrollConnection = remember {
+            object : NestedScrollConnection {
+                override fun onPreScroll(
+                    available: Offset,
+                    source: NestedScrollSource
+                ): Offset {
+                    val delta = available.y
+                    val newOffset: Float = brandsBubblesOffsetPx + delta
+                    brandsBubblesOffsetPx = newOffset.coerceIn(-brandsBubblesHeightInPx, 0f)
+                    return Offset.Zero
+                }
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colors.primary),
+        ) {
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .padding(top = searchBarHeight)
+                .nestedScroll(nestedScrollConnection),
+            ) {
+                if (clothesList.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 6.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .onGloballyPositioned {
+                                    brandsBubblesHeightInPx = it.size.toSize().height
+                                }
+                                .offset { IntOffset(x = 0, y = brandsBubblesOffsetPx.roundToInt()) }
+                        ) {
+                            selectedFilter?.let { selectedFilter ->
+                                ShopFilterBubbles(
+                                    viewModel = viewModel,
+                                    selectedFilter = selectedFilter,
+                                    filters = filters,
+                                    selectedFilterIndex = selectedFilterIndex,
+                                    queryBubbles = queryBubbles
+                                )
+                            }
+                        }
+                        var topPadding by remember{mutableStateOf(0.dp)}
+                        topPadding = if (brandsBubblesOffset + brandsBubblesHeight < 0.dp) {
+                            0.dp
+                        } else {
+                            brandsBubblesOffset + brandsBubblesHeight
+                        }
+                        Column(
+                            modifier = Modifier
+                                .padding(top = topPadding),
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 2.dp, start = 8.dp, end = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Сортировка: ",
+                                        style = MaterialTheme.typography.h4,
+                                        color = MaterialTheme.colors.onBackground
+                                    )
+                                    Text(
+                                        text = "Сначала дешевле",
+                                        style = MaterialTheme.typography.h4,
+                                        color = MaterialTheme.colors.onPrimary
+                                    )
+                                }
+
+                                IconButton(
+                                    onClick = {
+                                        viewModel.clothesList.clear()
+                                    }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colors.onPrimary
+                                    )
+                                }
+                            }
+                            Spacer(
+                                modifier = Modifier
+                                    .height(1.dp)
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colors.primaryVariant, CircleShape)
+                            )
+                            LazyColumn(
+                                modifier = Modifier,
+                                flingBehavior = StockFlingBehaviours.smoothScroll()
+                            ) {
+                                itemsIndexed(clothesList) { index, item ->
+                                    ClothesItem(
+                                        modifier = Modifier
+                                            .clickable {
+                                                viewModel.onTriggerEvent(
+                                                    ShopEvent.GoToDetailClothesScreen(
+                                                        item
+                                                    )
+                                                )
+                                            },
+                                        clothes = item,
+                                        shape = RectangleShape,
+                                        onAddToFavoriteClick = {
+                                            viewModel.onTriggerEvent(
+                                                ShopEvent.AddToFavoriteClothesEvent(
+                                                    item
+                                                )
+                                            )
+                                        },
+                                        onRemoveFromFavoriteClick = {
+                                            viewModel.onTriggerEvent(
+                                                ShopEvent.RemoveFromFavoriteClothesEvent(
+                                                    item
+                                                )
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier,
+                    ) {
+                        //brands
+                        Box(
+                            modifier = Modifier
+                                .onGloballyPositioned {
+                                    brandsBubblesHeightInPx = it.size.toSize().height
+                                }
+                                .offset { IntOffset(x = 0, y = brandsBubblesOffsetPx.roundToInt()) },
+                        ) {
+                            ShopBrands(
+                                modifier = Modifier
+                                    .padding(top = 16.dp, bottom = 8.dp)
+                                    .fillMaxWidth(),
+                                viewModel = viewModel,
+                                topBrands = topBrands,
+                                brandListScrollState = brandListScrollState,
+                            )
+                        }
+                        var topPadding by remember{mutableStateOf(0.dp)}
+                        topPadding = if (brandsBubblesOffset + brandsBubblesHeight < 0.dp) {
+                            0.dp
+                        } else {
+                            brandsBubblesOffset + brandsBubblesHeight
+                        }
+                        Column(
+                            modifier = Modifier
+                                .padding(top = topPadding),
+                        ){
+                            Row(
+                                modifier = Modifier
+                                    .padding(top = 8.dp, start = 28.dp, end = 28.dp, bottom = 0.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Подборки",
+                                    style = MaterialTheme.typography.subtitle1,
+                                    color = MaterialTheme.colors.onPrimary,
+                                )
+                                IconButton(
+                                    onClick = {
+                                        viewModel.onTriggerEvent(ShopEvent.GoToFiltersScreen())
+                                    }
+                                ) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .size(38.dp),
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                            LazyVerticalGrid(
+                                cells = GridCells.Adaptive(140.dp),
+                                contentPadding = PaddingValues(
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    bottom = 16.dp,
+                                    top = 0.dp
+                                ),
+                            ) {
+                                itemsIndexed(filters) { index: Int, item: TestClothesFilter ->
+                                    Column(modifier = Modifier.wrapContentSize()) {
+                                        BoxWithConstraints(
+                                            modifier = Modifier
+                                                .padding(start = 12.dp, end = 12.dp, top = 4.dp)
+                                                .size((LocalConfiguration.current.screenWidthDp / 2 - 28).dp)
+                                                .clickable {
+                                                    Log.d(
+                                                        TAG,
+                                                        "ShopScreen: item.colors: ${item.colors}"
+                                                    )
+                                                    viewModel.onTriggerEvent(
+                                                        ShopEvent.SearchByFilters(
+                                                            filters = item
+                                                        )
+                                                    )
+                                                }
+                                        ) {
+                                            if (item.clothes?.size == 1) {
+                                                item.clothes?.get(0)?.let { clothes ->
+                                                    val painter = rememberImagePainter(data = clothes.picUrl) {
+                                                        crossfade(true)
+                                                        error(R.drawable.clothes_default_icon_gray)
+                                                    }
+                                                    Image(
+                                                        modifier = Modifier
+                                                            .fillMaxSize(),
+                                                        painter = painter,
+                                                        contentDescription = null,
+                                                        contentScale = ContentScale.Crop,
+                                                    )
+
+                                                }
+                                            } else {
+                                                item.clothes?.let {
+                                                    val cellWidth = this.maxHeight.div(2)
+                                                    LazyVerticalGrid(
+                                                        modifier = Modifier
+                                                            .fillMaxSize(),
+                                                        cells = GridCells.Fixed(2),
+                                                    ) {
+                                                        itemsIndexed(
+                                                            it.subList(
+                                                                0,
+                                                                4
+                                                            )
+                                                        ) { index: Int, item: Clothes ->
+                                                            Box(
+                                                                modifier = Modifier
+                                                                    .size(cellWidth)
+                                                                    .padding(
+                                                                        top = 0.dp,
+                                                                        end = if (index % 2 == 0) 2.dp else 0.dp,
+                                                                        start = if (index % 2 != 0) 2.dp else 0.dp,
+                                                                        bottom = if (index == it.lastIndex || index == it.lastIndex - 1) 0.dp else 4.dp
+                                                                    )
+                                                                    .background(MaterialTheme.colors.primary),
+                                                            ) {
+                                                                val painter =
+                                                                    rememberImagePainter(data = item.picUrl) {
+                                                                        crossfade(true)
+                                                                        error(R.drawable.clothes_default_icon_gray)
+                                                                    }
+                                                                Image(
+                                                                    modifier = Modifier
+                                                                        .fillMaxSize(),
+                                                                    painter = painter,
+                                                                    contentDescription = null,
+                                                                    contentScale = ContentScale.Crop
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            if (item.clothes == null || item.clothes?.isEmpty() == true) {
+                                                Surface(
+                                                    modifier = Modifier
+                                                        .fillMaxSize(),
+                                                    color = MaterialTheme.colors.background
+                                                ) {
+
+                                                }
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            modifier = Modifier.padding(
+                                                start = 12.dp,
+                                                top = 4.dp,
+                                                bottom = 4.dp
+                                            ),
+                                            text = item.title,
+                                            style = MaterialTheme.typography.h6,
+                                            color = MaterialTheme.colors.onPrimary
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            ShopSearchBar(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .onGloballyPositioned {
+                        searchBarHeightInPx = it.size.toSize().height
+                    },
+                query = query,
+                viewModel = viewModel,
+            )
+        }
+    }
+    if (loading) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = MaterialTheme.colors.secondary
+            )
+        }
+    }
+
+}
+
+@Composable
+private fun ShopBrands(
+    modifier: Modifier,
+    viewModel: ShopViewModel,
+    topBrands: List<Brand>,
+    brandListScrollState: LazyListState,
+) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colors.primary),
+        modifier = modifier,
     ) {
-        val brandListScrollState = rememberLazyListState()
+        Text(
+            modifier = Modifier.padding(start = 28.dp),
+            text = "Бренды",
+            style = MaterialTheme.typography.subtitle1,
+            color = MaterialTheme.colors.onPrimary,
+        )
+        Spacer(
+            modifier = Modifier.height(4.dp)
+        )
 
+        LazyRow(
+            state = brandListScrollState,
+        ) {
+            itemsIndexed(topBrands) { index: Int, item: Brand ->
+                if (index == 0) {
+                    Spacer(modifier = Modifier.width(28.dp))
+                }
+                item.image?.let {
+                    Column(
+                        modifier = Modifier
+                            .padding(end = 6.dp)
+                            .clickable {
+                                val newFilter = TestClothesFilter().apply {
+                                    brands.add(item.name)
+                                }
+                                viewModel.onTriggerEvent(
+                                    ShopEvent.SearchByFilters(
+                                        newFilter
+                                    )
+                                )
+                            },
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Surface(
+                            modifier = Modifier
+                                .size(62.dp),
+                            shape = CircleShape,
+                            border = BorderStroke(
+                                1.dp,
+                                MaterialTheme.colors.primaryVariant
+                            )
+                        ) {
+                            Image(
+                                modifier = Modifier.fillMaxSize(),
+                                bitmap = item.image.asImageBitmap(),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            modifier = Modifier
+                                .width(62.dp),
+                            text = item.name,
+                            maxLines = 1,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+
+            }
+        }
+//        Spacer(modifier = Modifier.height(14.dp))
+    }
+}
+
+@Composable
+private fun ShopSearchBar(
+    modifier: Modifier,
+    query: String,
+    viewModel: ShopViewModel,
+) {
+    BoxWithConstraints(
+        modifier = modifier,
+    ) {
         Surface(elevation = 4.dp) {
             Column(
                 modifier = Modifier
@@ -139,9 +554,12 @@ fun ShopScreen(
                     keyboardActions = KeyboardActions(
                         onSearch = {
                             focusManager.clearFocus()
-                            viewModel.onTriggerEvent(ShopEvent.SearchByFilters(TestClothesFilter().apply {
-                                fullTextQuery = query
-                            }))
+                            viewModel.onTriggerEvent(
+                                ShopEvent.SearchByFilters(
+                                    TestClothesFilter().apply {
+                                        fullTextQuery = query
+                                    })
+                            )
                         }
                     )
                 )
@@ -204,468 +622,7 @@ fun ShopScreen(
                 }
             }
         }
-        if (clothesList.isNotEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 6.dp)
-            ) {
-                var isGridExpanded by remember { mutableStateOf(false) }
-                selectedFilter?.let { selectedFilter ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 12.dp, start = 12.dp, end = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            modifier = Modifier.clickable {
-                                viewModel.onTriggerEvent(ShopEvent.GoToFiltersScreen(selectedFilter))
-                            },
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.FilterAlt,
-                                contentDescription = null,
-                                tint = MaterialTheme.colors.onPrimary
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Выбрать",
-                                style = MaterialTheme.typography.subtitle1,
-                                color = MaterialTheme.colors.onPrimary
-                            )
-                        }
-                        if (!filters.contains(selectedFilter)) {
-                            Row(
-                                modifier = Modifier.clickable {
-                                    selectedFilterIndex?.let {
-                                        viewModel.filters[it] = selectedFilter
-                                        viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
-                                    }
-                                },
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Done,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colors.onPrimary
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Сохранить",
-                                    style = MaterialTheme.typography.subtitle1,
-                                    color = MaterialTheme.colors.onPrimary
-                                )
-                            }
-                        }
-                    }
-
-                    ExpandableStaggeredHorizontalGrid(
-                        modifier = Modifier.padding(4.dp),
-                        isExpanded = isGridExpanded,
-                        expandButton = {
-                            Button(
-                                modifier = Modifier
-                                    .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
-                                    .size(30.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    backgroundColor = MaterialTheme.colors.onPrimary,
-                                    contentColor = MaterialTheme.colors.primary
-                                ),
-                                onClick = {
-                                    isGridExpanded = !isGridExpanded
-                                },
-                                contentPadding = PaddingValues(0.dp)
-                            ) {
-                                Icon(
-                                    imageVector = if (isGridExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                    contentDescription = null,
-                                )
-                            }
-                        }
-                    ) {
-                        selectedFilter.genders.forEach {
-                            FilterBubble(
-                                modifier = Modifier
-                                    .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
-                                    .wrapContentSize(),
-                                text = it,
-                                onCloseClick = {
-                                    selectedFilter.genders.remove(it)
-                                    viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
-                                }
-                            )
-                        }
-
-                        selectedFilter.colors.forEach {
-                            FilterBubble(
-                                modifier = Modifier
-                                    .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
-                                    .wrapContentSize(),
-                                text = it,
-                                onCloseClick = {
-                                    selectedFilter.colors.remove(it)
-                                    viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
-                                }
-                            )
-                        }
-                        selectedFilter.brands.forEach {
-                            FilterBubble(
-                                modifier = Modifier
-                                    .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
-                                    .wrapContentSize(),
-                                text = it,
-                                onCloseClick = {
-                                    selectedFilter.brands.remove(it)
-                                    viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
-                                }
-                            )
-                        }
-                        selectedFilter.price.min.let { min ->
-                            if (min != viewModel.filterValues.price.min) {
-                                FilterBubble(
-                                    modifier = Modifier
-                                        .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
-                                        .wrapContentSize(),
-                                    text = "Одежда от $min ₽",
-                                    onCloseClick = {
-                                        selectedFilter.price = Price(
-                                            min = viewModel.filterValues.price.min,
-                                            max = selectedFilter.price.max
-                                        )
-                                        viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
-                                    }
-                                )
-                            }
-                        }
-                        selectedFilter.price.max.let { max ->
-                            if (max != viewModel.filterValues.price.max) {
-                                FilterBubble(
-                                    modifier = Modifier
-                                        .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
-                                        .wrapContentSize(),
-                                    text = "Одежда до $max ₽",
-                                    onCloseClick = {
-                                        selectedFilter.price = Price(
-                                            min = selectedFilter.price.min,
-                                            max = viewModel.filterValues.price.max,
-                                        )
-                                        viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
-                                    }
-                                )
-                            }
-                        }
-                        queryBubbles.forEach { str ->
-                            FilterBubble(
-                                modifier = Modifier
-                                    .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
-                                    .wrapContentSize(),
-                                text = str,
-                                onCloseClick = {
-                                    var newQuery = ""
-                                    queryBubbles.forEach {
-                                        if (it == str) return@forEach
-                                        newQuery += "$it "
-                                    }
-                                    selectedFilter.fullTextQuery = newQuery
-                                    viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
-                                }
-                            )
-                        }
-                    }
-//                    LazyVerticalGrid(
-//                        cells = GridCells.Adaptive(110.dp),
-//                        contentPadding = PaddingValues(6.dp)
-//                    ) {
-//                        itemsIndexed(selectedFilter.genders) { index, parameter ->
-//                            FilterBubble(
-//                                text = parameter,
-//                                onCloseClick = {
-//                                    selectedFilter.genders.remove(parameter)
-//                                    viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
-//                                }
-//                            )
-//                        }
-//                        itemsIndexed(selectedFilter.colors) { index: Int, item: String ->
-//                            FilterBubble(
-//                                text = item,
-//                                onCloseClick = {
-//                                    selectedFilter.colors.remove(item)
-//                                    viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
-//                                }
-//                            )
-//                        }
-//                    }
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 2.dp, start = 8.dp, end = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Сортировка: ",
-                            style = MaterialTheme.typography.h4,
-                            color = MaterialTheme.colors.onBackground
-                        )
-                        Text(
-                            text = "Сначала дешевле",
-                            style = MaterialTheme.typography.h4,
-                            color = MaterialTheme.colors.onPrimary
-                        )
-                    }
-
-                    IconButton(
-                        onClick = {
-                            viewModel.clothesList.clear()
-                        }) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = null,
-                            tint = MaterialTheme.colors.onPrimary
-                        )
-                    }
-                }
-                Spacer(
-                    modifier = Modifier
-                        .height(1.dp)
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colors.primaryVariant, CircleShape)
-                )
-                LazyColumn(
-                    modifier = Modifier,
-                    flingBehavior = StockFlingBehaviours.smoothScroll()
-                ) {
-                    itemsIndexed(clothesList) { index, item ->
-                        ClothesItem(
-                            modifier = Modifier
-                                .clickable {
-                                    viewModel.onTriggerEvent(ShopEvent.GoToDetailClothesScreen(item))
-                                },
-                            clothes = item,
-                            shape = RectangleShape,
-                            onAddToFavoriteClick = {
-                                viewModel.onTriggerEvent(
-                                    ShopEvent.AddToFavoriteClothesEvent(
-                                        item
-                                    )
-                                )
-                            },
-                            onRemoveFromFavoriteClick = {
-                                viewModel.onTriggerEvent(
-                                    ShopEvent.RemoveFromFavoriteClothesEvent(
-                                        item
-                                    )
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-        } else {
-            Column(
-                modifier = Modifier,
-            ) {
-                //brands
-                if (topBrands.isNotEmpty()) {
-                    Column(
-                        modifier = Modifier
-                            .padding(top = 16.dp, start = 28.dp, end = 28.dp, bottom = 8.dp)
-                            .fillMaxWidth(),
-                    ) {
-                        Text(
-                            text = "Бренды",
-                            style = MaterialTheme.typography.subtitle1,
-                            color = MaterialTheme.colors.onPrimary,)
-                        Spacer(modifier = Modifier.height(4.dp)
-                        )
-
-                        LazyRow(
-                            state = brandListScrollState,
-                        ) {
-                            itemsIndexed(topBrands) { index: Int, item: Brand ->
-                                item.image?.let {
-                                    Column(
-                                        modifier = Modifier
-                                            .padding(end = 6.dp)
-                                            .clickable {
-                                                val newFilter = TestClothesFilter().apply {
-                                                    brands.add(item.name)
-                                                }
-                                                viewModel.onTriggerEvent(
-                                                    ShopEvent.SearchByFilters(
-                                                        newFilter
-                                                    )
-                                                )
-                                            },
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Surface(
-                                            modifier = Modifier
-                                                .size(62.dp),
-                                            shape = CircleShape,
-                                            border = BorderStroke(1.dp, MaterialTheme.colors.primaryVariant)
-                                        ) {
-                                            Image(
-                                                modifier = Modifier.fillMaxSize(),
-                                                bitmap = item.image.asImageBitmap(),
-                                                contentDescription = null,
-                                                contentScale = ContentScale.Crop
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(text = item.name)
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-
-                }
-
-                Row(
-                    modifier = Modifier
-                        .padding(top = 8.dp, start = 28.dp, end = 28.dp, bottom = 0.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Подборки",
-                        style = MaterialTheme.typography.subtitle1,
-                        color = MaterialTheme.colors.onPrimary,
-                    )
-                    IconButton(
-                        onClick = {
-                            viewModel.onTriggerEvent(ShopEvent.GoToFiltersScreen())
-                        }
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(38.dp),
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null
-                        )
-                    }
-                }
-                LazyVerticalGrid(
-                    cells = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        bottom = 16.dp,
-                        top = 0.dp
-                    ),
-                ) {
-                    itemsIndexed(filters) { index: Int, item: TestClothesFilter ->
-                        Column(modifier = Modifier.wrapContentSize()) {
-                            BoxWithConstraints(
-                                modifier = Modifier
-                                    .padding(start = 12.dp, end = 12.dp, top = 4.dp)
-                                    .size((LocalConfiguration.current.screenWidthDp / 2 - 28).dp)
-                                    .clickable {
-                                        Log.d(TAG, "ShopScreen: item.colors: ${item.colors}")
-                                        viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = item))
-                                    }
-                            ) {
-                                if (item.clothes?.size == 1) {
-                                    item.clothes?.get(0)?.let { clothes ->
-                                        val painter = rememberImagePainter(data = clothes.picUrl) {
-                                            crossfade(true)
-                                            error(R.drawable.clothes_default_icon_gray)
-                                        }
-                                        Image(
-                                            modifier = Modifier
-                                                .fillMaxSize(),
-                                            painter = painter,
-                                            contentDescription = null,
-                                            contentScale = ContentScale.Crop,
-                                        )
-
-                                    }
-                                } else {
-                                    item.clothes?.let {
-                                        val cellWidth = this.maxHeight.div(2)
-                                        LazyVerticalGrid(
-                                            modifier = Modifier
-                                                .fillMaxSize(),
-                                            cells = GridCells.Fixed(2)
-                                        ) {
-                                            itemsIndexed(it.subList(0,4)) { index: Int, item: Clothes ->
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(cellWidth)
-                                                        .padding(
-                                                            top = 0.dp,
-                                                            end = if (index % 2 == 0) 2.dp else 0.dp,
-                                                            start = if (index % 2 != 0) 2.dp else 0.dp,
-                                                            bottom = if (index == it.lastIndex || index == it.lastIndex - 1) 0.dp else 4.dp
-                                                        )
-                                                        .background(MaterialTheme.colors.primary),
-                                                ) {
-                                                    val painter =
-                                                        rememberImagePainter(data = item.picUrl) {
-                                                            crossfade(true)
-                                                            error(R.drawable.clothes_default_icon_gray)
-                                                        }
-                                                    Image(
-                                                        modifier = Modifier
-                                                            .fillMaxSize(),
-                                                        painter = painter,
-                                                        contentDescription = null,
-                                                        contentScale = ContentScale.Crop
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                if (item.clothes == null || item.clothes?.isEmpty() == true) {
-                                    Surface(
-                                        modifier = Modifier
-                                            .fillMaxSize(),
-                                        color = MaterialTheme.colors.background
-                                    ) {
-
-                                    }
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                modifier = Modifier.padding(
-                                    start = 12.dp,
-                                    top = 4.dp,
-                                    bottom = 4.dp
-                                ),
-                                text = item.title,
-                                style = MaterialTheme.typography.h6,
-                                color = MaterialTheme.colors.onPrimary
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                    }
-                }
-            }
-        }
-
     }
-
-    if (loading) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = MaterialTheme.colors.secondary
-            )
-        }
-    }
-
 }
 
 @Composable
@@ -699,6 +656,235 @@ fun FilterBubble(
                     },
             ) {
                 Icon(imageVector = Icons.Default.Close, contentDescription = null)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShopFilterBubbles(
+    viewModel: ShopViewModel,
+    selectedFilter: TestClothesFilter,
+    filters: List<TestClothesFilter>,
+    selectedFilterIndex: Int?,
+    queryBubbles: List<String>
+) {
+    var isGridExpanded by remember { mutableStateOf(false) }
+    Column() {
+
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp, start = 12.dp, end = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                modifier = Modifier.clickable {
+                    viewModel.onTriggerEvent(
+                        ShopEvent.GoToFiltersScreen(
+                            selectedFilter
+                        )
+                    )
+                },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.FilterAlt,
+                    contentDescription = null,
+                    tint = MaterialTheme.colors.onPrimary
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Выбрать",
+                    style = MaterialTheme.typography.subtitle1,
+                    color = MaterialTheme.colors.onPrimary
+                )
+            }
+            if (!filters.contains(selectedFilter)) {
+                Row(
+                    modifier = Modifier.clickable {
+                        selectedFilterIndex?.let {
+                            viewModel.filters[it] = selectedFilter
+                            viewModel.onTriggerEvent(
+                                ShopEvent.SearchByFilters(
+                                    filters = selectedFilter
+                                )
+                            )
+                        }
+                    },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Done,
+                        contentDescription = null,
+                        tint = MaterialTheme.colors.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Сохранить",
+                        style = MaterialTheme.typography.subtitle1,
+                        color = MaterialTheme.colors.onPrimary
+                    )
+                }
+            }
+        }
+
+        ExpandableStaggeredHorizontalGrid(
+            modifier = Modifier.padding(4.dp),
+            isExpanded = isGridExpanded,
+            expandButton = {
+                Button(
+                    modifier = Modifier
+                        .padding(
+                            top = 8.dp,
+                            start = 8.dp,
+                            end = 8.dp,
+                            bottom = 8.dp
+                        )
+                        .size(30.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = MaterialTheme.colors.onPrimary,
+                        contentColor = MaterialTheme.colors.primary
+                    ),
+                    onClick = {
+                        isGridExpanded = !isGridExpanded
+                    },
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isGridExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                    )
+                }
+            }
+        ) {
+            selectedFilter.genders.forEach {
+                FilterBubble(
+                    modifier = Modifier
+                        .padding(
+                            top = 8.dp,
+                            start = 8.dp,
+                            end = 8.dp,
+                            bottom = 8.dp
+                        )
+                        .wrapContentSize(),
+                    text = it,
+                    onCloseClick = {
+                        selectedFilter.genders.remove(it)
+                        viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
+                    }
+                )
+            }
+
+            selectedFilter.colors.forEach {
+                FilterBubble(
+                    modifier = Modifier
+                        .padding(
+                            top = 8.dp,
+                            start = 8.dp,
+                            end = 8.dp,
+                            bottom = 8.dp
+                        )
+                        .wrapContentSize(),
+                    text = it,
+                    onCloseClick = {
+                        selectedFilter.colors.remove(it)
+                        viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
+                    }
+                )
+            }
+            selectedFilter.brands.forEach {
+                FilterBubble(
+                    modifier = Modifier
+                        .padding(
+                            top = 8.dp,
+                            start = 8.dp,
+                            end = 8.dp,
+                            bottom = 8.dp
+                        )
+                        .wrapContentSize(),
+                    text = it,
+                    onCloseClick = {
+                        selectedFilter.brands.remove(it)
+                        viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
+                    }
+                )
+            }
+            selectedFilter.price.min.let { min ->
+                if (min != viewModel.filterValues.price.min) {
+                    FilterBubble(
+                        modifier = Modifier
+                            .padding(
+                                top = 8.dp,
+                                start = 8.dp,
+                                end = 8.dp,
+                                bottom = 8.dp
+                            )
+                            .wrapContentSize(),
+                        text = "Одежда от $min ₽",
+                        onCloseClick = {
+                            selectedFilter.price = Price(
+                                min = viewModel.filterValues.price.min,
+                                max = selectedFilter.price.max
+                            )
+                            viewModel.onTriggerEvent(
+                                ShopEvent.SearchByFilters(
+                                    filters = selectedFilter
+                                )
+                            )
+                        }
+                    )
+                }
+            }
+            selectedFilter.price.max?.let { max ->
+                if (max != viewModel.filterValues.price.max) {
+                    FilterBubble(
+                        modifier = Modifier
+                            .padding(
+                                top = 8.dp,
+                                start = 8.dp,
+                                end = 8.dp,
+                                bottom = 8.dp
+                            )
+                            .wrapContentSize(),
+                        text = "Одежда до $max ₽",
+                        onCloseClick = {
+                            selectedFilter.price = Price(
+                                min = selectedFilter.price.min,
+                                max = viewModel.filterValues.price.max,
+                            )
+                            viewModel.onTriggerEvent(
+                                ShopEvent.SearchByFilters(
+                                    filters = selectedFilter
+                                )
+                            )
+                        }
+                    )
+                }
+            }
+            queryBubbles.forEach { str ->
+                FilterBubble(
+                    modifier = Modifier
+                        .padding(
+                            top = 8.dp,
+                            start = 8.dp,
+                            end = 8.dp,
+                            bottom = 8.dp
+                        )
+                        .wrapContentSize(),
+                    text = str,
+                    onCloseClick = {
+                        var newQuery = ""
+                        queryBubbles.forEach {
+                            if (it == str) return@forEach
+                            newQuery += "$it "
+                        }
+                        selectedFilter.fullTextQuery = newQuery
+                        viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
+                    }
+                )
             }
         }
     }
@@ -814,9 +1000,7 @@ private fun ExpandableStaggeredHorizontalGrid(
     },
     content: @Composable () -> Unit,
 ) {
-    run {
-
-    }
+    var isMoreThenOneRow = false
     Layout(
         modifier = modifier,
         content = {
@@ -842,36 +1026,53 @@ private fun ExpandableStaggeredHorizontalGrid(
         var y = 0
         run lit@{
             measurables.forEach {
-                val placeable = it.measure(constrains)
-                width += placeable.width
-                if (!isExpanded && width >= screenMaxWidth - 200) {
-                    rowPlaceablesArrayList[rowIndex].add(measurables.last().measure(constrains))
+                try {
+                    val placeable = it.measure(constrains)
+                    width += placeable.width
+                    if (width >= screenMaxWidth - 200) {
+                        Log.d(TAG, "ExpandableStaggeredHorizontalGrid: moreThenOneRow")
+                        isMoreThenOneRow = true
+                        if (!isExpanded) {
+                            rowPlaceablesArrayList[rowIndex].add(
+                                measurables.last().measure(constrains)
+                            )
+                            coordinatesArrayList[rowIndex].add(Pair(x, y))
+                            return@lit
+                        }
+                        rowIndex++
+                        width = 0
+                        rowPlaceablesArrayList.add(arrayListOf())
+                        coordinatesArrayList.add(arrayListOf())
+                        x = 0
+                        y += placeable.height
+                    }
+                    height = placeable.height * (rowIndex + 1)
+
+                    rowPlaceablesArrayList[rowIndex].add(placeable)
                     coordinatesArrayList[rowIndex].add(Pair(x, y))
-                    return@lit
+                    x += placeable.width
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
-                if (width >= screenMaxWidth - 200) {
-                    rowIndex++
-                    width = 0
-                    rowPlaceablesArrayList.add(arrayListOf())
-                    coordinatesArrayList.add(arrayListOf())
-                    x = 0
-                    y += placeable.height
-                }
-                height = placeable.height * (rowIndex + 1)
-
-                rowPlaceablesArrayList[rowIndex].add(placeable)
-                coordinatesArrayList[rowIndex].add(Pair(x, y))
-                x += placeable.width
             }
-
         }
+
         layout(width, height) {
             for (i in 0..rowIndex) {
                 rowPlaceablesArrayList[i].forEachIndexed { index, placeable ->
-                    placeable.place(
-                        x = coordinatesArrayList[i][index].first,
-                        y = coordinatesArrayList[i][index].second
-                    )
+//                    Log.d(TAG, "ExpandableStaggeredHorizontalGrid: placing placeable with rowIndex: $i")
+                    //check if need to add expand button
+                    if (i == rowIndex && index == rowPlaceablesArrayList[i].lastIndex && !isMoreThenOneRow) {
+                        Log.d(TAG, "ExpandableStaggeredHorizontalGrid: do not add expand button")
+                        //do not add expand button
+                        return@forEachIndexed
+                    } else {
+                        placeable.place(
+                            x = coordinatesArrayList[i][index].first,
+                            y = coordinatesArrayList[i][index].second
+                        )
+                    }
+
                 }
             }
         }

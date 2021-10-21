@@ -68,7 +68,7 @@ class AssistantDetector
 
 
 
-    private val entryPoint = EntryPointAccessors.fromApplication(context, PhotoDetectorEntryPoint::class.java)
+    private  val entryPoint = EntryPointAccessors.fromApplication(context, PhotoDetectorEntryPoint::class.java)
     private val viewModel = entryPoint.provideViewModel()
     private val assistantManager = entryPoint.provideAssistantManager()
     private val detectedClothesList = DetectedClothesListItem(context)

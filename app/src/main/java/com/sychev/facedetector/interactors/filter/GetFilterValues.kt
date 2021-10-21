@@ -83,6 +83,7 @@ class GetFilterValues(
                             min = list[0],
                             max = list[1]
                         )
+                        Log.d(TAG, "execute: prices: ${filterValues.price}")
                     }
                 }
 //                "provider" -> {

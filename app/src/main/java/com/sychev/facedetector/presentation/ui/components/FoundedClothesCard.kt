@@ -79,7 +79,7 @@ fun FoundedClothesCard(
                 ) {
                     Text(
                         modifier = Modifier.heightIn(max = 50.dp),
-                        text = "${clothes.brand} ${clothes.itemCategory} sflgkjglgflkvklfkjlfsdjkldsfjklsdfjkldfskljdsfljkdsfjkldfsljkfdsjklfsjklsfdljksjlfgsjlkfgjklsgfljkgfslkjsflkgdk",
+                        text = "${clothes.itemCategory} ${clothes.brand} ",
                         style = MaterialTheme.typography.subtitle2,
                         color = Color.Black
                     )

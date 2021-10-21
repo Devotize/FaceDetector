@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberImagePainter
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.utils.loadPicture
@@ -37,17 +38,18 @@ fun ClothesChip(
         shape = MaterialTheme.shapes.large,
         border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colors.secondary) else null,
     ) {
-        loadPicture(
-            url = clothes.picUrl,
-            defaultImage = R.drawable.clothes_default_icon
-        ).value?.let {
+        val imagePainter = rememberImagePainter(data = clothes.picUrl){
+            crossfade(true)
+            error(R.drawable.clothes_default_icon_gray)
+        }
+
             Image(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(2.dp),
-                bitmap = it.asImageBitmap(),
+                painter = imagePainter,
                 contentDescription = null,
             )
-        }
+
     }
 }

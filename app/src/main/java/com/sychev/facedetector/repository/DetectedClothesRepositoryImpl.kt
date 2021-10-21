@@ -207,8 +207,10 @@ class DetectedClothesRepositoryImpl(
         }
 
             filters.price.let {
-                val prices = arrayOf(it.min, it.max)
-                hm.put(TestClothesFilter.Titles.prices, prices)
+                if (it.max != null) {
+                    val prices = arrayOf(it.min, it.max)
+                    hm.put(TestClothesFilter.Titles.prices, prices)
+                }
             }
 
         if (filters.itemSizes.isNotEmpty()) {

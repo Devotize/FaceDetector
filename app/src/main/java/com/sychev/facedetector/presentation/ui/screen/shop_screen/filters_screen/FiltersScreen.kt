@@ -626,22 +626,24 @@ fun FiltersScreen(
                     }
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Spacer(modifier = Modifier.width(4.dp))
-                        RangeSlider(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            values = customFilter.price.min.toFloat()..customFilter.price.max.toFloat(),
-                            onValueChange = { floatRange ->
-                                Log.d(TAG, "FiltersScreen: onValueCange floatRange = ${floatRange.endInclusive.toInt()}")
-                                val newFilter = customFilter.also {
-                                    it.price = Price(floatRange.start.toInt(), floatRange.endInclusive.toInt())
-                                }
-                                viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilter))
-                            },
-                            valueRange = viewModel.filterValues.price.min.toFloat()..viewModel.filterValues.price.max.toFloat(),
-                            colors = SliderDefaults.colors(
-                                activeTrackColor = MaterialTheme.colors.secondary
+                        if (customFilter.price.max != null && viewModel.filterValues.price.max != null) {
+                            RangeSlider(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                values = customFilter.price.min.toFloat()..customFilter.price.max!!.toFloat(),
+                                onValueChange = { floatRange ->
+                                    Log.d(TAG, "FiltersScreen: onValueCange floatRange = ${floatRange.endInclusive.toInt()}")
+                                    val newFilter = customFilter.also {
+                                        it.price = Price(floatRange.start.toInt(), floatRange.endInclusive.toInt())
+                                    }
+                                    viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilter))
+                                },
+                                valueRange = viewModel.filterValues.price.min.toFloat()..viewModel.filterValues.price.max!!.toFloat(),
+                                colors = SliderDefaults.colors(
+                                    activeTrackColor = MaterialTheme.colors.secondary
+                                )
                             )
-                        )
+                        }
                         Spacer(modifier = Modifier.width(4.dp))
                     }
 
@@ -781,7 +783,9 @@ fun FiltersScreen(
                     ),
                     onClick = {
                         isTitleEmpty = customFilter.title.isEmpty()
-                        isMinPriceLowerThenMax = customFilter.price.min < customFilter.price.max
+                        customFilter.price.max?.let { maxPrice ->
+                            isMinPriceLowerThenMax = customFilter.price.min < maxPrice
+                        }
                         if (!isTitleEmpty && isMinPriceLowerThenMax) {
                             if (filterIndex != null) {
                                 filterIndex?.let {

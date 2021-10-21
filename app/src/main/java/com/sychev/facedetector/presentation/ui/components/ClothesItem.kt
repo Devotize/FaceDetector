@@ -142,15 +142,11 @@ fun ClothesItem(
                 ) {
                     if (clothes.brandLogo.isNotBlank()) {
                         val logoBytes = Base64.decode(clothes.brandLogo, 0)
-                        val logoImagePainter = rememberImagePainter(data = logoBytes.toBitmap()){
-                            crossfade(true)
-                            error(R.drawable.default_logo_icon)
-                        }
                         Image(
                             modifier = Modifier
                                 .fillMaxWidth(0.8f)
                                 .height(40.dp),
-                            painter = logoImagePainter,
+                            bitmap = logoBytes.toBitmap().asImageBitmap(),
                             contentDescription = null,
                             contentScale = ContentScale.Crop
                         )

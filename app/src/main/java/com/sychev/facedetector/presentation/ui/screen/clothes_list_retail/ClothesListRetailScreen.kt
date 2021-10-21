@@ -1,9 +1,11 @@
 package com.sychev.facedetector.presentation.ui.screen.clothes_list_retail
 
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -19,12 +21,16 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.core.content.ContextCompat
 import com.google.accompanist.pager.*
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.presentation.activity.main.MainActivity
+import com.sychev.facedetector.presentation.ui.components.ClothesBigItem
 import com.sychev.facedetector.presentation.ui.components.ClothesChip
 import com.sychev.facedetector.presentation.ui.components.ClothesRetailItem
 import com.sychev.facedetector.presentation.ui.components.PagerIndicator
+import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailEvent
+import com.sychev.facedetector.presentation.ui.screen.clothes_detail.SimilarClothesCard
 import com.sychev.facedetector.presentation.ui.theme.AppTheme
 import com.sychev.facedetector.utils.TAG
 import kotlinx.coroutines.CoroutineScope
@@ -44,16 +50,16 @@ fun ClothesListRetailScreen(
 
     if (!recomposed) {
         if (clothesList.isNotEmpty() && viewModel.clothesList.isEmpty()) {
-            viewModel.onTriggerEvent(ClothesListRetailEvent.ProcessClothesEvent(clothesList))
+            viewModel.onTriggerEvent(ClothesListRetailEvent.ProcessClothesEvent(clothesList, context))
         }
 
         if (viewModel.clothesChips.isNotEmpty()) {
-            viewModel.onTriggerEvent(ClothesListRetailEvent.OnSelectChipEvent(viewModel.clothesChips.last()))
+            viewModel.onTriggerEvent(ClothesListRetailEvent.OnSelectChipEvent(viewModel.clothesChips.last(), context = context))
         }
 
         viewModel.clothesChips.forEach { pair ->
             if (pair.second == selectedClothes) {
-                viewModel.onTriggerEvent(ClothesListRetailEvent.OnSelectChipEvent(pair))
+                viewModel.onTriggerEvent(ClothesListRetailEvent.OnSelectChipEvent(pair, context))
             }
         }
         recomposed = true
@@ -66,10 +72,10 @@ fun ClothesListRetailScreen(
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(18.dp)
         ) {
             IconButton(
                 modifier = Modifier
+                    .padding(top = 18.dp, start = 4.dp)
                     .size(30.dp),
                 onClick = {
                     onBackClick()
@@ -78,91 +84,96 @@ fun ClothesListRetailScreen(
                 Icon(
                     imageVector = Icons.Filled.ArrowBackIos,
                     contentDescription = null,
-                    tint = MaterialTheme.colors.onBackground
+                    tint = MaterialTheme.colors.onPrimary
                 )
             }
-        }
-
-        val scrollRowScrollState = rememberLazyListState()
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            state = scrollRowScrollState
-        ) {
-            itemsIndexed(viewModel.clothesChips) { index, item ->
-                ClothesChip(
-                    clothes = item.first,
-                    isSelected = viewModel.selectedChip.value?.first == item.first,
-                    onClick = {
-                        viewModel.onTriggerEvent(ClothesListRetailEvent.OnSelectChipEvent(item))
-                    }
-                )
-            }
-        }
-        LaunchedEffect(scrollRowScrollState){
-            viewModel.selectedChip.value?.let{ pair: Pair<Clothes, List<Clothes>> ->
-                scrollRowScrollState.scrollToItem(viewModel.clothesChips.indexOf(pair))
-            }
-        }
-
-        val pagerState =
-            rememberPagerState(pageCount = viewModel.clothesList.size, initialOffscreenLimit = 2)
-
-        HorizontalPager(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 32.dp),
-            state = pagerState,
-            itemSpacing = 0.dp,
-        ) { page ->
-            ClothesRetailItem(
+            val scrollRowScrollState = rememberLazyListState()
+            LazyRow(
                 modifier = Modifier
-                    .width(255.dp)
-                    .clickable {
-                        viewModel.onTriggerEvent(ClothesListRetailEvent.GoToDetailScreen(context, viewModel.clothesList[page]))
-                    }
-                    .height(450.dp)
-                    .graphicsLayer {
-                        val pageOffset = calculateCurrentOffsetForPage(page).absoluteValue
-                        lerp(
-                            start = 0.85f,
-                            stop = 1f,
-                            fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                        ).also { scale ->
-                            scaleX = scale
-                            scaleY = scale
+                    .fillMaxWidth(),
+                state = scrollRowScrollState
+            ) {
+                itemsIndexed(viewModel.clothesChips) { index, item ->
+                    ClothesChip(
+                        clothes = item.first,
+                        isSelected = viewModel.selectedChip.value?.first == item.first,
+                        onClick = {
+                            viewModel.onTriggerEvent(ClothesListRetailEvent.OnSelectChipEvent(item, context = context))
                         }
-//                            alpha = lerp(
-//                                start = 0.5f,
-//                                stop = 1f,
-//                                fraction = 1f - pageOffset.coerceIn(0f, 1f)
-//                            )
-                    },
-                clothes = viewModel.clothesList[page],
-                onAddToFavoriteClick = {
-                    viewModel.onTriggerEvent(ClothesListRetailEvent.AddToFavoriteClothesEvent(viewModel.clothesList[page]))
-                },
-                onRemoveFromFavoriteClick = {
-                    viewModel.onTriggerEvent(ClothesListRetailEvent.RemoveFromFavoriteClothesEvent(viewModel.clothesList[page]))
+                    )
                 }
-            )
+            }
+            LaunchedEffect(scrollRowScrollState) {
+                viewModel.selectedChip.value?.let { pair: Pair<Clothes, List<Clothes>> ->
+                    scrollRowScrollState.scrollToItem(viewModel.clothesChips.indexOf(pair))
+                }
+            }
+
+        }
+        LazyColumn() {
+            itemsIndexed(viewModel.clothesList) {index, item ->
+                ClothesBigItem(
+                    clothes = item,
+                    onAddToFavoriteClick = {
+                        viewModel.onTriggerEvent(ClothesListRetailEvent.AddToFavoriteClothesEvent(clothes = it))
+                                           },
+                    onRemoveFromFavoriteClick = {
+                        viewModel.onTriggerEvent(ClothesListRetailEvent.RemoveFromFavoriteClothesEvent(clothes = it))
+                    },
+                    onShareClick = {
+                        viewModel.onTriggerEvent(ClothesListRetailEvent.ShareClothesEvent(item, context))
+                    },
+                    onShoppingCartClick = {
+                        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(item.clothesUrl))
+                        ContextCompat.startActivity(context, browserIntent, null)
+                    }
+                )
+                if (!viewModel.similarClothes.contains(index)) {
+                    viewModel.onTriggerEvent(ClothesListRetailEvent.GetSimilarClothes(clothes = item, context= context, index = index,))
+                }
+                viewModel.similarClothes[index]?.let { clothesList ->
+                    LazyRow() {
+                        itemsIndexed(clothesList){index, item ->
+                            Spacer(modifier = Modifier.width(12.dp))
+                            SimilarClothesCard(
+                            modifier = Modifier
+                                .clickable {
+                                    viewModel.onTriggerEvent(
+                                        ClothesListRetailEvent.GoToDetailScreen(
+                                            clothes = item
+                                        )
+                                    )
+                                },
+                            clothes = item,
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(18.dp))
+
+
+            }
+
         }
 
-        PagerIndicator(
-            modifier = Modifier
-                .padding(top = 8.dp)
-                .align(Alignment.CenterHorizontally),
-            pagerState = pagerState,
-            activeColor = MaterialTheme.colors.secondary,
-            inactiveColor = MaterialTheme.colors.primaryVariant,
-            activeWidth = 24.dp,
-            inactiveWidth = 4.dp,
-            inactiveHeight = 4.dp,
-            activeHeight = 4.dp,
-        )
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

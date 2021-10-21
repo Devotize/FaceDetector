@@ -39,7 +39,7 @@ data class FilterValue(
 
 data class Price(
     var min: Int = 0,
-    var max: Int = 100000000,
+    var max: Int? = null,
 )
 
 

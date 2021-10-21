@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -66,7 +67,8 @@ fun ClothesDetailScreen(
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(4.dp)
+                    .padding(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(
                     modifier = Modifier
@@ -78,21 +80,24 @@ fun ClothesDetailScreen(
                     Icon(
                         imageVector = Icons.Filled.ArrowBackIos,
                         contentDescription = null,
-                        tint = MaterialTheme.colors.onBackground
+                        tint = MaterialTheme.colors.onPrimary
                     )
                 }
+                Column {
+                    Text(
+                        text = cl.brand.plus(" ${cl.itemCategory}"),
+                        style = MaterialTheme.typography.h2,
+                        color = MaterialTheme.colors.onPrimary
+                    )
+                    Text(
+                        text = cl.provider,
+                        style = MaterialTheme.typography.subtitle1,
+                        color = MaterialTheme.colors.primaryVariant
+                    )
+                }
+
             }
 
-            Text(
-                text = cl.brand.plus(" ${cl.itemCategory}"),
-                style = MaterialTheme.typography.h2,
-                color = MaterialTheme.colors.onPrimary
-            )
-            Text(
-                text = cl.provider,
-                style = MaterialTheme.typography.subtitle1,
-                color = MaterialTheme.colors.primaryVariant
-            )
             val painterState = rememberImagePainter(data = cl.picUrl){
                 error(R.drawable.clothes_default_icon_gray)
                 crossfade(true)
@@ -191,11 +196,6 @@ fun ClothesDetailScreen(
                             modifier = Modifier
                                 .wrapContentSize(),
                             onClick = {
-//                                val i = Intent(Intent.ACTION_SEND)
-//                                i.type = "text/plain"
-//                                i.putExtra(Intent.EXTRA_SUBJECT, "Sharing URL")
-//                                i.putExtra(Intent.EXTRA_TEXT, cl.clothesUrl)
-//                                context.startActivity(Intent.createChooser(i, "Share URL"))
                                       viewModel.onTriggerEvent(ClothesDetailEvent.ShareClothesEvent(context, cl))
                             },
                         ) {
@@ -260,7 +260,7 @@ fun ClothesDetailScreen(
 
 
 @Composable
-private fun SimilarClothesCard(
+fun SimilarClothesCard(
     modifier: Modifier = Modifier,
     clothes: Clothes
 ) {

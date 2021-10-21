@@ -171,8 +171,20 @@ class ShopViewModel
         ).onEach { dataState ->
             loading.value = dataState.loading
             dataState.data?.let {
-                clothesList.clear()
-                clothesList.addAll(it.clothes)
+                Log.d(TAG, "performSearchByFilters: queryBubbles: ${it.bubbles}")
+                if (it.clothes.isNotEmpty()) {
+                    clothesList.clear()
+                    clothesList.addAll(it.clothes)
+                }
+                var newQuery = ""
+                it.bubbles.forEachIndexed() { index, str ->
+                    newQuery += if (index != 0) {
+                        " $str"
+                    } else {
+                        str
+                    }
+                }
+                query.value = newQuery
                 queryBubbles.clear()
                 queryBubbles.addAll(it.bubbles)
                 selectedFilter.value = null

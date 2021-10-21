@@ -23,7 +23,6 @@ data class TestClothesFilter (
     var clothes: List<Clothes>? = null
 ) {
 
-
     object Titles {
         val gender: String = "gender"
         val size: String = "size"
