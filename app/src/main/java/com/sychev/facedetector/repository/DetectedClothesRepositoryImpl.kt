@@ -14,12 +14,14 @@ import com.sychev.facedetector.data.local.mapper.DetectedClothesEntityConverter
 import com.sychev.facedetector.data.remote.ClothesDetectionApi
 import com.sychev.facedetector.data.remote.UnsplashApi
 import com.sychev.facedetector.data.remote.converter.BrandDtoConverter
+import com.sychev.facedetector.data.remote.converter.CelebDtoConverter
 import com.sychev.facedetector.data.remote.converter.ClothesDtoConverter
 import com.sychev.facedetector.data.remote.model.FilterValuesDtoItem
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.ClothesWithBubbles
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.brand.Brand
+import com.sychev.facedetector.domain.celeb.Celeb
 import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 import com.sychev.facedetector.utils.TAG
@@ -43,7 +45,8 @@ class DetectedClothesRepositoryImpl(
     private val clothesEntityConverter: ClothesEntityConverter,
     private val clothesDtoConverter: ClothesDtoConverter,
     private val brandDtoConverter: BrandDtoConverter,
-    private val detectedClothesEntityConverter: DetectedClothesEntityConverter
+    private val detectedClothesEntityConverter: DetectedClothesEntityConverter,
+    private val celebDtoConverter: CelebDtoConverter,
 ): DetectedClothesRepository {
 
     private fun File.writeBitmap(bitmap: Bitmap, format: Bitmap.CompressFormat, quality: Int) {
@@ -157,35 +160,10 @@ class DetectedClothesRepositoryImpl(
         }
     }
 
-    override suspend fun getCelebPics(page: Int ): List<Bitmap> {
-        val response = clothesDetectionApi.getCelebPics(page = page)
-        val responseString = response.string()
-        val quotesIndexes = ArrayList<Int>()
-        val endQuoteIndexes = ArrayList<Int>()
-        val strings = ArrayList<String>()
-        responseString.forEachIndexed{index: Int, c: Char ->
-            if (c == '"') {
-                quotesIndexes.add(index)
-            }
-        }
-        quotesIndexes.forEachIndexed { index, quoteIndex ->
-            if (index != quotesIndexes.lastIndex && !endQuoteIndexes.contains(quoteIndex)) {
-                val str = responseString.substring(startIndex = quoteIndex + 1, endIndex = quotesIndexes[index+1])
-                endQuoteIndexes.add(quotesIndexes[index + 1])
-                strings.add(str)
-            }
-        }
-//        Log.d(TAG, "getCelebPics: indexes: $quotesIndexes")
-//        Log.d(TAG, "getCelebPics: strings: ${strings[2]}, ${strings.last()}")
-        val bitmapList = ArrayList<Bitmap>()
-        strings.forEachIndexed { index, s ->
-            if (index%2 != 0) {
-                val imageBytes = Base64.decode(s,0)
-                val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                bitmapList.add(bitmap)
-            }
-        }
-        return bitmapList
+    override suspend fun getCelebPics(page: Int ): List<Celeb> {
+        val result = clothesDetectionApi.getCelebPics(page = page)
+
+        return result.map{celebDtoConverter.toDomainModel(it)}
     }
 
     override suspend fun searchClothesByQuery(query: String, size: Int): List<Clothes> {

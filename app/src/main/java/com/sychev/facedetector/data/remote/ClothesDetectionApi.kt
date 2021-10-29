@@ -22,7 +22,7 @@ interface ClothesDetectionApi {
     @GET("endlessCelebrities")
     suspend fun getCelebPics(
         @Query("page_num") page: Int
-    ): ResponseBody
+    ): List<CelebDto>
 
     @POST("searchFullText")
     suspend fun searchClothesByText(

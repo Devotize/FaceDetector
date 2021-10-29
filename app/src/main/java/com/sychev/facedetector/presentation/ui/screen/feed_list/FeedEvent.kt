@@ -14,18 +14,19 @@ sealed class FeedEvent() {
     ): FeedEvent()
     class DetectClothesEvent(
         val context: Context,
-        val bitmap: Bitmap,
-        val page: Int,
+        val resizedBitmap: Bitmap,
+        val celebImage: CelebImage,
         val onLoaded: (Boolean) -> Unit,
         ): FeedEvent()
     class FindClothes(
+        val celebImage: CelebImage,
         val detectedClothes: DetectedClothes,
         val context: Context,
-        val page: Int,
         val location: RectF,
         val onLoaded: (Boolean?) -> Unit,
         ): FeedEvent()
     class FindMultiplyClothes(
+        val celebImage: CelebImage,
         val detectedClothesList: List<DetectedClothes>,
         val context: Context,
         val page: Int,

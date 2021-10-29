@@ -10,6 +10,7 @@ import com.sychev.facedetector.data.remote.CelebDetectionApi
 import com.sychev.facedetector.data.remote.ClothesDetectionApi
 import com.sychev.facedetector.data.remote.UnsplashApi
 import com.sychev.facedetector.data.remote.converter.BrandDtoConverter
+import com.sychev.facedetector.data.remote.converter.CelebDtoConverter
 import com.sychev.facedetector.data.remote.converter.ClothesDtoConverter
 import com.sychev.facedetector.repository.DetectedClothesRepository
 import com.sychev.facedetector.repository.DetectedClothesRepositoryImpl
@@ -51,7 +52,8 @@ object RepoModule {
         clothesEntityConverter: ClothesEntityConverter,
         clothesDtoConverter: ClothesDtoConverter,
         brandDtoConverter: BrandDtoConverter,
-        detectedClothesEntityConverter: DetectedClothesEntityConverter
+        detectedClothesEntityConverter: DetectedClothesEntityConverter,
+        celebDtoConverter: CelebDtoConverter
     ): DetectedClothesRepository {
         return DetectedClothesRepositoryImpl(
             clothesDetectionApi,
@@ -61,7 +63,8 @@ object RepoModule {
             clothesEntityConverter,
             clothesDtoConverter,
             brandDtoConverter,
-            detectedClothesEntityConverter
+            detectedClothesEntityConverter,
+            celebDtoConverter
         )
     }
 

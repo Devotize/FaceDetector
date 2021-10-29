@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import com.sychev.facedetector.domain.filter.FilterValues
+import com.sychev.facedetector.presentation.ui.screen.feed_list.FoundedClothes
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.ShopEvent
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 import com.sychev.facedetector.utils.toMoneyString
@@ -26,7 +27,7 @@ import com.sychev.facedetector.utils.toMoneyString
 @Composable
 fun FoundedClothesCard(
     modifier: Modifier = Modifier,
-    foundedClothes: FeedViewModel.FoundedClothes,
+    foundedClothes: FoundedClothes,
     onClick: () -> Unit,
     onCloseClick: () -> Unit,
     onGenderChange: (newGender: String) -> Unit,

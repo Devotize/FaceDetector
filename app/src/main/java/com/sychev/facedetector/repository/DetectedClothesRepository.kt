@@ -7,6 +7,7 @@ import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.ClothesWithBubbles
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.brand.Brand
+import com.sychev.facedetector.domain.celeb.Celeb
 import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 
 interface DetectedClothesRepository {
@@ -39,7 +40,7 @@ interface DetectedClothesRepository {
 
     suspend fun getCelebPics(
         page: Int
-    ): List<Bitmap>
+    ): List<Celeb>
 
     suspend fun searchClothesByQuery(query: String, size: Int): List<Clothes>
 

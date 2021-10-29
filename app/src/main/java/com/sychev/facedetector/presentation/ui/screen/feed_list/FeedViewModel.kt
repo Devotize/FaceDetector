@@ -39,11 +39,8 @@ constructor(
     private val navigationManager: NavigationManager,
 ): ViewModel() {
     val urls = mutableStateListOf<String>()
-    val pictures = mutableStateListOf<Bitmap>()
     val loading = mutableStateOf(false)
-    val processedPages = mutableStateListOf<Int>()
-    val detectedClothes = mutableStateListOf<Pair<Int, List<DetectedClothes>>>()
-    val foundedClothes = mutableStateListOf<FoundedClothes>()
+    val celebImages = mutableStateListOf<CelebImage>()
     var page = 0
 
     init {
@@ -73,38 +70,31 @@ constructor(
             is FeedEvent.DetectClothesEvent -> {
                 detectClothes(
                     context = event.context,
-                    bitmap = event.bitmap,
-                    page = event.page,
+                    resizedBitmap = event.resizedBitmap,
+                    celebImage = event.celebImage,
                     callback = event.onLoaded
                 )
             }
             is FeedEvent.FindClothes -> {
                 searchClothes(
+                    celebImage = event.celebImage,
                     detectedClothes = event.detectedClothes,
                     context = event.context,
-                    page = event.page,
                     location = event.location,
                     callback = event.onLoaded
                 )
             }
             is FeedEvent.FindMultiplyClothes -> {
                 searchMultiplyClothes(
-                    detectedClothesList = event.detectedClothesList,
+                    celebImage =  event.celebImage,
                     context = event.context,
-                    page = event.page,
                     location = event.location,
                     callback = event.onLoaded
                 )
             }
             is FeedEvent.GetCelebPicsEvent -> {
-                getCelebPics.execute(page).onEach { dataState ->
-                    loading.value = dataState.loading
-                    dataState.data?.let{
-                        Log.d(TAG, "onTriggerEvent: getCelebPicsEvent data: $it")
-                        pictures.addAll(it)
-                        page++
-                    }
-                }.launchIn(viewModelScope)
+                Log.d(TAG, "onTriggerEvent: getCelebPicsEvent called")
+                getCelebPics()
             }
             is FeedEvent.GoToRetailScreen -> {
                 val retailScreen = Screen.ClothesListRetail.apply {
@@ -117,25 +107,35 @@ constructor(
         }
     }
 
+    private fun getCelebPics() {
+        getCelebPics.execute(page).onEach { dataState ->
+            loading.value = dataState.loading
+            dataState.data?.let{ celebs ->
+                Log.d(TAG, "onTriggerEvent: getCelebPicsEvent data: $celebs")
+                        celebImages.addAll(celebs.map { CelebImage(image = it.image) })
+                page++
+            }
+        }.launchIn(viewModelScope)
+    }
+
     private fun searchMultiplyClothes(
-        detectedClothesList: List<DetectedClothes>,
+        celebImage: CelebImage,
         context: Context,
-        page: Int,
         location: RectF,
         callback: (Boolean) -> Unit
     ) {
-        searchClothes.execute(detectedClothesList = detectedClothesList, context = context)
+        searchClothes.execute(detectedClothesList = celebImage.detectedClothes, context = context)
             .onEach { dataState ->
                 callback(dataState.loading)
                 dataState.data?.let {
                     val fc = FoundedClothes(
-                        page = page,
                         location = location,
                         clothes = it
                     )
-                    if (!foundedClothes.contains(fc)){
-                        foundedClothes.add(fc)
-                        Log.d(TAG, "searchClothes: clothesList = $it")
+                    celebImages.forEachIndexed{index, ci ->
+                        if (ci == celebImage) {
+                            celebImages[index].foundedClothes.add(fc)
+                        }
                     }
                     Log.d(TAG, "searchMultiplyClothes: foundedClothes: $fc")
                 }
@@ -143,30 +143,34 @@ constructor(
             }.launchIn(CoroutineScope(IO))
     }
 
-    private fun detectClothes(context: Context, bitmap: Bitmap, page: Int, callback: (Boolean) -> Unit) {
-        detectClothesLocal.execute(context = context, bitmap = bitmap)
+    private fun detectClothes(context: Context, resizedBitmap: Bitmap, celebImage: CelebImage, callback: (Boolean) -> Unit) {
+        detectClothesLocal.execute(context = context, bitmap = resizedBitmap)
             .onEach {dataState ->
                 callback(dataState.loading)
                 dataState.data?.let{
-                    processedPages.add(page)
-                    detectedClothes.add(Pair(page, it))
+                    celebImages.forEachIndexed() { index, ci ->
+                        if (ci == celebImage) {
+                            celebImages[index].detectedClothes.addAll(it)
+                            celebImages[index].isProcessed = true
+                        }
+                    }
                 }
             }.launchIn(CoroutineScope(IO))
     }
 
-    private fun searchClothes(detectedClothes: DetectedClothes, context: Context, page: Int, location: RectF, callback: (Boolean?) -> Unit) {
+    private fun searchClothes(celebImage: CelebImage, detectedClothes: DetectedClothes, context: Context, location: RectF, callback: (Boolean?) -> Unit) {
         searchClothes.execute(detectedClothes = detectedClothes, context = context)
             .onEach { dataState ->
                 callback(dataState.loading)
                 dataState.data?.let {
                     val fc = FoundedClothes(
-                        page = page,
                         location = location,
                         clothes = it
                     )
-                    if (!foundedClothes.contains(fc)){
-                        foundedClothes.add(fc)
-                        Log.d(TAG, "searchClothes: clothesList = $it")
+                    celebImages.forEachIndexed{index, ci ->
+                        if (ci == celebImage) {
+                            celebImages[index].foundedClothes.add(fc)
+                        }
                     }
                 }
                 dataState.error?.let { message ->
@@ -188,24 +192,36 @@ constructor(
             }.launchIn(CoroutineScope(IO))
     }
 
-    fun removeFromFoundedClothes(vararg fc: FoundedClothes) {
-        foundedClothes.removeAll(fc)
-    }
-
-    fun removeFromFoundedClothes(fc: List<FoundedClothes>) {
-        foundedClothes.removeAll(fc)
-    }
-
-    fun addToFoundedClothes(fc: List<FoundedClothes>) {
-        foundedClothes.addAll(fc)
+    fun removeFromFoundedClothes(celebImage: CelebImage, vararg fc: FoundedClothes) {
+        celebImages.forEachIndexed {index, ci ->
+            if (ci == celebImage) {
+                celebImages[index].foundedClothes.removeAll(fc)
+            }
+        }
     }
 
 
 
-    data class FoundedClothes(
-        val page: Int,
-        val location: RectF,
-        val clothes: List<Clothes>
-    )
+    fun addToFoundedClothes(celebImage: CelebImage, vararg fc: FoundedClothes) {
+        celebImages.forEachIndexed {index, ci ->
+            if (ci == celebImage) {
+                celebImages[index].foundedClothes.addAll(fc)
+            }
+        }
+    }
+
+
 
 }
+
+data class CelebImage(
+    val image: Bitmap,
+    val detectedClothes: ArrayList<DetectedClothes> = arrayListOf(),
+    var isProcessed: Boolean = false,
+    val foundedClothes: ArrayList<FoundedClothes> = arrayListOf(),
+)
+
+data class FoundedClothes(
+    val location: RectF,
+    val clothes: List<Clothes>
+)
