@@ -1,13 +1,13 @@
 package com.sychev.facedetector.data.local.mapper
 
-import com.sychev.facedetector.data.local.entity.DetectedClothesEntity
+import com.sychev.facedetector.data.local.entity.ClothesEntity
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DomainMapper
 
-class ClothesEntityConverter: DomainMapper<Clothes, DetectedClothesEntity> {
+class ClothesEntityConverter: DomainMapper<Clothes, ClothesEntity> {
 
-    override fun fromDomainModel(model: Clothes): DetectedClothesEntity {
-        return DetectedClothesEntity(
+    override fun fromDomainModel(model: Clothes): ClothesEntity {
+        return ClothesEntity(
             url = model.clothesUrl,
             image = model.picUrl,
             gender = model.gender,
@@ -32,7 +32,7 @@ class ClothesEntityConverter: DomainMapper<Clothes, DetectedClothesEntity> {
         )
     }
 
-    override fun toDomainModel(model: DetectedClothesEntity): Clothes {
+    override fun toDomainModel(model: ClothesEntity): Clothes {
         return Clothes(
             clothesUrl = model.url,
             picUrl = model.image,
@@ -58,13 +58,13 @@ class ClothesEntityConverter: DomainMapper<Clothes, DetectedClothesEntity> {
         )
     }
 
-    fun fromDomainList(list: List<Clothes>): List<DetectedClothesEntity> {
+    fun fromDomainList(list: List<Clothes>): List<ClothesEntity> {
         return list.map {
             fromDomainModel(it)
         }
     }
 
-    fun toDomainModelList(list: List<DetectedClothesEntity>): List<Clothes> {
+    fun toDomainModelList(list: List<ClothesEntity>): List<Clothes> {
         return list.map {
             toDomainModel(it)
         }

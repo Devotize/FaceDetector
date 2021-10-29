@@ -37,7 +37,7 @@ fun GenericDialog(
                     ),
                     onClick = onPositiveAction,
                 ) {
-                    Text(text = "OK")
+                    Text(text = "ОК")
                 }
             }
         }

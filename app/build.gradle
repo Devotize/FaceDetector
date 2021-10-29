@@ -154,6 +154,8 @@ dependencies {
     implementation 'com.github.iamjosephmj:flinger:1.0.2'
     // hilt compose navigation
     implementation "androidx.hilt:hilt-navigation-compose:1.0.0-alpha03"
+    // flow layout (FlowRow and FlowColumn)
+    implementation "com.google.accompanist:accompanist-flowlayout:0.10.0"
 
     //navigation component
     def nav_version = "2.3.5"

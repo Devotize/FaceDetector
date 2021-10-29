@@ -1,12 +1,11 @@
 package com.sychev.facedetector.data.local.entity
 
-import android.graphics.Bitmap
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = DetectedClothesEntity.TABLE_NAME)
-data class DetectedClothesEntity (
+@Entity(tableName = ClothesEntity.TABLE_NAME)
+data class ClothesEntity (
     @PrimaryKey(autoGenerate = false)
     @ColumnInfo(name = "url")
     val url: String,
@@ -43,7 +42,7 @@ data class DetectedClothesEntity (
     @ColumnInfo(name = "num_reviews")
     val numReviews: Double,
     @ColumnInfo(name = "popular_flg")
-    val popularFlg: String,
+    val popularFlg: Int,
     @ColumnInfo(name = "premium")
     val premium: String,
     @ColumnInfo(name = "size")

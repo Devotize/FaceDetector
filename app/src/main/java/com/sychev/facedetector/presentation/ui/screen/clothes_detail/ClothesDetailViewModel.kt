@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
-import android.widget.ImageView
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -18,7 +17,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
-import com.sychev.facedetector.interactors.clothes.GetClothesList
+import com.sychev.facedetector.interactors.clothes.GetClothes
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
@@ -40,7 +39,7 @@ class ClothesDetailViewModel
     private val navigationManager: NavigationManager,
     private val insertClothesToFavorite: InsertClothesToFavorite,
     private val removeFromFavoriteClothes: RemoveFromFavoriteClothes,
-    private val getClothesList: GetClothesList,
+    private val getClothes: GetClothes,
 ): ViewModel(){
     val similarClothes = mutableStateListOf<Clothes>()
     val loadingSimilarClothes = mutableStateOf(false)
@@ -125,7 +124,7 @@ class ClothesDetailViewModel
     }
 
     private fun getClothesFromCache(clothes: Clothes) {
-        getClothesList.execute(clothes)
+        getClothes.execute(clothes)
             .onEach {dataState ->
                 dataState.data?.let {
                     Log.d(TAG, "getClothesFromCache: data: $clothes")

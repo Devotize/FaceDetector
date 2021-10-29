@@ -17,7 +17,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="swipe down to close assistant"
+            android:text="смахните вниз чтобы закрыть"
             android:textColor="@color/white"
             android:layout_gravity="center|bottom"
             android:textSize="18sp"

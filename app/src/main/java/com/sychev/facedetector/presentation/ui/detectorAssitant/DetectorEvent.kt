@@ -26,4 +26,6 @@ sealed class DetectorEvent {
 
     class DefineGenderEvent(val screenshot: Bitmap): DetectorEvent()
 
+    class InsertDetectedClothesEvent(val detectedClothes: List<DetectedClothes>): DetectorEvent()
+
 }

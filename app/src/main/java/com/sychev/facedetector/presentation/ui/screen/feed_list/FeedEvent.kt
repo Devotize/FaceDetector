@@ -33,5 +33,5 @@ sealed class FeedEvent() {
         val onLoaded: (Boolean) -> Unit,
     ): FeedEvent()
     class GetCelebPicsEvent(): FeedEvent()
-    class GoToRetailScreen(val clothesList: List<Clothes>): FeedEvent()
+    class GoToRetailScreen(val clothesList: List<DetectedClothes>): FeedEvent()
 }

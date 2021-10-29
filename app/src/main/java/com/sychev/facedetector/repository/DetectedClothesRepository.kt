@@ -51,4 +51,10 @@ interface DetectedClothesRepository {
 
     suspend fun getTopBrands(): List<Brand>
 
+    suspend fun getDetectedClothes(): List<DetectedClothes>
+
+    suspend fun insertDetectedClothes(detectedClothes: List<DetectedClothes>): LongArray
+
+    suspend fun clearDetectedClothesTable()
+
 }

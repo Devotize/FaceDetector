@@ -9,6 +9,7 @@ import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.interactors.clothes.*
 import com.sychev.facedetector.interactors.clothes_list.*
+import com.sychev.facedetector.interactors.detected_clothes.InsertDetectedClothes
 import com.sychev.facedetector.interactors.gender.DefineGender
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorEvent.*
 import com.sychev.facedetector.presentation.ui.items.SnackbarItem
@@ -34,9 +35,10 @@ class DetectorViewModel(
         fun provideInsertClothesToFavorite(): InsertClothesToFavorite
         fun provideGetFavoriteClothes(): GetFavoriteClothes
         fun provideDeleteClothes(): DeleteClothes
-        fun provideGetClothesList(): GetClothesList
+        fun provideGetClothesList(): GetClothes
         fun provideDetectClothesLocal(): DetectClothesLocal
         fun provideDefineGender(): DefineGender
+        fun provideInsertDetectedClothes(): InsertDetectedClothes
     }
 
     private val entryPoint = EntryPointAccessors.fromApplication(context, DetectorViewModelEntryPoint::class.java)
@@ -47,6 +49,7 @@ class DetectorViewModel(
     private val getClothesList = entryPoint.provideGetClothesList()
     private val detectClothesLocal = entryPoint.provideDetectClothesLocal()
     private val defineGender = entryPoint.provideDefineGender()
+    private val insertDetectedClothes = entryPoint.provideInsertDetectedClothes()
 
     private val _loading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val _clothesList: MutableStateFlow<Pair<View?, List<Clothes>>> = MutableStateFlow(Pair(null, listOf()))
@@ -58,6 +61,7 @@ class DetectorViewModel(
     private val _isActive: MutableStateFlow<Boolean?> = MutableStateFlow(null)
     private val _detectedClothesListLocal: MutableStateFlow<List<DetectedClothes>> = MutableStateFlow(listOf())
     private val _drawMode: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    private val _insertedRowsLongArray: MutableStateFlow<LongArray> = MutableStateFlow(LongArray(0))
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
     val clothesList: StateFlow<Pair<View?, List<Clothes>>> = _clothesList.asStateFlow()
     val favoriteClothesList = _favoriteClothesList.asStateFlow()
@@ -68,6 +72,7 @@ class DetectorViewModel(
     val isActive = _isActive.asStateFlow()
     val detectedClothesListLocal = _detectedClothesListLocal.asStateFlow()
     val drawMode = _drawMode.asStateFlow()
+    val insertedRowsLongArray = _insertedRowsLongArray.asStateFlow()
 
     fun onTriggerEvent(event: DetectorEvent) {
         when (event) {
@@ -100,6 +105,9 @@ class DetectorViewModel(
             }
             is DefineGenderEvent -> {
                 defineGender(event.screenshot)
+            }
+            is InsertDetectedClothesEvent -> {
+                insertDetectedClothes(event.detectedClothes)
             }
         }
     }
@@ -236,6 +244,15 @@ class DetectorViewModel(
                     }
                 }
             }.launchIn(CoroutineScope(IO))
+    }
+
+    private fun insertDetectedClothes(detectedClothes: List<DetectedClothes>) {
+        insertDetectedClothes.execute(detectedClothes = detectedClothes).onEach {
+            _loading.value = it.loading
+            it.data?.let {
+                _insertedRowsLongArray.value = it
+            }
+        }.launchIn(CoroutineScope(IO))
     }
 
 }

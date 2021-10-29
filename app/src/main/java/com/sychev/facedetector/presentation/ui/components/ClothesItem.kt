@@ -84,7 +84,7 @@ fun ClothesItem(
                         .padding(top = 4.dp),
                     text = "${clothes.price.toString().toMoneyString()} ₽",
                     color = MaterialTheme.colors.onPrimary,
-                    style = MaterialTheme.typography.h2,
+                    style = MaterialTheme.typography.h3,
                 )
 
                 Row(

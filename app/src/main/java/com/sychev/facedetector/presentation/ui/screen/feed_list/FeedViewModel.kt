@@ -137,22 +137,9 @@ constructor(
                         foundedClothes.add(fc)
                         Log.d(TAG, "searchClothes: clothesList = $it")
                     }
+                    Log.d(TAG, "searchMultiplyClothes: foundedClothes: $fc")
                 }
-//                dataState.error?.let { message ->
-//                    Log.d(TAG, "searchClothes: error: $message")
-//                    MessageDialog.dialogMessages.add(
-//                        MessageDialog.Builder()
-//                            .message(message)
-//                            .title("Alert")
-//                            .onDismiss {
-//                                MessageDialog.dialogMessages.removeLast()
-//                            }
-//                            .onPositiveAction {
-//                                MessageDialog.dialogMessages.removeLast()
-//                            }
-//                            .build()
-//                    )
-//                }
+//
             }.launchIn(CoroutineScope(IO))
     }
 
@@ -187,8 +174,8 @@ constructor(
                     callback(null)
                     MessageDialog.dialogMessages.add(
                         MessageDialog.Builder()
-                            .message(message)
-                            .title("Alert")
+                            .message("Похожей одежды не найдено")
+                            .title("Ошибка")
                             .onDismiss {
                                 MessageDialog.dialogMessages.removeLast()
                             }

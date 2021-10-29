@@ -2,6 +2,7 @@ package com.sychev.facedetector.presentation.activity.main
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Parcelable
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
@@ -9,16 +10,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.SavedScreenshot
-import com.sychev.facedetector.interactors.clothes.GetClothesList
+import com.sychev.facedetector.interactors.clothes.GetClothes
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
+import com.sychev.facedetector.interactors.detected_clothes.ClearDetectedClothes
+import com.sychev.facedetector.interactors.detected_clothes.GetDetectedClothes
 import com.sychev.facedetector.interactors.filter.GetFilterValues
+import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
+import com.sychev.facedetector.presentation.ui.navigation.Screen
 import com.sychev.facedetector.repository.SavedScreenshotRepo
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -29,11 +36,14 @@ class MainViewModel
 @Inject
     constructor(
     private val repository: SavedScreenshotRepo,
-    private val getClothesList: GetClothesList,
+    private val getClothes: GetClothes,
     private val insertClothesToFavorite: InsertClothesToFavorite,
     private val removeFromFavoriteClothes: RemoveFromFavoriteClothes,
     private val getFilterValues: GetFilterValues,
-): ViewModel() {
+    private val getDetectedClothes: GetDetectedClothes,
+    private val clearDetectedClothes: ClearDetectedClothes,
+    private val navigationManager: NavigationManager,
+    ): ViewModel() {
 
     val screenshotList: MutableState<List<SavedScreenshot>?> = mutableStateOf(null);
     val loading: MutableState<Boolean> = mutableStateOf(false)
@@ -41,6 +51,8 @@ class MainViewModel
     val savedClothesList = mutableStateListOf<Clothes>()
     val launchFromAssistant = mutableStateOf(false)
     var closeApp = false
+    val detectedClothesList = mutableStateListOf<DetectedClothes>()
+
 
     fun onTriggerEvent(event: MainEvent) {
         when (event) {
@@ -72,6 +84,12 @@ class MainViewModel
             is MainEvent.GetFilterValues -> {
                 getFilterValues.execute().launchIn(viewModelScope)
             }
+            is MainEvent.GetDetectedClothesEvent -> {
+                getDetectedClothes()
+            }
+            is MainEvent.ClearDetectedClothesEvent -> {
+                clearDetectedClothes()
+            }
         }
     }
 
@@ -90,7 +108,7 @@ class MainViewModel
     }
 
     private fun getAllClothes() {
-        getClothesList.execute(false).onEach { dataState ->
+        getClothes.execute(false).onEach { dataState ->
            loading.value = dataState.loading
             dataState.data?.let {
                 savedClothesList.clear()
@@ -100,7 +118,7 @@ class MainViewModel
     }
 
     private fun getAllFavoriteClothes() {
-        getClothesList.execute(true).onEach { dataState ->
+        getClothes.execute(true).onEach { dataState ->
             loading.value = dataState.loading
             dataState.data?.let {
                 savedClothesList.clear()
@@ -128,6 +146,34 @@ class MainViewModel
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    private fun getDetectedClothes() {
+        getDetectedClothes.execute().onEach { dataState ->
+            dataState.data?.let {
+                if (it.isNotEmpty()) {
+                    detectedClothesList.addAll(it)
+                    goToRetailScreen(it)
+                    clearDetectedClothes()
+                }
+            }
+        }.launchIn(CoroutineScope(Main))
+    }
+
+    private fun clearDetectedClothes() {
+        clearDetectedClothes.execute().onEach {
+
+        }.launchIn(viewModelScope)
+    }
+
+    private fun goToRetailScreen(detectedClothes: List<DetectedClothes>) {
+        Log.d(TAG, "goToRetailScreen: detectedClothes: $detectedClothes")
+        val retailScreen = Screen.ClothesListRetail.apply {
+            arguments = arrayListOf<Parcelable>().apply {
+                addAll(detectedClothes)
+            }
+        }
+        navigationManager.navigate(retailScreen)
     }
 
 }

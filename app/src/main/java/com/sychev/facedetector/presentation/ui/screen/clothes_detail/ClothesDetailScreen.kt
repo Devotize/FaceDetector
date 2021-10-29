@@ -238,6 +238,19 @@ fun ClothesDetailScreen(
 
             Spacer(modifier = Modifier.height(6.dp))
 
+            if (similarClothes.isEmpty()) {
+                LazyRow(
+                    modifier = Modifier,
+                    contentPadding = PaddingValues(6.dp)) {
+                    repeat(6) {
+                        item {
+                            LoadingSimilarClothes()
+                            Spacer(modifier = Modifier.width(12.dp))
+                        }
+                    }
+                }
+            }
+
             LazyRow(
                 modifier = Modifier,
                 contentPadding = PaddingValues(6.dp)
@@ -309,6 +322,30 @@ fun SimilarClothesCard(
             style = MaterialTheme.typography.h3
         )
         
+    }
+}
+
+@Composable
+private fun LoadingSimilarClothes() {
+    Column(
+
+    ) {
+        Surface(
+            modifier = Modifier
+                .width(114.dp)
+                .height(164.dp),
+            shape = MaterialTheme.shapes.small,
+            color = MaterialTheme.colors.background
+        ){}
+        Spacer(modifier = Modifier.height(4.dp))
+        Surface(
+            modifier = Modifier
+                .height(16.dp)
+                .width(114.dp),
+            shape = MaterialTheme.shapes.medium,
+            color = MaterialTheme.colors.background
+        ){}
+        Spacer(modifier = Modifier.height(4.dp))
     }
 }
 

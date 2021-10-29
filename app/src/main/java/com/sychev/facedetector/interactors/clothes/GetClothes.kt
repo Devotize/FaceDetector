@@ -6,7 +6,7 @@ import com.sychev.facedetector.repository.DetectedClothesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class GetClothesList(
+class GetClothes(
     private val detectedClothesRepository: DetectedClothesRepository
 ) {
 

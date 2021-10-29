@@ -19,4 +19,8 @@ sealed class MainEvent() {
     class RemoveFromFavoriteClothesEvent(val clothes: Clothes): MainEvent()
 
     object GetFilterValues: MainEvent()
+
+    object GetDetectedClothesEvent: MainEvent()
+
+    object ClearDetectedClothesEvent: MainEvent()
 }

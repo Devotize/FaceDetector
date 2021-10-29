@@ -752,7 +752,7 @@ fun FiltersScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
+                    .padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
 
@@ -771,7 +771,7 @@ fun FiltersScreen(
                 ) {
                     Text(
                         text = "Сбросить",
-                        fontSize = TextUnit(value = 24f, TextUnitType.Sp),
+                        fontSize = TextUnit(value = 21f, TextUnitType.Sp),
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary
                     )
@@ -803,7 +803,7 @@ fun FiltersScreen(
                 ) {
                     Text(
                         text = "Сохранить",
-                        fontSize = TextUnit(value = 24f, TextUnitType.Sp),
+                        fontSize = TextUnit(value = 21f, TextUnitType.Sp),
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary,
                     )

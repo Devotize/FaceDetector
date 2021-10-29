@@ -28,27 +28,29 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.domain.filter.FilterValues
+import com.sychev.facedetector.utils.color
 import com.sychev.facedetector.utils.loadPicture
 import com.sychev.facedetector.utils.toBitmap
 import com.sychev.facedetector.utils.toMoneyString
 
 @Composable
 fun ClothesBigItem(
+    modifier: Modifier = Modifier,
     clothes: Clothes,
+    clothesList: List<Clothes>,
     onAddToFavoriteClick: (Clothes) -> Unit,
     onRemoveFromFavoriteClick: (Clothes) -> Unit,
     onShoppingCartClick: () -> Unit = {},
     onShareClick: () -> Unit,
+    filterValues: FilterValues,
 ) {
     val showDetails = remember{ mutableStateOf(false) }
     val context = LocalContext.current
 
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 2.dp),
+        modifier = modifier,
     ) {
         Column(
             modifier = Modifier
@@ -80,13 +82,15 @@ fun ClothesBigItem(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
+                    modifier = Modifier.fillMaxWidth(0.8f),
                     text = "${clothes.itemCategory} ${clothes.brand}",
                     style = MaterialTheme.typography.h3,
                     color = Color.Black
                 )
 
                 Surface(
-                    modifier = Modifier.wrapContentSize(),
+                    modifier = Modifier
+                        .wrapContentSize(),
                     color = MaterialTheme.colors.onSurface,
                     shape = CircleShape
                 ) {
@@ -143,8 +147,12 @@ fun ClothesBigItem(
                         color = MaterialTheme.colors.onSurface,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    listOf(Shop(name = clothes.provider),Shop(name = clothes.provider),Shop(name = clothes.provider)).forEach {
-                        ShopComponent(shop = it, onShoppingCartClick = onShoppingCartClick)
+                    clothesList.forEach {
+                        ShopComponent(
+                            clothes = it,
+                            filterValues = filterValues,
+                            onShoppingCartClick = onShoppingCartClick
+                        )
                         Spacer(modifier = Modifier.padding(bottom = 8.dp))
                     }
                 }
@@ -215,7 +223,8 @@ fun ClothesBigItem(
 
 @Composable
 fun ShopComponent(
-    shop: Shop,
+    clothes: Clothes,
+    filterValues: FilterValues,
     onShoppingCartClick: () -> Unit
 ) {
     Surface(
@@ -240,12 +249,12 @@ fun ShopComponent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = shop.name,
+                        text = clothes.provider,
                         style = MaterialTheme.typography.caption,
                         color = MaterialTheme.colors.onBackground
                     )
                     Text(
-                        text = shop.price,
+                        text = "${clothes.price.toString().toMoneyString()} ₽",
                         style = MaterialTheme.typography.overline,
                         color = MaterialTheme.colors.onSurface
                     )
@@ -264,7 +273,7 @@ fun ShopComponent(
                         color = MaterialTheme.colors.onBackground
                     )
                     Text(
-                        text = shop.size,
+                        text = clothes.size,
                         style = MaterialTheme.typography.caption,
                         color = MaterialTheme.colors.onSurface
                     )
@@ -283,53 +292,67 @@ fun ShopComponent(
                         color = MaterialTheme.colors.onBackground
                     )
                     Row {
-                        OutlinedButton(
-                            modifier = Modifier
-                                .width(15.dp)
-                                .height(15.dp)
-                                .clickable {},
-                            shape = CircleShape,
-                            border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
-                            onClick = {},
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
-                        ){
+                        filterValues.colors.second.forEach {
+                            if (it.colorName == clothes.color) {
+                                OutlinedButton(
+                                    modifier = Modifier
+                                        .width(15.dp)
+                                        .height(15.dp)
+                                        .clickable {},
+                                    shape = CircleShape,
+                                    border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
+                                    onClick = {},
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = ("#" + it.colorHex).color)
+                                ){}
+                                Spacer(modifier = Modifier.width(6.dp))
+                            }
                         }
-                        Spacer(modifier = Modifier.width(6.dp))
-                        OutlinedButton(
-                            modifier = Modifier
-                                .width(15.dp)
-                                .height(15.dp)
-                                .clickable {},
-                            shape = CircleShape,
-                            border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
-                            onClick = {},
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF8C8C))
-                        ){
-                        }
-                        Spacer(modifier = Modifier.width(6.dp))
-                        OutlinedButton(
-                            modifier = Modifier
-                                .width(15.dp)
-                                .height(15.dp)
-                                .clickable {},
-                            shape = CircleShape,
-                            border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
-                            onClick = {},
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF00790C))
-                        ){
-                        }
-                        Spacer(modifier = Modifier.width(6.dp))
-                        OutlinedButton(
-                            modifier = Modifier
-                                .width(15.dp)
-                                .height(15.dp)
-                                .clickable {},
-                            shape = CircleShape,
-                            border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
-                            onClick = {},
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF00A3FF))
-                        ){
-                        }
+//                        OutlinedButton(
+//                            modifier = Modifier
+//                                .width(15.dp)
+//                                .height(15.dp)
+//                                .clickable {},
+//                            shape = CircleShape,
+//                            border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
+//                            onClick = {},
+//                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+//                        ){}
+//                        Spacer(modifier = Modifier.width(6.dp))
+//                        OutlinedButton(
+//                            modifier = Modifier
+//                                .width(15.dp)
+//                                .height(15.dp)
+//                                .clickable {},
+//                            shape = CircleShape,
+//                            border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
+//                            onClick = {},
+//                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF8C8C))
+//                        ){
+//                        }
+//                        Spacer(modifier = Modifier.width(6.dp))
+//                        OutlinedButton(
+//                            modifier = Modifier
+//                                .width(15.dp)
+//                                .height(15.dp)
+//                                .clickable {},
+//                            shape = CircleShape,
+//                            border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
+//                            onClick = {},
+//                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF00790C))
+//                        ){
+//                        }
+//                        Spacer(modifier = Modifier.width(6.dp))
+//                        OutlinedButton(
+//                            modifier = Modifier
+//                                .width(15.dp)
+//                                .height(15.dp)
+//                                .clickable {},
+//                            shape = CircleShape,
+//                            border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
+//                            onClick = {},
+//                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF00A3FF))
+//                        ){
+//                        }
 
                     }
                 }
@@ -365,8 +388,8 @@ fun ShopComponent(
     }
 }
 
-data class Shop(
-    val name: String = "Wildberries",
-    val price: String = "11 549 ₽",
-    val size: String = "S, M, L, XL, XXL",
-)
+//data class Shop(
+//    val name: String = "Wildberries",
+//    val price: String = "11 549 ₽",
+//    val size: String = "S, M, L, XL, XXL",
+//)

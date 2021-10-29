@@ -40,7 +40,7 @@ class SearchClothes(
             emit(DataState.success(result))
 
         }catch (e: Exception) {
-            emit(DataState.error("${e.message}"))
+            emit(DataState.error(" ${e.localizedMessage}"))
             e.printStackTrace()
         }
     }

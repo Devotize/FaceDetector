@@ -40,14 +40,14 @@ class ClothesRetailActivity: AppCompatActivity() {
                             navController.getBackStackEntry(Screen.ClothesListRetail.route)
                         )
 
-                        ClothesListRetailScreen(
-                            viewModel = clothesListRetailViewModel,
-                            clothesList = clothesList,
-                            selectedClothes = selectedClothes,
-                            onBackClick = {
-                                onBackPressed()
-                            }
-                        )
+//                        ClothesListRetailScreen(
+//                            viewModel = clothesListRetailViewModel,
+//                            clothesList = clothesList,
+//                            selectedClothes = selectedClothes,
+//                            onBackClick = {
+//                                onBackPressed()
+//                            }
+//                        )
                     }
                 }
             }

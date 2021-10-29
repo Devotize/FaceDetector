@@ -7,16 +7,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.brand.Brand
-import com.sychev.facedetector.domain.data.DataState
 import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.interactors.brand.GetTopBrands
-import com.sychev.facedetector.interactors.clothes.GetClothesList
+import com.sychev.facedetector.interactors.clothes.GetClothes
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
 import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.navigation.Screen
-import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailEvent
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -29,7 +27,7 @@ class ShopViewModel
     private val searchClothes: SearchClothes,
     private val removeFromFavoriteClothes: RemoveFromFavoriteClothes,
     private val insertClothesToFavorite: InsertClothesToFavorite,
-    private val getClothesList: GetClothesList,
+    private val getClothes: GetClothes,
     private val navigationManager: NavigationManager,
     private val getTopBrands: GetTopBrands,
 ) : ViewModel() {
@@ -172,9 +170,11 @@ class ShopViewModel
             loading.value = dataState.loading
             dataState.data?.let {
                 Log.d(TAG, "performSearchByFilters: queryBubbles: ${it.bubbles}")
+                clothesList.clear()
                 if (it.clothes.isNotEmpty()) {
-                    clothesList.clear()
                     clothesList.addAll(it.clothes)
+                }else {
+                    clothesList.add(Clothes.NothingFoundClothes.get())
                 }
                 var newQuery = ""
                 it.bubbles.forEachIndexed() { index, str ->
@@ -240,7 +240,7 @@ class ShopViewModel
     }
 
     private fun refreshClothesList() {
-        getClothesList.execute(clothesList).onEach { dataState ->
+        getClothes.execute(clothesList).onEach { dataState ->
             dataState.data?.let {
                 clothesList.clear()
                 clothesList.addAll(it)

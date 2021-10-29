@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.fastForEachIndexed
 import coil.compose.rememberImagePainter
+import com.google.accompanist.flowlayout.FlowRow
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.brand.Brand
@@ -111,8 +112,7 @@ fun ShopScreen(
                 if (clothesList.isNotEmpty()) {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = 6.dp),
+                            .fillMaxSize(),
                     ) {
                         Box(
                             modifier = Modifier
@@ -153,12 +153,12 @@ fun ShopScreen(
                                 ) {
                                     Text(
                                         text = "Сортировка: ",
-                                        style = MaterialTheme.typography.h4,
+                                        style = MaterialTheme.typography.h5,
                                         color = MaterialTheme.colors.onBackground
                                     )
                                     Text(
                                         text = "Сначала дешевле",
-                                        style = MaterialTheme.typography.h4,
+                                        style = MaterialTheme.typography.h5,
                                         color = MaterialTheme.colors.onPrimary
                                     )
                                 }
@@ -185,6 +185,19 @@ fun ShopScreen(
                                 flingBehavior = StockFlingBehaviours.smoothScroll()
                             ) {
                                 itemsIndexed(clothesList) { index, item ->
+                                    if (item.itemId == Clothes.NothingFoundClothes.ITEM_ID_NOTHING_FOUND) {
+                                        Column(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                            Text(
+                                                text = "Ничего не найдено",
+                                                color = MaterialTheme.colors.onPrimary,
+                                                style = MaterialTheme.typography.h3,
+                                            )
+                                        }
+                                    }else {
                                     ClothesItem(
                                         modifier = Modifier
                                             .clickable {
@@ -213,8 +226,8 @@ fun ShopScreen(
                                     )
                                 }
                             }
+                            }
                         }
-
                     }
                 } else {
                     Box(
@@ -639,13 +652,13 @@ fun FilterBubble(
     ) {
         Row(
             modifier = Modifier
-                .padding(start = 8.dp, end = 8.dp, top = 6.dp, bottom = 6.dp)
+                .padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp)
                 .wrapContentSize(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = text,
-                style = MaterialTheme.typography.h5,
+                style = MaterialTheme.typography.body2,
                 color = MaterialTheme.colors.onPrimary,
             )
             Spacer(modifier = Modifier.width(4.dp))
@@ -655,7 +668,11 @@ fun FilterBubble(
                         onCloseClick()
                     },
             ) {
-                Icon(imageVector = Icons.Default.Close, contentDescription = null)
+                Icon(
+                    modifier = Modifier.size(18.dp),
+                    imageVector = Icons.Default.Close,
+                    contentDescription = null,
+                )
             }
         }
     }
@@ -670,9 +687,8 @@ private fun ShopFilterBubbles(
     queryBubbles: List<String>
 ) {
     var isGridExpanded by remember { mutableStateOf(false) }
-    Column() {
-
-
+    Column(
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -743,7 +759,7 @@ private fun ShopFilterBubbles(
                             end = 8.dp,
                             bottom = 8.dp
                         )
-                        .size(30.dp),
+                        .size(24.dp),
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = MaterialTheme.colors.onPrimary,
                         contentColor = MaterialTheme.colors.primary
@@ -760,6 +776,7 @@ private fun ShopFilterBubbles(
                 }
             }
         ) {
+            //gender
             selectedFilter.genders.forEach {
                 FilterBubble(
                     modifier = Modifier
@@ -777,7 +794,7 @@ private fun ShopFilterBubbles(
                     }
                 )
             }
-
+            //color
             selectedFilter.colors.forEach {
                 FilterBubble(
                     modifier = Modifier
@@ -795,6 +812,7 @@ private fun ShopFilterBubbles(
                     }
                 )
             }
+            //brand
             selectedFilter.brands.forEach {
                 FilterBubble(
                     modifier = Modifier
@@ -812,6 +830,7 @@ private fun ShopFilterBubbles(
                     }
                 )
             }
+            //from price
             selectedFilter.price.min.let { min ->
                 if (min != viewModel.filterValues.price.min) {
                     FilterBubble(
@@ -838,6 +857,7 @@ private fun ShopFilterBubbles(
                     )
                 }
             }
+            //to price
             selectedFilter.price.max?.let { max ->
                 if (max != viewModel.filterValues.price.max) {
                     FilterBubble(
@@ -864,6 +884,73 @@ private fun ShopFilterBubbles(
                     )
                 }
             }
+            // popular only
+            selectedFilter.popular.let { popular ->
+                if (popular == FilterValues.Constants.Popular.popular) {
+                    FilterBubble(
+                        modifier = Modifier
+                            .padding(
+                                top = 8.dp,
+                                start = 8.dp,
+                                end = 8.dp,
+                                bottom = 8.dp
+                            )
+                            .wrapContentSize(),
+                        text = "Популярное",
+                        onCloseClick = {
+                            selectedFilter.popular = FilterValues.Constants.Popular.default
+                            viewModel.onTriggerEvent(
+                                ShopEvent.SearchByFilters(
+                                    filters = selectedFilter
+                                )
+                            )
+                        }
+                    )
+                }
+            }
+            // novice only
+            selectedFilter.novice.let { novice ->
+                if (novice == FilterValues.Constants.Novice.new) {
+                    FilterBubble(
+                        modifier = Modifier
+                            .padding(
+                                top = 8.dp,
+                                start = 8.dp,
+                                end = 8.dp,
+                                bottom = 8.dp
+                            )
+                            .wrapContentSize(),
+                        text = "Новинки",
+                        onCloseClick = {
+                            selectedFilter.novice = FilterValues.Constants.Novice.default
+                            viewModel.onTriggerEvent(
+                                ShopEvent.SearchByFilters(
+                                    filters = selectedFilter
+                                )
+                            )
+                        }
+                    )
+                }
+            }
+            // category
+            selectedFilter.itemCategories.forEach {
+                FilterBubble(
+                    modifier = Modifier
+                        .padding(
+                            top = 8.dp,
+                            start = 8.dp,
+                            end = 8.dp,
+                            bottom = 8.dp
+                        )
+                        .wrapContentSize(),
+                    text = it,
+                    onCloseClick = {
+                        selectedFilter.itemCategories.remove(it)
+                        viewModel.onTriggerEvent(ShopEvent.SearchByFilters(filters = selectedFilter))
+                    }
+                )
+            }
+            //query
             queryBubbles.forEach { str ->
                 FilterBubble(
                     modifier = Modifier
@@ -887,6 +974,7 @@ private fun ShopFilterBubbles(
                 )
             }
         }
+
     }
 }
 
@@ -1029,7 +1117,7 @@ private fun ExpandableStaggeredHorizontalGrid(
                 try {
                     val placeable = it.measure(constrains)
                     width += placeable.width
-                    if (width >= screenMaxWidth - 200) {
+                    if (width >= screenMaxWidth - 300) {
                         Log.d(TAG, "ExpandableStaggeredHorizontalGrid: moreThenOneRow")
                         isMoreThenOneRow = true
                         if (!isExpanded) {
@@ -1076,6 +1164,16 @@ private fun ExpandableStaggeredHorizontalGrid(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MyStaggeredGrid(
+    modifier: Modifier,
+    content: List<@Composable () -> Unit>,
+){
+    content.forEach {
+
     }
 }
 

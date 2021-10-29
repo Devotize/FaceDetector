@@ -3,10 +3,14 @@ package com.sychev.facedetector.repository
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Environment
 import android.util.Base64
 import android.util.Log
 import com.sychev.facedetector.data.local.dao.ClothesDao
+import com.sychev.facedetector.data.local.dao.DetectedClothesDao
+import com.sychev.facedetector.data.local.entity.ClothesDetectedEntity
 import com.sychev.facedetector.data.local.mapper.ClothesEntityConverter
+import com.sychev.facedetector.data.local.mapper.DetectedClothesEntityConverter
 import com.sychev.facedetector.data.remote.ClothesDetectionApi
 import com.sychev.facedetector.data.remote.UnsplashApi
 import com.sychev.facedetector.data.remote.converter.BrandDtoConverter
@@ -26,15 +30,28 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.file.Paths
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class DetectedClothesRepositoryImpl(
     private val clothesDetectionApi: ClothesDetectionApi,
     private val clothesDao: ClothesDao,
+    private val detectedClothesDao: DetectedClothesDao,
     private val unsplashApi: UnsplashApi,
     private val clothesEntityConverter: ClothesEntityConverter,
     private val clothesDtoConverter: ClothesDtoConverter,
     private val brandDtoConverter: BrandDtoConverter,
+    private val detectedClothesEntityConverter: DetectedClothesEntityConverter
 ): DetectedClothesRepository {
+
+    private fun File.writeBitmap(bitmap: Bitmap, format: Bitmap.CompressFormat, quality: Int) {
+        outputStream().use { out ->
+            bitmap.compress(format, quality, out)
+            out.flush()
+        }
+    }
 
     override suspend fun searchClothes(detectedClothes: DetectedClothes, context: Context, size: Int): List<Clothes> {
         val stream = ByteArrayOutputStream()
@@ -42,12 +59,23 @@ class DetectedClothesRepositoryImpl(
         val byteArrayBitmap = stream.toByteArray()
 //        val bodyString = Base64.encodeToString(byteArrayBitmap, Base64.DEFAULT)
 
-        val file = File(context.cacheDir,"image_test.jpg")
+        val uuid = UUID.randomUUID()
+        val file = File(context.cacheDir,"files\\image_${uuid}.jpg")
         file.createNewFile()
         val fos = FileOutputStream(file)
         fos.write(byteArrayBitmap)
         fos.flush()
         fos.close()
+
+        //for testing porpuses
+        val path = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+        val testfile = File(path, "test_image.jpg").writeBitmap(detectedClothes.croppedBitmap, Bitmap.CompressFormat.PNG, 85)
+//        testfile.createNewFile()
+//        val testFos = FileOutputStream(file)
+//        testFos.write(byteArrayBitmap)
+//        testFos.flush()
+//        testFos.close()
+
 
         val requestBody: RequestBody =
             MultipartBody.Builder()
@@ -55,6 +83,7 @@ class DetectedClothesRepositoryImpl(
                 .addFormDataPart("img", file.name ,file.asRequestBody("image/jpg".toMediaTypeOrNull()))
                 .build()
 
+        Log.d(TAG, "searchClothes: imgType: ${detectedClothes.title}, gender: ${detectedClothes.gender}, size: $size")
 
         val result = clothesDetectionApi.searchClothesByCrop(
             imgType = detectedClothes.title,
@@ -67,8 +96,10 @@ class DetectedClothesRepositoryImpl(
         val wildberriesClothes = result.globalSearchResult.wildberries.searchResult
         val lamodaClothes = result.globalSearchResult.lamoda.searchResult
         val allClothes = wildberriesClothes.plus(lamodaClothes)
-        Log.d(TAG, "searchClothes: allClothes size: ${allClothes.size}")
 
+        if (file.exists()) {
+//            file.delete()
+        }
         return clothesDtoConverter.toDomainClothesList(allClothes)
     }
 
@@ -277,6 +308,22 @@ class DetectedClothesRepositoryImpl(
     override suspend fun getTopBrands(): List<Brand> {
         val result = clothesDetectionApi.getTopBrands()
         return brandDtoConverter.toDomainModelList(result)
+    }
+
+    override suspend fun getDetectedClothes(): List<DetectedClothes> {
+        val result = detectedClothesDao.getDetectedClothes()
+        return result.map {
+            detectedClothesEntityConverter.toDomainModel(it)
+        }
+    }
+
+    override suspend fun insertDetectedClothes( detectedClothes: List<DetectedClothes>): LongArray {
+        val result = detectedClothesDao.insertDetectedClothes(detectedClothes.map { detectedClothesEntityConverter.fromDomainModel(it) })
+        return result
+    }
+
+    override suspend fun clearDetectedClothesTable() {
+        return detectedClothesDao.clearDetectedClothes()
     }
 }
 

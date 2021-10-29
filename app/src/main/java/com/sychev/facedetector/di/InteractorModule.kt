@@ -6,6 +6,9 @@ import com.sychev.facedetector.interactors.clothes.*
 import com.sychev.facedetector.interactors.clothes_list.DetectClothesLocal
 import com.sychev.facedetector.interactors.clothes_list.ProcessClothesForRetail
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
+import com.sychev.facedetector.interactors.detected_clothes.ClearDetectedClothes
+import com.sychev.facedetector.interactors.detected_clothes.GetDetectedClothes
+import com.sychev.facedetector.interactors.detected_clothes.InsertDetectedClothes
 import com.sychev.facedetector.interactors.filter.GetFilterValues
 import com.sychev.facedetector.interactors.gender.DefineGender
 import com.sychev.facedetector.interactors.pics.GetCelebPics
@@ -55,8 +58,8 @@ object InteractorModule {
     @Provides
     fun provideGetClothesList(
         detectedClothesRepository: DetectedClothesRepository
-    ): GetClothesList {
-        return GetClothesList(detectedClothesRepository)
+    ): GetClothes {
+        return GetClothes(detectedClothesRepository)
     }
 
     @Provides
@@ -98,4 +101,31 @@ object InteractorModule {
         clothesRepository: DetectedClothesRepository
     ) = GetTopBrands(clothesRepository)
 
+    @Provides
+    fun provideGetDetectedClothes(
+        clothesRepository: DetectedClothesRepository
+    ) = GetDetectedClothes(clothesRepository)
+
+    @Provides
+    fun provideInsertDetectedClothes(
+        clothesRepository: DetectedClothesRepository
+    ) = InsertDetectedClothes(clothesRepository)
+
+    @Provides
+    fun provideClearDetectedClothes(
+        clothesRepository: DetectedClothesRepository
+    ) = ClearDetectedClothes(clothesRepository)
+
 }
+
+
+
+
+
+
+
+
+
+
+
+

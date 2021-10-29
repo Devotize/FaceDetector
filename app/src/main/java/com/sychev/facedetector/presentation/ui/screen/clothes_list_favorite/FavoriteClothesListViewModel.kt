@@ -5,11 +5,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavType
-import androidx.navigation.compose.navArgument
-import com.google.gson.Gson
 import com.sychev.facedetector.domain.Clothes
-import com.sychev.facedetector.interactors.clothes.GetClothesList
+import com.sychev.facedetector.interactors.clothes.GetClothes
 import com.sychev.facedetector.interactors.clothes.GetFavoriteClothes
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
@@ -28,7 +25,7 @@ class FavoriteClothesListViewModel
     private val insertClothesToFavorite: InsertClothesToFavorite,
     private val removeFromFavoriteClothes: RemoveFromFavoriteClothes,
     private val navigationManager: NavigationManager,
-    private val getClothesList: GetClothesList,
+    private val getClothes: GetClothes,
 ): ViewModel(){
 
     val favoriteClothesList = mutableStateListOf<Clothes>()
@@ -88,7 +85,7 @@ class FavoriteClothesListViewModel
     }
 
     private fun refreshClothesList() {
-        getClothesList.execute(favoriteClothesList).onEach {dataState ->
+        getClothes.execute(favoriteClothesList).onEach { dataState ->
             dataState.data?.let{
                 favoriteClothesList.clear()
                 favoriteClothesList.addAll(it)

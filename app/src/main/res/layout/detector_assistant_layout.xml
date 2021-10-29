@@ -28,6 +28,21 @@
             >
 
             <ImageView
+                android:id="@+id/detector_close"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:src="@drawable/ic_baseline_close_gray"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/detector_camera"
+                />
+
+            <ImageView
                 android:id="@+id/detector_camera"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
@@ -36,11 +51,10 @@
                 android:layout_marginEnd="8dp"
                 android:visibility="gone"
                 tools:visibility="visible"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/detector_close"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toTopOf="@id/detector_capture"
-
                 />
 
             <ImageView

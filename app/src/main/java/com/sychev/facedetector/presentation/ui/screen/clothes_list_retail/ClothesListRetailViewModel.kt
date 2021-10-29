@@ -18,17 +18,18 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
-import com.sychev.facedetector.interactors.clothes.GetClothesList
+import com.sychev.facedetector.domain.filter.FilterValues
+import com.sychev.facedetector.interactors.clothes.GetClothes
 import com.sychev.facedetector.interactors.clothes.InsertClothesToFavorite
 import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
 import com.sychev.facedetector.interactors.clothes_list.ProcessClothesForRetail
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
-import com.sychev.facedetector.presentation.activity.main.MainActivity
 import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.navigation.Screen
-import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailEvent
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import java.io.ByteArrayOutputStream
@@ -41,37 +42,21 @@ constructor(
     private val insertClothesToFavorite: InsertClothesToFavorite,
     private val removeFromFavoriteClothes: RemoveFromFavoriteClothes,
     private val processClothesForRetail: ProcessClothesForRetail,
-    private val getClothesList: GetClothesList,
+    private val getClothes: GetClothes,
     private val searchClothes: SearchClothes,
     private val navigationManager: NavigationManager,
 ): ViewModel() {
-
-    val clothesList = mutableStateListOf<Clothes>()
-    val clothesChips = mutableStateListOf<Pair<Clothes, List<Clothes>>>()
-    val selectedChip = mutableStateOf<Pair<Clothes, List<Clothes>>?>(null)
+    val clothesChips = mutableStateListOf<Clothes>()
+    val clothesChipsContainsIndexes = mutableStateListOf<List<Int>>()
+    val listOfClothesList = mutableStateListOf<ArrayList<Clothes>>()
     val similarClothes = mutableStateMapOf<Int, List<Clothes>>()
+    val loading = mutableStateOf(false)
+    @Inject lateinit var filterValues: FilterValues
 
     fun onTriggerEvent(event: ClothesListRetailEvent) {
         when (event) {
-            is ClothesListRetailEvent.ProcessClothesEvent -> {
-                processClothesForRetail.execute(event.clothes).onEach { dataState ->
-                    dataState.data?.let {
-                        it.forEachIndexed { index: Int, clothes: Clothes ->
-                             if (clothes.provider == "wildberries") {
-                                clothesChips.add(Pair(clothes, listOf(clothes, it[index+1])))
-                            }
-                        }
-                        if (clothesChips.isNotEmpty()) {
-                            onTriggerEvent(ClothesListRetailEvent.OnSelectChipEvent(clothesChips.first(), event.context))
-                        }
-                    }
-                }.launchIn(viewModelScope)
-//                CoroutineScope(IO).launch {
-//                    updateChips()
-//                }
-            }
-            is ClothesListRetailEvent.OnSelectChipEvent -> {
-                onSelectedChipChanged(event.chip, event.context)
+            is ClothesListRetailEvent.FindClothes -> {
+                findClothes(event.detectedClothes, event.context)
             }
             is ClothesListRetailEvent.AddToFavoriteClothesEvent -> {
                 addToFavorite(event.clothes)
@@ -94,22 +79,34 @@ constructor(
         }
     }
 
-    private fun onSelectedChipChanged(newSelectedChip: Pair<Clothes, List<Clothes>>, context: Context) {
-        selectedChip.value = newSelectedChip
-        clothesList.clear()
-        clothesList.addAll(newSelectedChip.second)
-        similarClothes.clear()
-        clothesList.forEachIndexed{index, clothes ->
-            searchSimilarClothes(index = index, clothes = clothes, context = context)
-        }
-        refreshClothesList()
+    var containIndexToAdd = 0
+    private fun findClothes(detectedClothes: DetectedClothes, context: Context) {
+        searchClothes.execute(
+            detectedClothes = detectedClothes,
+            context = context
+        ).onEach { dataState ->
+            loading.value = dataState.loading
+            dataState.data?.let {
+                listOfClothesList.add(it as ArrayList<Clothes>)
+                clothesChips.add(it[0])
+                val indexesToAdd = ArrayList<Int>()
+                for (i in 0 until it.size) {
+                    indexesToAdd.add(containIndexToAdd)
+                    containIndexToAdd++
+                }
+                clothesChipsContainsIndexes.add(indexesToAdd )
+            }
+            dataState.error?.let {
+                Log.d(TAG, "findClothes: error: $it")
+            }
+        }.launchIn(viewModelScope)
     }
 
     private fun addToFavorite(clothes: Clothes) {
         insertClothesToFavorite.execute(clothes)
             .onEach {
                 it.data?.let {
-                   refreshClothesList()
+                   updateClothes(clothes)
                 }
 
             }.launchIn(viewModelScope)
@@ -118,21 +115,34 @@ constructor(
     private fun removeFromFavorite(clothes: Clothes) {
         removeFromFavoriteClothes.execute(clothes)
             .onEach {
-                 refreshClothesList()
+                 updateClothes(clothes = clothes)
             }.launchIn(viewModelScope)
     }
 
-    private fun refreshClothesList() {
-        getClothesList.execute(clothesList).onEach {dataState ->
-            dataState.data?.let{
-                clothesList.clear()
-                clothesList.addAll(it)
+//    private fun refreshClothesList() {
+//        getClothes.execute(clothesList).onEach { dataState ->
+//            dataState.data?.let{
+//                clothesList.clear()
+//                clothesList.addAll(it)
+//            }
+//        }.launchIn(viewModelScope)
+//    }
+
+    private fun updateClothes(clothes: Clothes) {
+        getClothes.execute(clothes = clothes).onEach { dataState ->
+            dataState.data?.let { clothesFromCache ->
+                listOfClothesList.forEach { cl ->
+                    cl.forEachIndexed { index, item ->
+                        if (item.clothesUrl == clothesFromCache.clothesUrl) {
+                            cl[index] = clothesFromCache
+                        }
+                    }
+                }
             }
         }.launchIn(viewModelScope)
     }
 
     private fun searchSimilarClothes(clothes: Clothes, context: Context, index: Int) {
-        Log.d(TAG, "searchSimilarClothes: called index: $index")
         Glide.with(context)
             .asBitmap()
             .load(clothes.picUrl)
@@ -147,7 +157,6 @@ constructor(
                     )
                     searchClothes.execute(detectedClothes, context, size = 6).onEach { dataState ->
                         dataState.data?.let {
-                            Log.d(TAG, "onResourceReady: dataIsNotNull : $index: $index")
                             val list = it.toMutableList()
                             try {
                                 list.remove(clothes)
@@ -155,7 +164,6 @@ constructor(
                                 e.printStackTrace()
                             }
                             similarClothes[index] = list.toList()
-                            Log.d(TAG, "onResourceReady: similarClothes: ${similarClothes.keys.toList()}")
                         }
                     }.launchIn(viewModelScope)
                 }

@@ -34,7 +34,7 @@ fun FoundedClothesCard(
     val clothes = foundedClothes.clothes[0]
     val x = with(LocalDensity.current) {foundedClothes.location.centerX().toDp()}
     val y = with(LocalDensity.current) {foundedClothes.location.centerY().toDp()}
-    val width = 280.dp
+    val width = 295.dp
     val height = 95.dp
     Column(
         modifier = modifier,
@@ -55,24 +55,32 @@ fun FoundedClothesCard(
                     .padding(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Image(
+                Surface(
                     modifier = Modifier
-                        .width(68.dp)
-                        .fillMaxHeight()
-                        .padding(4.dp),
-                    painter = rememberImagePainter(
+                        .padding(4.dp)
+                        .wrapContentSize(),
+                    color = MaterialTheme.colors.background
+                ) {
+                    val imagePainter = rememberImagePainter(
                         data = clothes.picUrl,
                         builder = {
                             crossfade(true)
                             transformations(RoundedCornersTransformation(6.dp.value))
                             error(R.drawable.clothes_default_icon_gray)
                         }
-                    ),
-                    contentDescription = null,
-                )
+                    )
+                    Image(
+                        modifier = Modifier
+                            .width(68.dp)
+                            .fillMaxHeight()
+                            ,
+                        painter = imagePainter,
+                        contentDescription = null,
+                    )
+                }
                 Column(
                     modifier = Modifier
-                        .widthIn(max = 135.dp)
+                        .widthIn(max = 128.dp)
                         .fillMaxHeight()
                         .padding(start = 4.dp, top = 4.dp, bottom = 4.dp),
                     verticalArrangement = Arrangement.SpaceBetween
@@ -134,11 +142,13 @@ fun FoundedClothesCard(
                             shape = RoundedCornerShape(topStart = 6.dp, bottomStart = 6.dp),
                         ) {
                             Icon(
+                                modifier = Modifier.size(32.dp),
                                 imageVector = Icons.Default.Male,
                                 contentDescription = null,
                                 tint = if (!isMale) MaterialTheme.colors.onPrimary else MaterialTheme.colors.primary,
                             )
                         }
+                        Spacer(modifier = Modifier.width(2.dp))
                         //female
                         Surface(
                             modifier = Modifier
@@ -151,6 +161,7 @@ fun FoundedClothesCard(
                             shape = RoundedCornerShape(topEnd = 6.dp, bottomEnd = 6.dp),
                         ) {
                             Icon(
+                                modifier = Modifier.size(32.dp),
                                 imageVector = Icons.Default.Female,
                                 contentDescription = null,
                                 tint = if (isMale) MaterialTheme.colors.onPrimary else MaterialTheme.colors.primary,

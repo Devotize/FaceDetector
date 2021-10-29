@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.sychev.facedetector.data.local.AppDatabase
 import com.sychev.facedetector.data.local.mapper.ClothesEntityConverter
+import com.sychev.facedetector.data.local.mapper.DetectedClothesEntityConverter
 import com.sychev.facedetector.data.local.mapper.SavedScreenshotConverter
 import dagger.Module
 import dagger.Provides
@@ -22,7 +23,7 @@ object CacheModule {
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java,
-            "app_database"
+            "assistant_app_database"
         )
             .fallbackToDestructiveMigration()
             .build()
@@ -34,6 +35,10 @@ object CacheModule {
 
     @Provides
     @Singleton
+    fun provideClothesDao(appDb: AppDatabase) = appDb.clothesDao()
+
+    @Provides
+    @Singleton
     fun provideDetectedClothesDao(appDb: AppDatabase) = appDb.detectedClothesDao()
 
     @Singleton
@@ -42,7 +47,11 @@ object CacheModule {
 
     @Singleton
     @Provides
-    fun provideDetectedClothesConverter() = ClothesEntityConverter()
+    fun provideClothesConverter() = ClothesEntityConverter()
+
+    @Singleton
+    @Provides
+    fun provideDetectedClothesConverter() = DetectedClothesEntityConverter()
 
 }
 

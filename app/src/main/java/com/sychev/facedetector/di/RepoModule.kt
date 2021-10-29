@@ -1,8 +1,10 @@
 package com.sychev.facedetector.di
 
 import com.sychev.facedetector.data.local.dao.ClothesDao
+import com.sychev.facedetector.data.local.dao.DetectedClothesDao
 import com.sychev.facedetector.data.local.dao.ScreenshotDao
 import com.sychev.facedetector.data.local.mapper.ClothesEntityConverter
+import com.sychev.facedetector.data.local.mapper.DetectedClothesEntityConverter
 import com.sychev.facedetector.data.local.mapper.SavedScreenshotConverter
 import com.sychev.facedetector.data.remote.CelebDetectionApi
 import com.sychev.facedetector.data.remote.ClothesDetectionApi
@@ -41,22 +43,28 @@ object RepoModule {
 
     @Singleton
     @Provides
-    fun provideDetectedClothesRepository(
+    fun provideClothesRepository(
         clothesDetectionApi: ClothesDetectionApi,
-        ClothesDao: ClothesDao,
+        clothesDao: ClothesDao,
+        detectedClothesDao: DetectedClothesDao,
         unsplashApi: UnsplashApi,
         clothesEntityConverter: ClothesEntityConverter,
         clothesDtoConverter: ClothesDtoConverter,
         brandDtoConverter: BrandDtoConverter,
+        detectedClothesEntityConverter: DetectedClothesEntityConverter
     ): DetectedClothesRepository {
         return DetectedClothesRepositoryImpl(
             clothesDetectionApi,
-            ClothesDao,
+            clothesDao,
+            detectedClothesDao,
             unsplashApi,
             clothesEntityConverter,
             clothesDtoConverter,
             brandDtoConverter,
+            detectedClothesEntityConverter
         )
     }
+
+
 
 }

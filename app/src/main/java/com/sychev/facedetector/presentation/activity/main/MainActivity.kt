@@ -26,6 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.ui.components.BottomNavigationBar
 import com.sychev.facedetector.presentation.ui.components.GenericDialog
 import com.sychev.facedetector.presentation.ui.detectorAssitant.AssistantDetector
@@ -99,7 +100,8 @@ class MainActivity : AppCompatActivity() {
         mainViewModel.launchFromAssistant.value =
             bundle?.getBoolean("from_assistant_launch") ?: false
         var firstLaunch = true
-        val clothesListRetail = bundle?.getParcelableArrayList<Clothes>("clothes_list")
+        mainViewModel.onTriggerEvent(MainEvent.GetDetectedClothesEvent)
+
 
         setContent {
 
@@ -128,56 +130,12 @@ class MainActivity : AppCompatActivity() {
                             )
                         }
                     },
-                    drawerContent = {
-                        Text("Reviews")
-                    },
-                    drawerShape = RoundedCornerShape(
-                        topStart = 0.dp,
-                        topEnd = 8.dp,
-                        bottomEnd = 8.dp,
-                        bottomStart = 0.dp
-                    ),
                 ) {
                     Column(
                         modifier = Modifier
                             .background(MaterialTheme.colors.primary)
                             .fillMaxSize()
                     ) {
-//                        Row(
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .wrapContentHeight()
-//                                .padding(start = 18.dp, top = 18.dp, end = 18.dp),
-//                            verticalAlignment = Alignment.CenterVertically,
-//                            horizontalArrangement = Arrangement.SpaceBetween
-//                        ) {
-//                            IconButton(onClick = {
-//                                Log.d(TAG, "onCreate: menu clicked")
-//                                if (scaffoldState.drawerState.isClosed) {
-//                                    scope.launch { scaffoldState.drawerState.open() }
-//                                } else {
-//                                    scope.launch { scaffoldState.drawerState.close() }
-//                                }
-//
-//                            }) {
-//                                Icon(
-//                                    modifier = Modifier
-//                                        .width(30.dp)
-//                                        .height(30.dp),
-//                                    imageVector = Icons.Outlined.Menu,
-//                                    contentDescription = null
-//                                )
-//                            }
-//                            Text(
-//                                modifier = Modifier
-//                                    .clickable {
-//                                        this@MainActivity.finish()
-//                                    },
-//                                text = "Close",
-//                                color = MaterialTheme.colors.onBackground,
-//                                style = MaterialTheme.typography.h3,
-//                            )
-//                        }
                         NavHost(
                             navController,
                             startDestination = Screen.FeedList.route,
@@ -234,34 +192,37 @@ class MainActivity : AppCompatActivity() {
                             }
                             composable(Screen.ClothesListRetail.route) { navBackStackEntry ->
                                 hasNavBottomBar = false
-                                var clothesList = listOf<Clothes>()
-                                clothesListRetail?.let {
-                                    clothesList = it
+                                var clothesList = listOf<DetectedClothes>()
+
+                                if (mainViewModel.detectedClothesList.isNotEmpty()) {
+                                    clothesList = mainViewModel.detectedClothesList
                                 }
-                                navController.previousBackStackEntry?.arguments?.getParcelableArrayList<Clothes>(
+                                navController.previousBackStackEntry?.arguments?.getParcelableArrayList<DetectedClothes>(
                                     "args"
                                 )?.let {
                                     Log.d(TAG, "onCreate: retailArgs: $it")
                                     clothesList = it
                                 }
+
                                 val retailViewModel = hiltViewModel<ClothesListRetailViewModel>(navController.getBackStackEntry(Screen.ClothesListRetail.route))
                                 ClothesListRetailScreen(
                                     viewModel = retailViewModel,
-                                    clothesList = clothesList,
+                                    detectedClothes = clothesList,
                                     onBackClick = {onBackPressed()},
                                 )
                             }
                             if (firstLaunch) {
                                     navigationManager.navigate(Screen.FavoriteClothesList)
                                     navigationManager.navigate(Screen.FeedList)
-                                    clothesListRetail?.let {
-                                        val screen = Screen.ClothesListRetail.apply {
+                                if (mainViewModel.detectedClothesList.isNotEmpty()) {
+                                    val screen = Screen.ClothesListRetail.apply {
                                             arguments = arrayListOf<Parcelable>().apply {
-                                                addAll(it)
+                                                addAll(mainViewModel.detectedClothesList)
                                             }
                                         }
                                         navigationManager.navigate(screen)
-                                    }
+                                }
+
                                     firstLaunch = false
                             }
                         }
