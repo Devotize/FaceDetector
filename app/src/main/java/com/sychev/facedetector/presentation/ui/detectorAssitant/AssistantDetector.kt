@@ -25,7 +25,6 @@ import kotlinx.coroutines.Dispatchers.Main
 import java.util.*
 import android.graphics.Bitmap
 import android.graphics.drawable.ColorDrawable
-import android.os.Parcelable
 import android.provider.MediaStore
 import android.view.animation.Animation
 import android.view.animation.Transformation
@@ -35,14 +34,9 @@ import com.bumptech.glide.Glide
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.filter.FilterValues
-import com.sychev.facedetector.interactors.detected_clothes.InsertDetectedClothes
 import com.sychev.facedetector.presentation.activity.CameraActivity
 import com.sychev.facedetector.presentation.activity.main.MainActivity
-import com.sychev.facedetector.presentation.ui.items.BottomFavoriteSheet
-import com.sychev.facedetector.presentation.ui.items.BottomGallerySheet
-import com.sychev.facedetector.presentation.ui.items.DetectedClothesListItem
 import com.sychev.facedetector.presentation.ui.items.FrameDrawItem
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 import com.sychev.facedetector.service.FaceDetectorService
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach

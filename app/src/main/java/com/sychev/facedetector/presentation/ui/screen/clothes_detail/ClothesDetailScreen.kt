@@ -7,11 +7,13 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +22,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import coil.compose.rememberImagePainter
@@ -292,34 +297,57 @@ fun SimilarClothesCard(
             contentDescription = null,
         )
         Spacer(modifier = Modifier.height(4.dp))
+        val fullStr = "${clothes.itemCategory} ${clothes.brand}"
+        var text = ""
+        kotlin.run let@{ fullStr.forEach { char ->
+            text += char
+            if (text.length > 11) {
+                text += "..."
+                return@let
+            }
+        } }
         Text(
             modifier = Modifier
                 .widthIn(max = 114.dp),
-            text = "${clothes.brand} ${clothes.itemCategory}",
+            text = text,
             color = MaterialTheme.colors.onPrimary,
-            style = MaterialTheme.typography.subtitle1
+            style = MaterialTheme.typography.subtitle2,
+            maxLines = 1,
         )
         Spacer(modifier = Modifier.height(4.dp))
-        RatingBar(
+        Surface(
             modifier = Modifier
-                .background(MaterialTheme.colors.primary ),
-            value = clothes.rating.toFloat(),
-            numStars = 5,
-            size = 16.dp,
-            activeColor = MaterialTheme.colors.secondary,
-            inactiveColor = MaterialTheme.colors.primaryVariant,
-            isIndicator = true,
-            ratingBarStyle = RatingBarStyle.Normal,
-            onRatingChanged = {
-
+                .wrapContentSize(),
+            color = MaterialTheme.colors.onSurface,
+            shape = CircleShape
+        ) {
+            Row(
+                modifier = Modifier.wrapContentSize(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .padding(8.dp, 2.dp, 0.dp, 2.dp)
+                        .size(13.dp),
+                    imageVector = Icons.Default.Star,
+                    contentDescription = null,
+                    tint = Color.Yellow
+                )
+                Text(
+                    modifier = Modifier.padding(2.dp, 2.dp, 8.dp, 2.dp),
+                    text = "${clothes.rating}",
+                    color = Color.White,
+                    style = MaterialTheme.typography.caption,
+                    fontWeight = FontWeight.W100
+                )
             }
-        )
+        }
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
             text = clothes.price.toString().toMoneyString().plus(" ₽"),
             color = MaterialTheme.colors.onPrimary,
-            style = MaterialTheme.typography.h3
+            style = MaterialTheme.typography.h6
         )
         
     }

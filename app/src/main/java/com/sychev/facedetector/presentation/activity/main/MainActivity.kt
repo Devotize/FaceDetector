@@ -15,11 +15,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -41,9 +39,11 @@ import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.Clothe
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailViewModel
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedListScreen
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedViewModel
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.ShopScreen
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.ShopViewModel
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.filters_screen.FiltersScreen
+import com.sychev.facedetector.presentation.ui.screen.own_image.OwnImageScreen
+import com.sychev.facedetector.presentation.ui.screen.own_image.OwnImageViewModel
+import com.sychev.facedetector.presentation.ui.screen.shop.ShopScreen
+import com.sychev.facedetector.presentation.ui.screen.shop.ShopViewModel
+import com.sychev.facedetector.presentation.ui.screen.shop.filters_screen.FiltersScreen
 import com.sychev.facedetector.presentation.ui.theme.AppTheme
 import com.sychev.facedetector.service.FaceDetectorService
 import com.sychev.facedetector.utils.MessageDialog
@@ -60,6 +60,7 @@ class MainActivity : AppCompatActivity() {
     private val mainViewModel: MainViewModel by viewModels()
     private val shopViewModel: ShopViewModel by viewModels()
     private val retailViewModel: ClothesListRetailViewModel by viewModels()
+    private val ownImageViewModel: OwnImageViewModel by viewModels()
 
     @Inject
     lateinit var navigationManager: NavigationManager
@@ -160,9 +161,9 @@ class MainActivity : AppCompatActivity() {
                                 FiltersScreen(viewModel = this@MainActivity.shopViewModel)
                             }
 
-                            composable(Screen.Profile.route) {
+                            composable(Screen.OwnImage.route) {
                                 hasNavBottomBar = true
-                                Text(text = "Profile")
+                                OwnImageScreen(viewModel = ownImageViewModel)
                             }
                             composable(Screen.ClothesListRetail.route) {
 
@@ -192,7 +193,7 @@ class MainActivity : AppCompatActivity() {
                             }
                             composable(Screen.ClothesListRetail.route) { navBackStackEntry ->
                                 hasNavBottomBar = false
-                                var clothesList = listOf<DetectedClothes>()
+                                var clothesList = mutableListOf<DetectedClothes>()
 
                                 if (mainViewModel.detectedClothesList.isNotEmpty()) {
                                     clothesList = mainViewModel.detectedClothesList

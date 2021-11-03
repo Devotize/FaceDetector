@@ -1,4 +1,4 @@
-package com.sychev.facedetector.presentation.ui.screen.shop_screen
+package com.sychev.facedetector.presentation.ui.screen.shop
 
 import com.sychev.facedetector.domain.Clothes
 

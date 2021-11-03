@@ -1,9 +1,7 @@
-package com.sychev.facedetector.presentation.ui.screen.shop_screen
+package com.sychev.facedetector.presentation.ui.screen.shop
 
 import com.sychev.facedetector.domain.Clothes
-import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.domain.filter.Price
-import javax.inject.Inject
 
 data class TestClothesFilter (
     var title: String = "",

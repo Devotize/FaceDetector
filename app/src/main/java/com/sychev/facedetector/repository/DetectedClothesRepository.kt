@@ -1,14 +1,13 @@
 package com.sychev.facedetector.repository
 
 import android.content.Context
-import android.graphics.Bitmap
 import com.sychev.facedetector.data.remote.model.FilterValuesDtoItem
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.ClothesWithBubbles
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.brand.Brand
 import com.sychev.facedetector.domain.celeb.Celeb
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
+import com.sychev.facedetector.presentation.ui.screen.shop.TestClothesFilter
 
 interface DetectedClothesRepository {
 

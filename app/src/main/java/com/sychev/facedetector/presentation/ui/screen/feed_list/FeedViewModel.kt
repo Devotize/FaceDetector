@@ -40,7 +40,7 @@ constructor(
 ): ViewModel() {
     val urls = mutableStateListOf<String>()
     val loading = mutableStateOf(false)
-    val celebImages = mutableStateListOf<CelebImage>()
+    val celebImages = mutableStateOf<List<CelebImage>>(listOf())
     var page = 0
 
     init {
@@ -111,8 +111,7 @@ constructor(
         getCelebPics.execute(page).onEach { dataState ->
             loading.value = dataState.loading
             dataState.data?.let{ celebs ->
-                Log.d(TAG, "onTriggerEvent: getCelebPicsEvent data: $celebs")
-                        celebImages.addAll(celebs.map { CelebImage(image = it.image) })
+                celebImages.value = celebs.map { CelebImage(image = it.image) }
                 page++
             }
         }.launchIn(viewModelScope)
@@ -132,9 +131,10 @@ constructor(
                         location = location,
                         clothes = it
                     )
-                    celebImages.forEachIndexed{index, ci ->
+                    celebImages.value.forEachIndexed{index, ci ->
                         if (ci == celebImage) {
-                            celebImages[index].foundedClothes.add(fc)
+                            celebImages.value[index].foundedClothes.add(fc)
+                            refreshCelebImagesData()
                         }
                     }
                     Log.d(TAG, "searchMultiplyClothes: foundedClothes: $fc")
@@ -148,10 +148,22 @@ constructor(
             .onEach {dataState ->
                 callback(dataState.loading)
                 dataState.data?.let{
-                    celebImages.forEachIndexed() { index, ci ->
+                    celebImages.value.forEachIndexed() { index, ci ->
                         if (ci == celebImage) {
-                            celebImages[index].detectedClothes.addAll(it)
-                            celebImages[index].isProcessed = true
+                            celebImages.value[index].detectedClothes.addAll(it)
+                            celebImages.value[index].isProcessed = true
+                            refreshCelebImagesData()
+                            it.forEach {
+                                searchClothes(
+                                    celebImages.value[index],
+                                    detectedClothes = it,
+                                    context = context,
+                                    location = it.location,
+                                    callback = {
+
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -167,35 +179,37 @@ constructor(
                         location = location,
                         clothes = it
                     )
-                    celebImages.forEachIndexed{index, ci ->
+                    celebImages.value.forEachIndexed{index, ci ->
                         if (ci == celebImage) {
-                            celebImages[index].foundedClothes.add(fc)
+                            celebImages.value[index].foundedClothes.add(fc)
+                            refreshCelebImagesData()
                         }
                     }
                 }
                 dataState.error?.let { message ->
                     Log.d(TAG, "searchClothes: error: $message")
-                    callback(null)
-                    MessageDialog.dialogMessages.add(
-                        MessageDialog.Builder()
-                            .message("Похожей одежды не найдено")
-                            .title("Ошибка")
-                            .onDismiss {
-                                MessageDialog.dialogMessages.removeLast()
-                            }
-                            .onPositiveAction {
-                                MessageDialog.dialogMessages.removeLast()
-                            }
-                            .build()
-                    )
+//                    callback(null)
+//                    MessageDialog.dialogMessages.add(
+//                        MessageDialog.Builder()
+//                            .message("Похожей одежды не найдено")
+//                            .title("Ошибка")
+//                            .onDismiss {
+//                                MessageDialog.dialogMessages.removeLast()
+//                            }
+//                            .onPositiveAction {
+//                                MessageDialog.dialogMessages.removeLast()
+//                            }
+//                            .build()
+//                    )
                 }
             }.launchIn(CoroutineScope(IO))
     }
 
     fun removeFromFoundedClothes(celebImage: CelebImage, vararg fc: FoundedClothes) {
-        celebImages.forEachIndexed {index, ci ->
+        celebImages.value.forEachIndexed {index, ci ->
             if (ci == celebImage) {
-                celebImages[index].foundedClothes.removeAll(fc)
+                celebImages.value[index].foundedClothes.removeAll(fc)
+                refreshCelebImagesData()
             }
         }
     }
@@ -203,14 +217,20 @@ constructor(
 
 
     fun addToFoundedClothes(celebImage: CelebImage, vararg fc: FoundedClothes) {
-        celebImages.forEachIndexed {index, ci ->
+        celebImages.value.forEachIndexed {index, ci ->
             if (ci == celebImage) {
-                celebImages[index].foundedClothes.addAll(fc)
+                celebImages.value[index].foundedClothes.addAll(fc)
+                refreshCelebImagesData()
             }
         }
     }
 
-
+    private fun refreshCelebImagesData() {
+        val newCelebImages = ArrayList<CelebImage>()
+        newCelebImages.addAll(celebImages.value)
+        celebImages.value = listOf()
+        celebImages.value = newCelebImages
+    }
 
 }
 

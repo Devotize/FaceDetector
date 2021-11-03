@@ -1,4 +1,4 @@
-package com.sychev.facedetector.presentation.ui.screen.shop_screen
+package com.sychev.facedetector.presentation.ui.screen.shop
 
 import android.util.Log
 import androidx.compose.foundation.*
@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.fastForEachIndexed
 import coil.compose.rememberImagePainter
-import com.google.accompanist.flowlayout.FlowRow
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.brand.Brand

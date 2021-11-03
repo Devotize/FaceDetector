@@ -39,7 +39,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -59,8 +59,7 @@ android {
         mlModelBinding true
     }
     composeOptions {
-        kotlinCompilerVersion "1.4.32"
-        kotlinCompilerExtensionVersion "1.0.0-rc01"
+        kotlinCompilerExtensionVersion '1.0.1'
 
     }
 }
@@ -122,7 +121,7 @@ dependencies {
 
 
     //compose
-    def compose_version = "1.0.0-rc01"
+    def compose_version = "1.0.4"
     implementation "androidx.compose.ui:ui:$compose_version"
     //util
     implementation "androidx.compose.ui:ui-util:$compose_version"

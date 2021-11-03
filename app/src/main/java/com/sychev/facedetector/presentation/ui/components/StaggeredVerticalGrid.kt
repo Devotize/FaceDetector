@@ -3,6 +3,7 @@ package com.sychev.facedetector.presentation.ui.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Dp
 import kotlin.math.ceil
 
@@ -10,12 +11,14 @@ import kotlin.math.ceil
 fun StaggeredVerticalGrid(
     modifier: Modifier = Modifier,
     maxColumnWidth: Dp,
-    children: @Composable () -> Unit
+    content: @Composable () -> Unit
 ) {
     Layout(
-        content = children,
+        content = content,
         modifier = modifier
     ) { measurables, constraints ->
+        val placeableXY: MutableMap<Placeable, Pair<Int, Int>> = mutableMapOf()
+
         check(constraints.hasBoundedWidth) {
             "Unbounded width not supported"
         }
@@ -26,24 +29,23 @@ fun StaggeredVerticalGrid(
         val placeables = measurables.map { measurable ->
             val column = shortestColumn(colHeights)
             val placeable = measurable.measure(itemConstraints)
+            placeableXY[placeable] = Pair(columnWidth * column, colHeights[column])
             colHeights[column] += placeable.height
             placeable
         }
 
-        val height = colHeights.maxOrNull()?.coerceIn(constraints.minHeight, constraints.maxHeight)
+        val height = colHeights.maxOrNull()
+            ?.coerceIn(constraints.minHeight, constraints.maxHeight)
             ?: constraints.minHeight
         layout(
             width = constraints.maxWidth,
             height = height
         ) {
-            val colY = IntArray(columns) { 0 }
             placeables.forEach { placeable ->
-                val column = shortestColumn(colY)
                 placeable.place(
-                    x = columnWidth * column,
-                    y = colY[column]
+                    x = placeableXY.getValue(placeable).first,
+                    y = placeableXY.getValue(placeable).second
                 )
-                colY[column] += placeable.height
             }
         }
     }

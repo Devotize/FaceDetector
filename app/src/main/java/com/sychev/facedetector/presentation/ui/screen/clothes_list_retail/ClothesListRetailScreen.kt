@@ -54,7 +54,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ClothesListRetailScreen(
     viewModel: ClothesListRetailViewModel,
-    detectedClothes: List<DetectedClothes>,
+    detectedClothes: MutableList<DetectedClothes>,
     onBackClick: () -> Unit,
 ) {
     var recomposed by remember{mutableStateOf(false)}
@@ -173,8 +173,8 @@ fun ClothesListRetailScreen(
                                     )
                                 },
                                 onShoppingCartClick = {
-                                    val browserIntent =
-                                        Intent(Intent.ACTION_VIEW, Uri.parse(item.clothesUrl))
+                                    detectedClothes.clear()
+                                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(item.clothesUrl))
                                     ContextCompat.startActivity(context, browserIntent, null)
                                 },
                                 filterValues = viewModel.filterValues,
@@ -192,7 +192,7 @@ fun ClothesListRetailScreen(
                             Text(
                                 modifier = Modifier.padding(start = 16.dp),
                                 text = "Похожие товары",
-                                style = MaterialTheme.typography.h4,
+                                style = MaterialTheme.typography.h5,
                                 color = MaterialTheme.colors.onPrimary
                             )
 

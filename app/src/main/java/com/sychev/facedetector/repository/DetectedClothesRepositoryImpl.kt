@@ -2,13 +2,10 @@ package com.sychev.facedetector.repository
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Environment
-import android.util.Base64
 import android.util.Log
 import com.sychev.facedetector.data.local.dao.ClothesDao
 import com.sychev.facedetector.data.local.dao.DetectedClothesDao
-import com.sychev.facedetector.data.local.entity.ClothesDetectedEntity
 import com.sychev.facedetector.data.local.mapper.ClothesEntityConverter
 import com.sychev.facedetector.data.local.mapper.DetectedClothesEntityConverter
 import com.sychev.facedetector.data.remote.ClothesDetectionApi
@@ -23,7 +20,7 @@ import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.brand.Brand
 import com.sychev.facedetector.domain.celeb.Celeb
 import com.sychev.facedetector.domain.filter.FilterValues
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
+import com.sychev.facedetector.presentation.ui.screen.shop.TestClothesFilter
 import com.sychev.facedetector.utils.TAG
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -32,7 +29,6 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.nio.file.Paths
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap

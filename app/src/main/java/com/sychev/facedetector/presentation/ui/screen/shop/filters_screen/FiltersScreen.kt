@@ -1,4 +1,4 @@
-package com.sychev.facedetector.presentation.ui.screen.shop_screen.filters_screen
+package com.sychev.facedetector.presentation.ui.screen.shop.filters_screen
 
 import android.util.Log
 import androidx.compose.animation.animateContentSize
@@ -15,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.DoneOutline
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,9 +27,9 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.domain.filter.Price
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.ShopEvent
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.ShopViewModel
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
+import com.sychev.facedetector.presentation.ui.screen.shop.ShopEvent
+import com.sychev.facedetector.presentation.ui.screen.shop.ShopViewModel
+import com.sychev.facedetector.presentation.ui.screen.shop.TestClothesFilter
 import com.sychev.facedetector.utils.TAG
 import com.sychev.facedetector.utils.color
 
@@ -118,102 +117,110 @@ fun FiltersScreen(
                     focusManager.clearFocus()
                 })
             )
-            RowWithCheckBox(
-                modifier = Modifier
-                    .padding(top = 12.dp, bottom = 12.dp)
-                    .fillMaxWidth(),
-                title = "Женщинам",
-                checked = customFilter.genders.contains(FilterValues.Constants.Gender.female),
-                onCheckedChange = { checked ->
-                    if (checked) {
-                        val newFilters = customFilter.also {
-                            it.genders.add(FilterValues.Constants.Gender.female)
-                        }
-                        viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
-                    } else {
-                        try {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                RowWithCheckBox(
+                    modifier = Modifier
+                        .padding(top = 12.dp, bottom = 12.dp, end = 18.dp)
+                        .fillMaxWidth(.5f),
+                    title = "Женщинам",
+                    checked = customFilter.genders.contains(FilterValues.Constants.Gender.female),
+                    onCheckedChange = { checked ->
+                        if (checked) {
                             val newFilters = customFilter.also {
-                                it.genders.remove(FilterValues.Constants.Gender.female)
+                                it.genders.add(FilterValues.Constants.Gender.female)
                             }
                             viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                        } else {
+                            try {
+                                val newFilters = customFilter.also {
+                                    it.genders.remove(FilterValues.Constants.Gender.female)
+                                }
+                                viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
                         }
                     }
-                }
-            )
-            RowWithCheckBox(
-                modifier = Modifier
-                    .padding(top = 12.dp, bottom = 12.dp)
-                    .fillMaxWidth(),
-                title = "Мужчинам",
-                checked = customFilter.genders.contains(FilterValues.Constants.Gender.male),
-                onCheckedChange = { checked ->
-                    if (checked) {
-                        val newFilters = customFilter.also {
-                            it.genders.add(FilterValues.Constants.Gender.male)
-                        }
-                        viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
-                    } else {
-                        try {
+                )
+                Spacer(modifier = Modifier.width(24.dp))
+                RowWithCheckBox(
+                    modifier = Modifier
+                        .padding(top = 12.dp, bottom = 12.dp)
+                        .fillMaxWidth(),
+                    title = "Мужчинам",
+                    checked = customFilter.genders.contains(FilterValues.Constants.Gender.male),
+                    onCheckedChange = { checked ->
+                        if (checked) {
                             val newFilters = customFilter.also {
-                                it.genders.remove(FilterValues.Constants.Gender.male)
+                                it.genders.add(FilterValues.Constants.Gender.male)
                             }
                             viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                        } else {
+                            try {
+                                val newFilters = customFilter.also {
+                                    it.genders.remove(FilterValues.Constants.Gender.male)
+                                }
+                                viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
                         }
-                    }
-                },
-            )
-            RowWithCheckBox(
-                modifier = Modifier
-                    .padding(top = 12.dp, bottom = 12.dp)
-                    .fillMaxWidth(),
-                title = "Только новинки",
-                checked = customFilter.novice == FilterValues.Constants.Novice.new,
-                onCheckedChange = { checked ->
-                    if (checked) {
-                        val newFilters = customFilter.also {
-                            it.novice = FilterValues.Constants.Novice.new
-                        }
-                        viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
-                    } else {
-                        try {
+                    },
+                )
+            }
+            Row(modifier = Modifier.fillMaxWidth()) {
+
+
+                RowWithCheckBox(
+                    modifier = Modifier
+                        .padding(top = 12.dp, bottom = 12.dp, end = 18.dp)
+                        .fillMaxWidth(.5f),
+                    title = "Новинки",
+                    checked = customFilter.novice == FilterValues.Constants.Novice.new,
+                    onCheckedChange = { checked ->
+                        if (checked) {
                             val newFilters = customFilter.also {
-                                it.novice = FilterValues.Constants.Novice.default
+                                it.novice = FilterValues.Constants.Novice.new
                             }
                             viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                        } else {
+                            try {
+                                val newFilters = customFilter.also {
+                                    it.novice = FilterValues.Constants.Novice.default
+                                }
+                                viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
                         }
-                    }
-                },
-            )
-            RowWithCheckBox(
-                modifier = Modifier
-                    .padding(top = 12.dp, bottom = 12.dp)
-                    .fillMaxWidth(),
-                title = "Только популярные",
-                checked = customFilter.popular == FilterValues.Constants.Popular.popular,
-                onCheckedChange = { checked ->
-                    if (checked) {
-                        val newFilters = customFilter.also {
-                            customFilter.popular = FilterValues.Constants.Popular.popular
-                        }
-                        viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
-                    } else {
-                        try {
+                    },
+                )
+                Spacer(modifier = Modifier.width(24.dp))
+                RowWithCheckBox(
+                    modifier = Modifier
+                        .padding(top = 12.dp, bottom = 12.dp)
+                        .fillMaxWidth(),
+                    title = "Популярные",
+                    checked = customFilter.popular == FilterValues.Constants.Popular.popular,
+                    onCheckedChange = { checked ->
+                        if (checked) {
                             val newFilters = customFilter.also {
-                                customFilter.popular = FilterValues.Constants.Popular.default
+                                customFilter.popular = FilterValues.Constants.Popular.popular
                             }
                             viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                        } else {
+                            try {
+                                val newFilters = customFilter.also {
+                                    customFilter.popular = FilterValues.Constants.Popular.default
+                                }
+                                viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(newFilters))
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
                         }
-                    }
-                },
-            )
+                    },
+                )
+            }
             // itemCategories
             Column(
                 modifier = Modifier

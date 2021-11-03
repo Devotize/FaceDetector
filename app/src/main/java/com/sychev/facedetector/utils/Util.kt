@@ -15,6 +15,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import java.io.ByteArrayOutputStream
+import java.util.*
+import kotlin.collections.ArrayList
 
 fun Bitmap.toByteArray(): ByteArray {
     val stream = ByteArrayOutputStream()
@@ -116,6 +118,9 @@ fun String.toWordsList(): List<String> {
 
     return words
 }
+
+fun IntRange.random() =
+    Random().nextInt((endInclusive + 1) - start) + start
 
 val String.color
     get() = Color(android.graphics.Color.parseColor(this))

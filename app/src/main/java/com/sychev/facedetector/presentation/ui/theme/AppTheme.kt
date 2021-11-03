@@ -17,7 +17,7 @@ private val lightThemeColors = lightColors(
     surface = White,
     error = Red1,
     onPrimary = Grey3,
-    onSecondary  = White,
+    onSecondary  = Grey3,
     onSurface = Grey3,
     onBackground = Grey2
 )

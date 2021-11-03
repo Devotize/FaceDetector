@@ -29,7 +29,7 @@ fun BottomNavigationBar(
         Screen.FeedList,
         Screen.FavoriteClothesList,
         Screen.Shop,
-        Screen.Profile,
+        Screen.OwnImage,
     )
     BottomNavigation(
         backgroundColor = MaterialTheme.colors.primary,
@@ -126,23 +126,23 @@ fun BottomNavigationBar(
             selectedContentColor = MaterialTheme.colors.secondary,
             unselectedContentColor = MaterialTheme.colors.onBackground
         )
-        //profile screen
+        //own image screen
         BottomNavigationItem(
             icon = {
-                if (Screen.Profile.route != backStackEntry.value?.destination?.route)
+                if (Screen.OwnImage.route != backStackEntry.value?.destination?.route)
                     Icon(
-                        imageVector = Icons.Outlined.AccountCircle,
+                        imageVector = Icons.Outlined.IosShare,
                         contentDescription = null
                     )
                 else
                     Icon(
-                        imageVector = Icons.Filled.AccountCircle,
+                        imageVector = Icons.Filled.IosShare,
                         contentDescription = null
                     )
             },
-            selected = Screen.Profile.route == backStackEntry.value?.destination?.route,
+            selected = Screen.OwnImage.route == backStackEntry.value?.destination?.route,
             onClick = {
-                    navController.navigate(Screen.Profile.route) {
+                    navController.navigate(Screen.OwnImage.route) {
                         popUpTo(navController.graph.findStartDestination().id)
                         launchSingleTop = true
                     }

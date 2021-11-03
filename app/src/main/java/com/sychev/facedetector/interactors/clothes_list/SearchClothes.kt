@@ -5,7 +5,7 @@ import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.ClothesWithBubbles
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.data.DataState
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
+import com.sychev.facedetector.presentation.ui.screen.shop.TestClothesFilter
 import com.sychev.facedetector.repository.DetectedClothesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

@@ -23,7 +23,7 @@ import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
 import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.navigation.Screen
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
+import com.sychev.facedetector.presentation.ui.screen.shop.TestClothesFilter
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn

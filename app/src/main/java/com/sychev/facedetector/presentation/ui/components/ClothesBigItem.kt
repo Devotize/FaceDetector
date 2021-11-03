@@ -84,7 +84,7 @@ fun ClothesBigItem(
                 Text(
                     modifier = Modifier.fillMaxWidth(0.8f),
                     text = "${clothes.itemCategory} ${clothes.brand}",
-                    style = MaterialTheme.typography.h3,
+                    style = MaterialTheme.typography.h4,
                     color = Color.Black
                 )
 
@@ -109,7 +109,7 @@ fun ClothesBigItem(
                         )
                         Text(
                             modifier = Modifier.padding(2.dp, 2.dp, 8.dp, 2.dp),
-                            text = "4.7",
+                            text = "${clothes.rating}",
                             color = Color.White,
                             style = MaterialTheme.typography.subtitle2
                         )
@@ -123,7 +123,7 @@ fun ClothesBigItem(
                     modifier = Modifier
                         .padding(0.dp,4.dp,0.dp,0.dp),
                     text = "${clothes.price.toString().toMoneyString()} ₽",
-                    style = MaterialTheme.typography.h1,
+                    style = MaterialTheme.typography.h3,
                     color = MaterialTheme.colors.onSurface
                 )
                 if (clothes.brandLogo.isNotEmpty()) {
@@ -141,11 +141,6 @@ fun ClothesBigItem(
             }
             Column(modifier = Modifier.animateContentSize(spring(1.75f))) {
                 if (showDetails.value) {
-                    Text(
-                        text = clothes.brand,
-                        style = MaterialTheme.typography.h6,
-                        color = MaterialTheme.colors.onSurface,
-                    )
                     Spacer(modifier = Modifier.height(4.dp))
                     clothesList.forEach {
                         ShopComponent(

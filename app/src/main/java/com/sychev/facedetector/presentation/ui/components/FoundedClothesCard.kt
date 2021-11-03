@@ -12,15 +12,12 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import coil.transform.RoundedCornersTransformation
 import com.sychev.facedetector.R
-import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FoundedClothes
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.ShopEvent
-import com.sychev.facedetector.presentation.ui.screen.shop_screen.TestClothesFilter
 import com.sychev.facedetector.utils.toMoneyString
 
 @ExperimentalMaterialApi
