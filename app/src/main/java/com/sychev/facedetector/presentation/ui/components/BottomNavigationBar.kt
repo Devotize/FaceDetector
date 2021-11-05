@@ -3,6 +3,8 @@ package com.sychev.facedetector.presentation.ui.components
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -12,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -77,30 +80,18 @@ fun BottomNavigationBar(
             unselectedContentColor = MaterialTheme.colors.onBackground
         )
         //assistant
-        val transition by rememberInfiniteTransition().animateFloat(
-            initialValue = 0f,
-            targetValue = 360f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(
-                    durationMillis = 2500,
-                    easing = LinearEasing,
-                    delayMillis = 0
-                ),
-                repeatMode = RepeatMode.Restart
-            )
-        )
-        Image(
-            modifier = Modifier
-                .clickable {
-                    if (!AssistantDetector.isShown) {
-                        launchAssistant()
-                    }
-                }
-                .graphicsLayer {
-//                    rotationZ = transition
-                },
-            painter = painterResource(id = R.drawable.yellow_abstract_icon_final),
-            contentDescription = null,
+        BottomNavigationItem(
+            icon = {
+                Icon(
+                    modifier = Modifier.size(35.dp),
+                    imageVector = Icons.Filled.CenterFocusStrong,
+                    contentDescription = null
+                )
+                   },
+            selected = false,
+            onClick = { if (!AssistantDetector.isShown) {
+                launchAssistant()
+            } },
         )
         //shop screen
         BottomNavigationItem(

@@ -11,7 +11,7 @@
         <entry key="app/src/main/res/drawable/detected_clothes_card_shape.xml" value="0.1645" />
         <entry key="app/src/main/res/drawable/ic_baseline_close_gray.xml" value="0.2215" />
         <entry key="app/src/main/res/drawable/ic_outline_camera_alt_24.xml" value="0.2215" />
-        <entry key="app/src/main/res/layout/clothes_card_layout.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/clothes_card_layout.xml" value="0.335" />
         <entry key="app/src/main/res/layout/detector_assistant_layout.xml" value="0.2941543579101562" />
         <entry key="app/src/main/res/layout/frame_touch_listener.xml" value="0.21920289855072464" />
       </map>

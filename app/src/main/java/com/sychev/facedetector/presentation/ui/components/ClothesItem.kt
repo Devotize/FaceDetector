@@ -4,6 +4,7 @@ import android.graphics.drawable.Drawable
 import android.util.Base64
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -69,7 +70,10 @@ fun ClothesItem(
                 }
 
             Column(
-                modifier = Modifier.padding(start = 6.dp)
+                modifier = Modifier
+                    .padding(start = 4.dp)
+                    .height(140.dp),
+                verticalArrangement = Arrangement.SpaceEvenly
             ) {
                 Text(
                     modifier = Modifier
@@ -81,52 +85,51 @@ fun ClothesItem(
                 )
                 Text(
                     modifier = Modifier
-                        .padding(top = 4.dp),
+                        ,
                     text = "${clothes.price.toString().toMoneyString()} ₽",
                     color = MaterialTheme.colors.onPrimary,
-                    style = MaterialTheme.typography.h3,
+                    style = MaterialTheme.typography.h4,
                 )
 
                 Row(
                     modifier = Modifier
-                    .padding(top = 6.dp),
+                    ,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    RatingBar(
-                        modifier = Modifier,
-                        value = rating.value,
-                        numStars = 5,
-                        size = 18.dp,
-                        activeColor = MaterialTheme.colors.secondary,
-                        inactiveColor = MaterialTheme.colors.primaryVariant,
-                        isIndicator = true,
-                        ratingBarStyle = RatingBarStyle.Normal,
-                        onRatingChanged = {
-
+                    Surface(
+                        modifier = Modifier
+                            .wrapContentSize(),
+                        color = MaterialTheme.colors.onSurface,
+                        shape = CircleShape
+                    ) {
+                        Row(
+                            modifier = Modifier.wrapContentSize(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .padding(8.dp, 2.dp, 0.dp, 2.dp)
+                                    .width(15.dp)
+                                    .height(15.dp),
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = Color.Yellow
+                            )
+                            Text(
+                                modifier = Modifier.padding(2.dp, 2.dp, 8.dp, 2.dp),
+                                text = "${clothes.rating}",
+                                color = Color.White,
+                                style = MaterialTheme.typography.subtitle2
+                            )
                         }
-                    )
-                    Text(
-                        modifier = Modifier.padding(start = 6.dp),
-                        text = rating.value.toString(),
-                        color = MaterialTheme.colors.primaryVariant,
-                        style = MaterialTheme.typography.subtitle1
-                    )
+                    }
                 }
 
                 Text(
-                    modifier = Modifier
-                        .padding(top = 4.dp),
+                    modifier = Modifier,
                     text = "${clothes.provider}",
                     color = MaterialTheme.colors.primaryVariant,
                     style = MaterialTheme.typography.subtitle1
-                )
-
-                Text(
-                    modifier = Modifier
-                        .padding(top = 4.dp),
-                    text = "32 комментрия",
-                    color = MaterialTheme.colors.primaryVariant,
-                    style = MaterialTheme.typography.subtitle2
                 )
             }
             Row(

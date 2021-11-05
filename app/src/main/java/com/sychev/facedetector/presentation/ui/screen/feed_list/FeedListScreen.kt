@@ -94,7 +94,7 @@ fun FeedListScreen(
                     ) {
                         celebImages.forEachIndexed {index, celebImage ->
                             Box() {
-                                val imageHeight = if (index % 2 == 0) this@BoxWithConstraints.maxWidth.value / 1.6f else  this@BoxWithConstraints.maxWidth.value / 2f
+                                val imageHeight = if (index % 2 == 0) this@BoxWithConstraints.maxWidth.value / 1.5f else  this@BoxWithConstraints.maxWidth.value / 1.8f
                                 CelebCard(
                                     image = celebImage.image,
                                     imageHeight = imageHeight.dp,
@@ -402,8 +402,6 @@ private fun CelebCard(
         elevation = 8.dp,
         shape = RoundedCornerShape(8.dp)
     ) {
-        val maxCardHeight = (maxHeight.value / 2.4f).toInt()
-        val minCardHeight = (maxHeight.value / 3).toInt()
         BoxWithConstraints (modifier = Modifier
             .height(imageHeight)
             .fillMaxWidth(),

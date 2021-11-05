@@ -122,11 +122,11 @@ class AssistantDetector
     private val rootView = layoutInflater.inflate(R.layout.detector_assistant_layout, null)
     @SuppressLint("ClickableViewAccessibility")
     private val showButton = rootView.findViewById<FrameLayout>(R.id.detector_show_button).apply {
-        setOnClickListener {
-            viewModel.setIsActive(true)
-            frameTouchListener.removeAllViews()
-//            findNewFaces(0)
-        }
+//        setOnClickListener {
+//            viewModel.setIsActive(true)
+//            frameTouchListener.removeAllViews()
+////            findNewFaces(0)
+//        }
         setOnTouchListener { v, event ->
             Log.d(TAG, "touched: ")
             when (event.action){
@@ -163,9 +163,9 @@ class AssistantDetector
 
     private val detectorCapture = rootView.findViewById<ImageView>(R.id.detector_capture).apply {
         setOnClickListener {
-            if (!viewModel.drawMode.value) {
-                viewModel.setIsActive(false)
-            }
+//            if (!viewModel.drawMode.value) {
+//                viewModel.setIsActive(false)
+//            }
             takeScreenshot()?.let { btm ->
 //                viewModel.onTriggerEvent(DetectorEvent.SearchClothesEvent(btm))
                 viewModel.onTriggerEvent(DetectorEvent.DetectClothesLocalEvent(btm))
@@ -307,7 +307,7 @@ class AssistantDetector
         Log.d(TAG, "open: assistantOpened")
         addViewToWM(frameTouchListener, frameParams)
         addViewToWM(rootView, rootViewParams)
-        isShown = true
+//        isShown = true
     }
 
     fun close() {
@@ -358,7 +358,8 @@ class AssistantDetector
             } else {
                 WindowManager.LayoutParams.TYPE_PHONE
             },
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                     WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
             PixelFormat.TRANSLUCENT
@@ -394,9 +395,9 @@ class AssistantDetector
         showButton.alpha = 1f
         detectorClose.visibility = View.VISIBLE
         detectorCapture.visibility = View.VISIBLE
-        detectorCamera.visibility = View.VISIBLE
-        detectorOpenApp.visibility = View.VISIBLE
-        detectorDraw.visibility = View.VISIBLE
+//        detectorCamera.visibility = View.VISIBLE
+//        detectorOpenApp.visibility = View.VISIBLE
+//        detectorDraw.visibility = View.VISIBLE
         val anim = object : Animation(){
 
             override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
@@ -608,20 +609,20 @@ class AssistantDetector
             .onEach { isActive ->
 //                Log.d(TAG, "onDetectorCreated: isActive = $isActive")
                 isActive?.let{
-                    if (isActive) {
-                        collapseAssistantTimer = Timer()
-                        expandAssistant()
-                        collapseAssistantTimer?.schedule(object : TimerTask(){
-                            override fun run() {
-                                if (viewModel.isActive.value == true) {
-                                    viewModel.setIsActive(false)
-                                }
-                            }
-                        }, 3000)
-                    } else {
-                        collapseAssistant()
-                        collapseAssistantTimer?.cancel()
-                    }
+//                    if (isActive) {
+//                        collapseAssistantTimer = Timer()
+//                        expandAssistant()
+//                        collapseAssistantTimer?.schedule(object : TimerTask(){
+//                            override fun run() {
+//                                if (viewModel.isActive.value == true) {
+//                                    viewModel.setIsActive(false)
+//                                }
+//                            }
+//                        }, 3000)
+//                    } else {
+//                        collapseAssistant()
+//                        collapseAssistantTimer?.cancel()
+//                    }
                 }
             }.launchIn(CoroutineScope(Main))
 

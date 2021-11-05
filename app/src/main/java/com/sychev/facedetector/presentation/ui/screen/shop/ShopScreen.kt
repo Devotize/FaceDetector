@@ -599,7 +599,7 @@ private fun ShopSearchBar(
                     ) {
                         Text(
                             text = "Мужчинам",
-                            style = MaterialTheme.typography.h3,
+                            style = MaterialTheme.typography.h5,
                             color = MaterialTheme.colors.onPrimary
 
                         )
@@ -614,7 +614,7 @@ private fun ShopSearchBar(
                     ) {
                         Text(
                             text = "Женщинам",
-                            style = MaterialTheme.typography.h3,
+                            style = MaterialTheme.typography.h5,
                             color = MaterialTheme.colors.onPrimary
                         )
                     }
@@ -627,7 +627,7 @@ private fun ShopSearchBar(
                     ) {
                         Text(
                             text = "Все вместе",
-                            style = MaterialTheme.typography.h3,
+                            style = MaterialTheme.typography.h5,
                             color = MaterialTheme.colors.onPrimary
                         )
                     }

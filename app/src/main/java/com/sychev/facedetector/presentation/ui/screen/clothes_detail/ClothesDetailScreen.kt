@@ -115,6 +115,10 @@ fun ClothesDetailScreen(
             ) {
                 Image(
                     modifier = Modifier
+                        .clickable {
+                            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(cl.clothesUrl))
+                            startActivity(context, browserIntent, null)
+                        }
                         .width(152.dp)
                         .height(224.dp)
                         .padding(top = 6.dp),
@@ -155,20 +159,33 @@ fun ClothesDetailScreen(
                         style = MaterialTheme.typography.h3,
                         color = MaterialTheme.colors.onPrimary
                     )
-                    RatingBar(
+                    Surface(
                         modifier = Modifier
-                            .background(MaterialTheme.colors.primary),
-                        value = cl.rating.toFloat(),
-                        numStars = 5,
-                        size = 22.dp,
-                        activeColor = MaterialTheme.colors.secondary,
-                        inactiveColor = MaterialTheme.colors.primaryVariant,
-                        isIndicator = true,
-                        ratingBarStyle = RatingBarStyle.Normal,
-                        onRatingChanged = {
-
+                            .wrapContentSize(),
+                        color = MaterialTheme.colors.onSurface,
+                        shape = CircleShape
+                    ) {
+                        Row(
+                            modifier = Modifier.wrapContentSize(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .padding(8.dp, 2.dp, 0.dp, 2.dp)
+                                    .width(15.dp)
+                                    .height(15.dp),
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = Color.Yellow
+                            )
+                            Text(
+                                modifier = Modifier.padding(2.dp, 2.dp, 8.dp, 2.dp),
+                                text = "${clothes.rating}",
+                                color = Color.White,
+                                style = MaterialTheme.typography.subtitle2
+                            )
                         }
-                    )
+                    }
                     Row(
                         modifier = Modifier,
                     ) {

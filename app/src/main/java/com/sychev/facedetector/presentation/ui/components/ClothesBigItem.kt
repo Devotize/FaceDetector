@@ -64,7 +64,6 @@ fun ClothesBigItem(
                     modifier = Modifier
                         .wrapContentSize(),
                     shape = MaterialTheme.shapes.large,
-                    color = MaterialTheme.colors.background
                 ){
                     Image(
                         modifier = Modifier
@@ -72,6 +71,7 @@ fun ClothesBigItem(
                             .height(188.dp),
                         painter = imagePainter,
                         contentDescription = null,
+                        contentScale = ContentScale.Crop
                     )
                 }
 
@@ -117,7 +117,8 @@ fun ClothesBigItem(
                 }
             }
             Row(
-                modifier = Modifier,
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     modifier = Modifier
@@ -127,47 +128,16 @@ fun ClothesBigItem(
                     color = MaterialTheme.colors.onSurface
                 )
                 if (clothes.brandLogo.isNotEmpty()) {
-                    Spacer(modifier = Modifier.width(12.dp))
                     val bytes = Base64.decode(clothes.brandLogo, 0)
                     Image(
                         modifier = Modifier
-                            .width(440.dp)
+                            .fillMaxWidth(.3f)
                             .height(50.dp),
                         bitmap = bytes.toBitmap().asImageBitmap(),
                         contentDescription = null,
-                        contentScale = ContentScale.FillHeight
+                        contentScale = ContentScale.Crop
                     )
                 }
-            }
-            Column(modifier = Modifier.animateContentSize(spring(1.75f))) {
-                if (showDetails.value) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    clothesList.forEach {
-                        ShopComponent(
-                            clothes = it,
-                            filterValues = filterValues,
-                            onShoppingCartClick = onShoppingCartClick
-                        )
-                        Spacer(modifier = Modifier.padding(bottom = 8.dp))
-                    }
-                }
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    modifier = Modifier
-                        .clickable {
-                            showDetails.value = !showDetails.value
-                        },
-                    text = if (!showDetails.value) "Details" else "Hide",
-                    style = MaterialTheme.typography.subtitle2,
-                )
-
                 Row(
                     modifier = Modifier.wrapContentSize(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -209,6 +179,35 @@ fun ClothesBigItem(
                         )
                     }
                 }
+            }
+            Column(modifier = Modifier.animateContentSize(spring(1.75f))) {
+                if (showDetails.value) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    clothesList.forEach {
+                        ShopComponent(
+                            clothes = it,
+                            filterValues = filterValues,
+                            onShoppingCartClick = onShoppingCartClick
+                        )
+                        Spacer(modifier = Modifier.padding(bottom = 8.dp))
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    modifier = Modifier
+                        .clickable {
+                            showDetails.value = !showDetails.value
+                        },
+                    text = if (!showDetails.value) "Ещё" else "Скрыть",
+                    style = MaterialTheme.typography.subtitle2,
+                )
 
             }
 
