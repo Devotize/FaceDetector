@@ -300,7 +300,7 @@ fun ShopScreen(
                                     top = 0.dp
                                 ),
                             ) {
-                                itemsIndexed(filters) { index: Int, item: TestClothesFilter ->
+                                itemsIndexed(filters) { index: Int, item: ClothesFilter ->
                                     Column(modifier = Modifier.wrapContentSize()) {
                                         BoxWithConstraints(
                                             modifier = Modifier
@@ -499,7 +499,7 @@ private fun ShopBrands(
                         modifier = Modifier
                             .padding(end = 6.dp)
                             .clickable {
-                                val newFilter = TestClothesFilter().apply {
+                                val newFilter = ClothesFilter().apply {
                                     brands.add(item.name)
                                 }
                                 viewModel.onTriggerEvent(
@@ -616,7 +616,7 @@ private fun ShopSearchBar(
                             focusManager.clearFocus()
                             viewModel.onTriggerEvent(
                                 ShopEvent.SearchByFilters(
-                                    TestClothesFilter().apply {
+                                    ClothesFilter().apply {
                                         fullTextQuery = query
                                     })
                             )
@@ -728,12 +728,18 @@ fun FilterBubble(
 @Composable
 private fun ShopFilterBubbles(
     viewModel: ShopViewModel,
-    selectedFilter: TestClothesFilter,
-    filters: List<TestClothesFilter>,
+    selectedFilter: ClothesFilter,
+    filters: List<ClothesFilter>,
     selectedFilterIndex: Int?,
     queryBubbles: List<String>
 ) {
     var isGridExpanded by remember { mutableStateOf(false) }
+    var isTitleAlreadyExsists by remember { mutableStateOf(false)}
+    viewModel.filters.forEach {
+        if (it.title == selectedFilter.title) {
+            isTitleAlreadyExsists = true
+        }
+    }
     Column(
     ) {
         Row(
@@ -765,16 +771,16 @@ private fun ShopFilterBubbles(
                     color = MaterialTheme.colors.onPrimary
                 )
             }
-            if (!filters.contains(selectedFilter)) {
+            if (isTitleAlreadyExsists && !filters.contains(selectedFilter)) {
                 Row(
                     modifier = Modifier.clickable {
                         selectedFilterIndex?.let {
                             viewModel.filters[it] = selectedFilter
-                            viewModel.onTriggerEvent(
-                                ShopEvent.SearchByFilters(
-                                    filters = selectedFilter
-                                )
-                            )
+//                            viewModel.onTriggerEvent(
+//                                ShopEvent.SearchByFilters(
+//                                    filters = selectedFilter
+//                                )
+//                            )
                         }
                     },
                     verticalAlignment = Alignment.CenterVertically

@@ -3,7 +3,7 @@ package com.sychev.facedetector.presentation.ui.screen.shop
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.filter.Price
 
-data class TestClothesFilter (
+data class ClothesFilter (
     var title: String = "",
     val genders: ArrayList<String> = arrayListOf(),
     val itemCategories: ArrayList<String> = arrayListOf(),
@@ -37,20 +37,20 @@ data class TestClothesFilter (
     }
 
     object Filters {
-        val defaultFilters = listOf<TestClothesFilter>(
-            TestClothesFilter().apply {
+        val defaultFilters = listOf<ClothesFilter>(
+            ClothesFilter().apply {
                 title = "Одежда до 500 ₽"
                 price = Price(0, 500)
             },
-            TestClothesFilter().apply {
+            ClothesFilter().apply {
                 title = "Новинки этой недели"
                 novice = 1
             },
-            TestClothesFilter().apply {
+            ClothesFilter().apply {
                 title = "Популярно сегодня"
                 popular = 1
             },
-            TestClothesFilter().apply {
+            ClothesFilter().apply {
                 title = "Одежда до 1000 ₽"
                 price = Price(500, 1000)
             },

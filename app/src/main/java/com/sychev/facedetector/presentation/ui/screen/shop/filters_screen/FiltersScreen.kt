@@ -29,7 +29,7 @@ import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.domain.filter.Price
 import com.sychev.facedetector.presentation.ui.screen.shop.ShopEvent
 import com.sychev.facedetector.presentation.ui.screen.shop.ShopViewModel
-import com.sychev.facedetector.presentation.ui.screen.shop.TestClothesFilter
+import com.sychev.facedetector.presentation.ui.screen.shop.ClothesFilter
 import com.sychev.facedetector.utils.TAG
 import com.sychev.facedetector.utils.color
 
@@ -769,7 +769,7 @@ fun FiltersScreen(
                         MaterialTheme.colors.primary
                     ),
                     onClick = {
-                        val emptyFilters = TestClothesFilter().apply {
+                        val emptyFilters = ClothesFilter().apply {
                             price = viewModel.filterValues.price
                         }
                         viewModel.onTriggerEvent(ShopEvent.ChangeCustomFilters(emptyFilters))

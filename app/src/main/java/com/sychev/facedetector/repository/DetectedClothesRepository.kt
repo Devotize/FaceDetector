@@ -7,7 +7,7 @@ import com.sychev.facedetector.domain.ClothesWithBubbles
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.brand.Brand
 import com.sychev.facedetector.domain.celeb.Celeb
-import com.sychev.facedetector.presentation.ui.screen.shop.TestClothesFilter
+import com.sychev.facedetector.presentation.ui.screen.shop.ClothesFilter
 
 interface DetectedClothesRepository {
 
@@ -44,7 +44,7 @@ interface DetectedClothesRepository {
     suspend fun searchClothesByQuery(query: String, size: Int): List<Clothes>
 
     suspend fun searchClothesByFilters(
-        testClothesFilter: TestClothesFilter,
+        clothesFilter: ClothesFilter,
     ): ClothesWithBubbles
 
     suspend fun getFilterValues(): List<FilterValuesDtoItem>

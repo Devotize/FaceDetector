@@ -20,7 +20,7 @@ import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.brand.Brand
 import com.sychev.facedetector.domain.celeb.Celeb
 import com.sychev.facedetector.domain.filter.FilterValues
-import com.sychev.facedetector.presentation.ui.screen.shop.TestClothesFilter
+import com.sychev.facedetector.presentation.ui.screen.shop.ClothesFilter
 import com.sychev.facedetector.utils.TAG
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -171,7 +171,7 @@ class DetectedClothesRepositoryImpl(
         return clothesDtoConverter.toDomainClothesList(result.searchResult)
     }
 
-    override suspend fun searchClothesByFilters(filters: TestClothesFilter): ClothesWithBubbles {
+    override suspend fun searchClothesByFilters(filters: ClothesFilter): ClothesWithBubbles {
         val hm = HashMap<String, Any>()
         if (filters.genders.isNotEmpty()) {
             filters.genders.let {
@@ -179,7 +179,7 @@ class DetectedClothesRepositoryImpl(
                 it.forEach { item ->
                     valueList.add(item)
                 }
-                hm.put(TestClothesFilter.Titles.gender, valueList)
+                hm.put(ClothesFilter.Titles.gender, valueList)
             }
         }
         hm.put("search_size", filters.searchSize)
@@ -189,7 +189,7 @@ class DetectedClothesRepositoryImpl(
                 it.forEach { item ->
                     valueList.add(item)
                 }
-                hm.put(TestClothesFilter.Titles.itemCategories, valueList)
+                hm.put(ClothesFilter.Titles.itemCategories, valueList)
             }
         }
         if (filters.itemCategories.isNotEmpty()) {
@@ -198,7 +198,7 @@ class DetectedClothesRepositoryImpl(
                 it.forEach { item ->
                     valueList.add(item)
                 }
-                hm.put(TestClothesFilter.Titles.itemSubcategories, valueList)
+                hm.put(ClothesFilter.Titles.itemSubcategories, valueList)
             }
         }
         if (filters.brands.isNotEmpty()) {
@@ -207,14 +207,14 @@ class DetectedClothesRepositoryImpl(
                 it.forEach { item ->
                     valueList.add(item)
                 }
-                hm.put(TestClothesFilter.Titles.brands, valueList)
+                hm.put(ClothesFilter.Titles.brands, valueList)
             }
         }
 
             filters.price.let {
                 if (it.max != null) {
                     val prices = arrayOf(it.min, it.max)
-                    hm.put(TestClothesFilter.Titles.prices, prices)
+                    hm.put(ClothesFilter.Titles.prices, prices)
                 }
             }
 
@@ -224,7 +224,7 @@ class DetectedClothesRepositoryImpl(
                 it.forEach { item ->
                     valueList.add(item.toInt())
                 }
-                hm.put(TestClothesFilter.Titles.itemSizes, valueList)
+                hm.put(ClothesFilter.Titles.itemSizes, valueList)
             }
         }
         if (filters.colors.isNotEmpty()) {
@@ -233,21 +233,21 @@ class DetectedClothesRepositoryImpl(
                 it.forEach { item ->
                     valueList.add(item)
                 }
-                hm.put(TestClothesFilter.Titles.colors, valueList)
+                hm.put(ClothesFilter.Titles.colors, valueList)
             }
         }
         if (filters.novice == FilterValues.Constants.Novice.new) {
             filters.novice.let {
                 val valueList = ArrayList<Int>()
                 valueList.add(it)
-                hm.put(TestClothesFilter.Titles.novice, true)
+                hm.put(ClothesFilter.Titles.novice, true)
             }
         }
         if (filters.popular == FilterValues.Constants.Popular.popular) {
             filters.popular.let {
                 val valueList = ArrayList<Int>()
                 valueList.add(it)
-                hm.put(TestClothesFilter.Titles.popularFlags, true)
+                hm.put(ClothesFilter.Titles.popularFlags, true)
             }
         }
         if (filters.providers.isNotEmpty()) {
@@ -256,12 +256,12 @@ class DetectedClothesRepositoryImpl(
                 it.forEach { item ->
                     valueList.add(item)
                 }
-                hm.put(TestClothesFilter.Titles.providers, valueList)
+                hm.put(ClothesFilter.Titles.providers, valueList)
             }
         }
         if (filters.fullTextQuery.isNotEmpty()) {
             filters.fullTextQuery.let {
-                hm.put(TestClothesFilter.Titles.fullTextQuery, it)
+                hm.put(ClothesFilter.Titles.fullTextQuery, it)
             }
         }
         Log.d(TAG, "searchClothesByFilters: hm: $hm")

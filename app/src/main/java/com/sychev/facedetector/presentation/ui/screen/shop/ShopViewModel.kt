@@ -36,13 +36,13 @@ class ShopViewModel
     val query = mutableStateOf("")
     val gender = mutableStateOf<String?>(null)
     val clothesList = mutableStateListOf<Clothes>()
-    val filters = mutableStateListOf<TestClothesFilter>().apply {
-        addAll(TestClothesFilter.Filters.defaultFilters)
+    val filters = mutableStateListOf<ClothesFilter>().apply {
+        addAll(ClothesFilter.Filters.defaultFilters)
     }
-    val selectedFilter = mutableStateOf<TestClothesFilter?>(null)
+    val selectedFilter = mutableStateOf<ClothesFilter?>(null)
     val queryBubbles = mutableStateListOf<String>()
     val topBrands = mutableStateListOf<Brand>()
-    val customFilter = mutableStateOf<TestClothesFilter>(TestClothesFilter())
+    val customFilter = mutableStateOf<ClothesFilter>(ClothesFilter())
 
 
     @Inject
@@ -160,7 +160,7 @@ class ShopViewModel
     }
 
     private fun performSearchByFilters(
-        filters: TestClothesFilter
+        filters: ClothesFilter
     ) {
         searchClothes.execute(
             filters.apply {
@@ -188,7 +188,7 @@ class ShopViewModel
                 queryBubbles.clear()
                 queryBubbles.addAll(it.bubbles)
                 selectedFilter.value = null
-                val newFilter = TestClothesFilter()
+                val newFilter = ClothesFilter()
                 newFilter.apply {
                     filters.let { filter ->
                         title = filter.title
@@ -218,7 +218,7 @@ class ShopViewModel
 
     private fun performSearch(query: String, size: Int) {
         if (query.isEmpty()) return
-        val filter = TestClothesFilter().apply {
+        val filter = ClothesFilter().apply {
             fullTextQuery = query
             searchSize = defaultSearchSize
             this@ShopViewModel.gender.value?.let {
@@ -260,7 +260,7 @@ class ShopViewModel
                     loading.value = dataState.loading
                     dataState.data?.let {
                         filter.clothes = it.clothes
-                        val clothesFilters = ArrayList<TestClothesFilter>()
+                        val clothesFilters = ArrayList<ClothesFilter>()
                         clothesFilters.addAll(filters)
                         filters.clear()
                         filters.addAll(clothesFilters)
@@ -269,21 +269,21 @@ class ShopViewModel
         }
     }
 
-    private fun onCustomFilterChange(newFilters: TestClothesFilter) {
-        customFilter.value = TestClothesFilter()
+    private fun onCustomFilterChange(newFilters: ClothesFilter) {
+        customFilter.value = ClothesFilter()
         customFilter.value = newFilters
     }
 
     private fun onSaveCustomFilters() {
         filters.add(customFilter.value)
-        customFilter.value = TestClothesFilter()
+        customFilter.value = ClothesFilter()
         onTriggerEvent(ShopEvent.GotBackToShopScreen)
         findClothesForFilters()
     }
 
     private fun replaceFilterByIndex(index: Int) {
         filters[index] = customFilter.value
-        customFilter.value = TestClothesFilter()
+        customFilter.value = ClothesFilter()
         onTriggerEvent(ShopEvent.GotBackToShopScreen)
         findClothesForFilters()
     }

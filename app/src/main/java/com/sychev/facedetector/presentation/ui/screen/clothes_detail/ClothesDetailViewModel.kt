@@ -23,7 +23,7 @@ import com.sychev.facedetector.interactors.clothes.RemoveFromFavoriteClothes
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
 import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.navigation.Screen
-import com.sychev.facedetector.presentation.ui.screen.shop.TestClothesFilter
+import com.sychev.facedetector.presentation.ui.screen.shop.ClothesFilter
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -135,7 +135,7 @@ class ClothesDetailViewModel
     }
 
     private fun searchClothesByQuery(query: String, size: Int) {
-        val filters = TestClothesFilter()
+        val filters = ClothesFilter()
         filters.fullTextQuery = query
         filters.searchSize = size
         searchClothes.execute(filters)
