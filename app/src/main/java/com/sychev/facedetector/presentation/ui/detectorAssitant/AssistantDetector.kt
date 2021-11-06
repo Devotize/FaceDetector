@@ -25,6 +25,7 @@ import kotlinx.coroutines.Dispatchers.Main
 import java.util.*
 import android.graphics.Bitmap
 import android.graphics.drawable.ColorDrawable
+import android.opengl.Visibility
 import android.provider.MediaStore
 import android.view.animation.Animation
 import android.view.animation.Transformation
@@ -470,27 +471,36 @@ class AssistantDetector
         val tailWidth = 40
         val tailHeight = 40
         val tailPadding = 45
-        addViewToWM(tailView, getWmLayoutParams(tailWidth,tailHeight).apply {
-            x = -widthPx / 2 + centerX
-            y = if (centerY <= heightPx / 2) -heightPx / 2 + tailPadding + centerY  else -heightPx / 2 - tailPadding + centerY
-        })
+//        addViewToWM(tailView, getWmLayoutParams(tailWidth,tailHeight).apply {
+//            x = -widthPx / 2 + centerX
+//            y = if (centerY <= heightPx / 2) -heightPx / 2 + tailPadding + centerY  else -heightPx / 2 - tailPadding + centerY
+//        })
         additionalDetectedClothesViews.add(tailView)
         //detected clothes card
         val detectedClothesCard = layoutInflater.inflate(R.layout.clothes_card_layout, null)
         detectedClothesCard.measure(0,0)
-        val clothesImage = detectedClothesCard.findViewById<ImageView>(R.id.clothes_card_image_view)
-        Glide.with(context)
-            .asBitmap()
-            .load(clothes.picUrl)
-            .into(clothesImage)
+//        val clothesImage = detectedClothesCard.findViewById<ImageView>(R.id.clothes_card_image_view)
+//        Glide.with(context)
+//            .asBitmap()
+//            .load(clothes.picUrl)
+//            .into(clothesImage)
         val priceTextView = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_price).apply {
             text = "${clothes.price} ₽"
         }
-        val ratingTextView = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_rating).apply {
-            text = "${clothes.rating}"
-        }
+//        val ratingTextView = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_rating).apply {
+//            text = "${clothes.rating}"
+//        }
+        val fullStr = "${clothes.itemCategory} ${clothes.brand}"
+        var clothesText = ""
+        kotlin.run let@{ fullStr.forEach { char ->
+            clothesText += char
+            if (clothesText.length > 15) {
+                clothesText += "..."
+                return@let
+            }
+        } }
         val nameTextView = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_name_text_view).apply {
-            text = "${clothes.brand} ${clothes.itemCategory}"
+            text = "$clothesText"
         }
 //        Log.d(TAG, "onDetectorCreated: detectedClothesCard.measuredWidth: ${detectedClothesCard.measuredWidth}")
         addViewToWM(detectedClothesCard, getWmLayoutParams(
@@ -502,9 +512,9 @@ class AssistantDetector
                 -widthPx / 2 - (detectedClothesCard.measuredWidth - (widthPx - centerX)) / 2 + centerX
 
             y = if (centerY <= heightPx / 2)
-                -heightPx/2 + (detectedClothesCard.measuredHeight) / 2 + centerY + circleHeight / 2 + tailPadding / 2
+                -heightPx/2 + (detectedClothesCard.measuredHeight) / 2 + centerY
             else
-                -heightPx/2 - (detectedClothesCard.measuredHeight) / 2 + centerY - circleHeight / 2 - tailPadding / 2
+                -heightPx/2 - (detectedClothesCard.measuredHeight) / 2 + centerY
         })
         additionalDetectedClothesViews.add(detectedClothesCard)
         detectedClothesCard.setOnClickListener {
@@ -566,10 +576,11 @@ class AssistantDetector
             y = -heightPx / 2 + centerY
         })
         additionalDetectedClothesViews.add(circle)
-        circle.setOnClickListener {
+        circle.visibility = View.INVISIBLE
+//        circle.setOnClickListener {
             viewModel.onTriggerEvent(DetectorEvent.SearchClothesEvent(detectedClothes, context, circle))
-            it.isClickable = false
-        }
+//            it.isClickable = false
+//        }
     }
 
     private fun onDetectorCreated() {

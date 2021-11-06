@@ -699,7 +699,7 @@ fun FiltersScreen(
                     LazyRow(
                         modifier = Modifier.padding(bottom = 6.dp)
                     ) {
-                        itemsIndexed(viewModel.filterValues.itemSizes) { index: Int, ct ->
+                        itemsIndexed(viewModel.filterValues.itemSizes.sorted()) { index: Int, ct ->
                             OutlinedButton(
                                 modifier = Modifier
                                     .padding(end = 6.dp),

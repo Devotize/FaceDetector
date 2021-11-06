@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ClothesDetector</string>
+    <string name="app_name">Fashion Wizard</string>
     <string name="gallery">Gallery</string>
     <string name="favorites">Favorites</string>
     <string name="clear">Clear</string>

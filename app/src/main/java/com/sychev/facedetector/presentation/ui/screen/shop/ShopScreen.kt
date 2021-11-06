@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.window.Dialog
 import coil.compose.rememberImagePainter
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
@@ -69,6 +70,8 @@ fun ShopScreen(
     }
     val topBrands = viewModel.topBrands
     val brandListScrollState = rememberLazyListState()
+    var showSortDialog by remember { mutableStateOf(false)}
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         var searchBarHeight by remember{mutableStateOf(0.dp)}
@@ -156,6 +159,10 @@ fun ShopScreen(
                                         color = MaterialTheme.colors.onBackground
                                     )
                                     Text(
+                                        modifier = Modifier
+                                            .clickable {
+                                                   showSortDialog = true
+                                            },
                                         text = "Сначала дешевле",
                                         style = MaterialTheme.typography.h5,
                                         color = MaterialTheme.colors.onPrimary
@@ -406,6 +413,47 @@ fun ShopScreen(
                 query = query,
                 viewModel = viewModel,
             )
+        }
+    }
+    if (showSortDialog) {
+        Dialog(
+            onDismissRequest = {
+                showSortDialog = false
+            }
+        ) {
+            Column(
+                modifier = Modifier
+                    .background(MaterialTheme.colors.primary, MaterialTheme.shapes.medium),
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    modifier = Modifier
+                        .padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 12.dp)
+                        .clickable {
+                            showSortDialog = false
+                        },
+                    text = "Сначала дешевле",
+                    color = MaterialTheme.colors.onPrimary,
+                    style = MaterialTheme.typography.h3,
+                )
+                Spacer(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .width(180.dp)
+                        .height(2.dp)
+                        .background(MaterialTheme.colors.background, MaterialTheme.shapes.small),
+                )
+                Text(
+                    modifier = Modifier
+                        .padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 12.dp)
+                        .clickable {
+                            showSortDialog = false
+                        },
+                    text = "Сначала дороже",
+                    color = MaterialTheme.colors.onPrimary,
+                    style = MaterialTheme.typography.h3
+                )
+            }
         }
     }
     if (loading) {
