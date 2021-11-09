@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.FaceDetector" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
+    <style name="Theme.FaceDetector" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/grey</item>
         <item name="colorPrimaryVariant">@color/grey_light</item>

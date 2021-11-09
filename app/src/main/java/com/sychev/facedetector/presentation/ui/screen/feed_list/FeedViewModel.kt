@@ -40,8 +40,9 @@ constructor(
 ): ViewModel() {
     val urls = mutableStateListOf<String>()
     val loading = mutableStateOf(false)
-    val celebImages = mutableStateOf<List<CelebImage>>(listOf())
+    val celebImages = mutableStateOf<ArrayList<CelebImage>>(arrayListOf())
     var page = 0
+    var lastVisibleIndex = 0
 
     init {
 //        val accessKey = "6mDdwXvOc4qruhG8SxW889oVVTKd5VUESYAQrYXKnTE"
@@ -50,7 +51,7 @@ constructor(
 //            query = "man",
 //            count = 25
 //        ))
-        onTriggerEvent(FeedEvent.GetCelebPicsEvent())
+        onTriggerEvent(FeedEvent.GetCelebPicsEvent)
     }
 
     fun onTriggerEvent(event: FeedEvent) {
@@ -108,13 +109,21 @@ constructor(
     }
 
     private fun getCelebPics() {
+        loading.value = true
         getCelebPics.execute(page).onEach { dataState ->
             loading.value = dataState.loading
             dataState.data?.let{ celebs ->
-                celebImages.value = celebs.map { CelebImage(image = it.image) }
-                page++
+                val mappedCelebs =  celebs.map { CelebImage(image = it.image) }
+                celebImages.value.addAll(mappedCelebs)
+                // api pagination not working for now
+//                page++
             }
         }.launchIn(viewModelScope)
+    }
+
+    fun onScrollPositionChanged(newPosition: Int) {
+        Log.d(TAG, "onScrollPositionChanged: newPosition: $newPosition")
+        lastVisibleIndex = newPosition
     }
 
     private fun searchMultiplyClothes(
@@ -228,7 +237,7 @@ constructor(
     private fun refreshCelebImagesData() {
         val newCelebImages = ArrayList<CelebImage>()
         newCelebImages.addAll(celebImages.value)
-        celebImages.value = listOf()
+        celebImages.value = arrayListOf()
         celebImages.value = newCelebImages
     }
 

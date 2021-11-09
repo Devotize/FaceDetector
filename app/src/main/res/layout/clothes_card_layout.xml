@@ -63,7 +63,6 @@
             android:layout_marginEnd="2dp">
 
             <Button
-                android:id="@+id/clothes_card_close_button"
                 android:layout_width="15dp"
                 android:layout_height="15dp"
                 android:background="@drawable/ic_baseline_arrow_forward_ios_24_grey"

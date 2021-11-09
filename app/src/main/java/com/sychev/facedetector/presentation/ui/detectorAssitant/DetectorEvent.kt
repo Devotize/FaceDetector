@@ -2,6 +2,7 @@ package com.sychev.facedetector.presentation.ui.detectorAssitant
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.RectF
 import android.view.View
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
@@ -27,5 +28,7 @@ sealed class DetectorEvent {
     class DefineGenderEvent(val screenshot: Bitmap): DetectorEvent()
 
     class InsertDetectedClothesEvent(val detectedClothes: List<DetectedClothes>): DetectorEvent()
+
+    class ChangeGenderForDetectedClothes(val newGender: String, val location: RectF, val circle: View, val context: Context): DetectorEvent()
 
 }

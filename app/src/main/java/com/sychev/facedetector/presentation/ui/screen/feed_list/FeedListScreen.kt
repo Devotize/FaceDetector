@@ -22,6 +22,8 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInParent
+import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -67,9 +69,6 @@ import kotlin.math.max
 import kotlin.random.Random
 
 
-@OptIn(ExperimentalMaterialApi::class)
-@ExperimentalCoilApi
-@ExperimentalPagerApi
 @Composable
 fun FeedListScreen(
     viewModel: FeedViewModel,
@@ -80,22 +79,63 @@ fun FeedListScreen(
     val celebImages = viewModel.celebImages.value
     val scrollState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    var screenHeight by remember{mutableStateOf(0)}
 
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(
+        modifier = Modifier
+            .onGloballyPositioned {
+                screenHeight = it.size.height
+            }
+            .fillMaxSize(),
+    ) {
         Column {
             LazyColumn(
-//                state = scrollState,
+                state = scrollState,
                 flingBehavior = StockFlingBehaviours.presetTwo(),
             ) {
                 item {
                     StaggeredVerticalGrid(
                         maxColumnWidth = (this@BoxWithConstraints.maxWidth / 2),
-                        modifier = Modifier.padding(4.dp)
+                        modifier = Modifier
+                            .onGloballyPositioned {
+//                                Log.d(TAG, "FeedListScreen: ${it.size.height}")
+                            }
+                            .padding(4.dp),
                     ) {
+//                        Log.d(TAG, "FeedListScreen: scrollState: ${scrollState.firstVisibleItemScrollOffset + screenHeight}")
+
+                        val passedIndexes = remember{ mutableStateListOf<Int>()}
+
                         celebImages.forEachIndexed {index, celebImage ->
-                            Box() {
+                            Box(
+                                modifier = Modifier.onGloballyPositioned {
+                                    val rect = it.boundsInRoot()
+                                    if (rect.topLeft.x != 0f || rect.topLeft.y != 0f) {
+                                        if (!passedIndexes.contains(index)) {
+                                            viewModel.onScrollPositionChanged(index)
+                                            passedIndexes.add(index)
+
+                                        }
+                                        //getting new page
+                                        if (index == celebImages.size - 2) {
+                                            if (!loading) {
+                                                Log.d(TAG, "FeedListScreen: triggering getCelebPicsEvent")
+                                                viewModel.onTriggerEvent(FeedEvent.GetCelebPicsEvent)
+                                            }
+                                        }
+                                    }
+                                }
+                            ) {
                                 val imageHeight = if (index % 2 == 0) this@BoxWithConstraints.maxWidth.value / 1.5f else  this@BoxWithConstraints.maxWidth.value / 1.8f
+                                var bitmapHeight by remember{ mutableStateOf(0)}
+                                var bitmapWidth by remember{ mutableStateOf(0)}
                                 CelebCard(
+                                    modifier = Modifier
+                                        .onGloballyPositioned {
+                                            bitmapHeight = it.size.height
+                                            bitmapWidth = it.size.width
+                                        }
+                                        .padding(4.dp),
                                     image = celebImage.image,
                                     imageHeight = imageHeight.dp,
                                     maxHeight = this@BoxWithConstraints.maxHeight,
@@ -112,6 +152,40 @@ fun FeedListScreen(
                                         )
                                     }
                                 )
+                                scrollState.isScrollInProgress.also {
+                                    var timer = Timer()
+                                    val timerTask = object : TimerTask() {
+                                        override fun run() {
+                                            if (viewModel.lastVisibleIndex - 2 == index && celebImage.isProcessed) {
+                                                    Log.d(TAG, "run: timerTask triggered")
+                                                    val resizedBitmap = Bitmap.createScaledBitmap(
+                                                        celebImage.image,
+                                                        bitmapWidth,
+                                                        bitmapHeight,
+                                                        false
+                                                    )
+                                                    viewModel.onTriggerEvent(
+                                                        FeedEvent.DetectClothesEvent(
+                                                            context = context,
+                                                            resizedBitmap = resizedBitmap,
+                                                            celebImage = celebImage,
+                                                            onLoaded = {
+
+                                                            }
+                                                        )
+                                                    )
+
+                                            }
+                                        }
+                                    }
+                                    if (it) {
+                                        Log.d(TAG, "FeedListScreen: scrollInProgress")
+                                        timer.cancel()
+                                        timer.purge()
+                                    } else {
+                                        timer.schedule(timerTask, 1000)
+                                    }
+                                }
                                 celebImage.foundedClothes.forEach {
                                     Log.d(TAG, "FeedListScreen: fouded clothes: $it")
                                     FoundedClothesCardSmall(
@@ -131,18 +205,18 @@ fun FeedListScreen(
                     }
                 }
                 item {
-                        Box(modifier = Modifier
-                            .onFocusChanged {
-                                Log.d(TAG, "FeedListScreen: focuschanged")
-                            }
-                            .height(25.dp)){
-                            Box(
-                                modifier = Modifier.padding(6.dp)
-                                    ,
-                            ) {
-
-                            }
-                        }
+//                        Box(modifier = Modifier
+//                            .onFocusChanged {
+//                                Log.d(TAG, "FeedListScreen: focuschanged")
+//                            }
+//                            .height(325.dp)){
+//                            Box(
+//                                modifier = Modifier.padding(6.dp)
+//                                    ,
+//                            ) {
+//
+//                            }
+//                        }
                 }
             }
         }
@@ -396,8 +470,7 @@ private fun CelebCard(
     onClick: (Bitmap) -> Unit,
 ) {
     Surface(
-        modifier = modifier
-            .padding(4.dp),
+        modifier = modifier,
         color = MaterialTheme.colors.background,
         elevation = 8.dp,
         shape = RoundedCornerShape(8.dp)

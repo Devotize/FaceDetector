@@ -33,6 +33,6 @@ sealed class FeedEvent() {
         val location: RectF,
         val onLoaded: (Boolean) -> Unit,
     ): FeedEvent()
-    class GetCelebPicsEvent(): FeedEvent()
+    object GetCelebPicsEvent: FeedEvent()
     class GoToRetailScreen(val clothesList: List<DetectedClothes>): FeedEvent()
 }

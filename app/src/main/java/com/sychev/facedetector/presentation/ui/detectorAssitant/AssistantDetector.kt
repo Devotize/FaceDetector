@@ -29,16 +29,20 @@ import android.opengl.Visibility
 import android.provider.MediaStore
 import android.view.animation.Animation
 import android.view.animation.Transformation
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toRectF
 import com.bumptech.glide.Glide
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.presentation.activity.CameraActivity
 import com.sychev.facedetector.presentation.activity.main.MainActivity
 import com.sychev.facedetector.presentation.ui.items.FrameDrawItem
+import com.sychev.facedetector.presentation.ui.screen.feed_list.FoundedClothes
 import com.sychev.facedetector.service.FaceDetectorService
+import com.sychev.facedetector.utils.toMoneyString
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlin.collections.ArrayList
@@ -461,7 +465,8 @@ class AssistantDetector
     private val circleWidth = 42
     private val circleHeight = 42
 
-    private fun addClothesCard(circle: View, selectedClothesList: List<Clothes>) {
+    private fun addClothesCard(circle: View, foundedClothes: FoundedClothesAssistant) {
+        val selectedClothesList = foundedClothes.clothes
         val clothes = selectedClothesList[0]
         val layoutParams = circle.layoutParams as WindowManager.LayoutParams
         val centerX = layoutParams.x + widthPx / 2
@@ -518,15 +523,139 @@ class AssistantDetector
         })
         additionalDetectedClothesViews.add(detectedClothesCard)
         detectedClothesCard.setOnClickListener {
+//            viewModel.onTriggerEvent(DetectorEvent.InsertDetectedClothesEvent(allDetectedClothesList))
+            removeViewFromWM(tailView)
+            removeViewFromWM(detectedClothesCard)
+            additionalDetectedClothesViews.remove(tailView)
+            additionalDetectedClothesViews.remove(detectedClothesCard)
+            addClothesCardExtended(circle, foundedClothes)
+        }
+        if (foundedClothes.showBigCard) {
+            removeViewFromWM(tailView)
+            removeViewFromWM(detectedClothesCard)
+            additionalDetectedClothesViews.remove(tailView)
+            additionalDetectedClothesViews.remove(detectedClothesCard)
+            addClothesCardExtended(circle, foundedClothes)
+        }
+//        detectedClothesCard.findViewById<Button>(R.id.clothes_card_close_button).apply {
+//            setOnClickListener {
+//                removeViewFromWM(tailView)
+//                removeViewFromWM(detectedClothesCard)
+//                additionalDetectedClothesViews.remove(tailView)
+//                additionalDetectedClothesViews.remove(detectedClothesCard)
+////                circle.isClickable = true
+//            }
+//        }
+    }
+
+    private fun addClothesCardExtended(circle: View, foundedClothes: FoundedClothesAssistant) {
+        val selectedClothesList = foundedClothes.clothes
+        val clothes = selectedClothesList[0]
+        val layoutParams = circle.layoutParams as WindowManager.LayoutParams
+        val centerX = layoutParams.x + widthPx / 2
+        val centerY = layoutParams.y + heightPx / 2
+        val tailView = View(context)
+        tailView.background = ContextCompat.getDrawable(context, R.drawable.rotated_rectangle)
+        val tailWidth = 40
+        val tailHeight = 40
+        val tailPadding = 45
+//        addViewToWM(tailView, getWmLayoutParams(tailWidth,tailHeight).apply {
+//            x = -widthPx / 2 + centerX
+//            y = if (centerY <= heightPx / 2) -heightPx / 2 + tailPadding + centerY  else -heightPx / 2 - tailPadding + centerY
+//        })
+        additionalDetectedClothesViews.add(tailView)
+        //detected clothes card
+        val detectedClothesCard = layoutInflater.inflate(R.layout.clothes_card_extended_layout, null)
+        detectedClothesCard.measure(0,0)
+//        val clothesImage = detectedClothesCard.findViewById<ImageView>(R.id.clothes_card_image_view)
+//        Glide.with(context)
+//            .asBitmap()
+//            .load(clothes.picUrl)
+//            .into(clothesImage)
+//        val priceTextView = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_price).apply {
+//            text = "${clothes.price} ₽"
+//        }
+//        val ratingTextView = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_rating).apply {
+//            text = "${clothes.rating}"
+//        }
+        val fullStr = "${clothes.itemCategory} ${clothes.brand}"
+        var clothesText = ""
+        kotlin.run let@{ fullStr.forEach { char ->
+            clothesText += char
+            if (clothesText.length > 15) {
+                clothesText += "..."
+                return@let
+            }
+        } }
+        val titleTextView = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_extended_title).apply {
+            text = "$clothesText"
+        }
+        val retailOneTitle = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_extended_retailer_first_name).apply {
+            text = selectedClothesList[0].provider
+        }
+        val retailOnePrice = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_extended_retailer_first_price).apply {
+            text = "${selectedClothesList[0].price.toString().toMoneyString()} ₽"
+        }
+        val retailTwoTitle = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_extended_retailer_second_name).apply {
+            text = selectedClothesList[1].provider
+        }
+        val retailTwoPrice = detectedClothesCard.findViewById<TextView>(R.id.clothes_card_extended_retailer_second_price).apply {
+            text = "${selectedClothesList[1].price.toString().toMoneyString()} ₽"
+        }
+
+        val switch = detectedClothesCard.findViewById<Switch>(R.id.clothes_card_extended_switch).apply {
+            this.isChecked = clothes.gender == FilterValues.Constants.Gender.female
+            this.setOnCheckedChangeListener { buttonView, isChecked ->
+                if (isChecked) {
+                    viewModel.onTriggerEvent(DetectorEvent.ChangeGenderForDetectedClothes(
+                        FilterValues.Constants.Gender.female,
+                        foundedClothes.location,
+                        circle,
+                        context))
+                } else {
+                    viewModel.onTriggerEvent(DetectorEvent.ChangeGenderForDetectedClothes(
+                        FilterValues.Constants.Gender.male,
+                        foundedClothes.location,
+                        circle,
+                        context))
+                }
+                removeViewFromWM(tailView)
+                removeViewFromWM(detectedClothesCard)
+                additionalDetectedClothesViews.remove(tailView)
+                additionalDetectedClothesViews.remove(detectedClothesCard)
+            }
+        }
+        val clothesImage = detectedClothesCard.findViewById<ImageView>(R.id.clothes_card_extended_image_view)
+        Glide.with(context)
+            .asBitmap()
+            .load(clothes.picUrl)
+            .into(clothesImage)
+
+//        Log.d(TAG, "onDetectorCreated: detectedClothesCard.measuredWidth: ${detectedClothesCard.measuredWidth}")
+        addViewToWM(detectedClothesCard, getWmLayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT).apply {
+            x = if (centerX <= widthPx / 2)
+                -widthPx / 2 + (detectedClothesCard.measuredWidth - centerX) / 2 + centerX
+            else
+                -widthPx / 2 - (detectedClothesCard.measuredWidth - (widthPx - centerX)) / 2 + centerX
+
+            y = if (centerY <= heightPx / 2)
+                -heightPx/2 + (detectedClothesCard.measuredHeight) / 2 + centerY
+            else
+                -heightPx/2 - (detectedClothesCard.measuredHeight) / 2 + centerY
+        })
+        additionalDetectedClothesViews.add(detectedClothesCard)
+        detectedClothesCard.setOnClickListener {
             viewModel.onTriggerEvent(DetectorEvent.InsertDetectedClothesEvent(allDetectedClothesList))
         }
-        detectedClothesCard.findViewById<Button>(R.id.clothes_card_close_button).apply {
+        detectedClothesCard.findViewById<Button>(R.id.clothes_card_extended_close_button).apply {
             setOnClickListener {
                 removeViewFromWM(tailView)
                 removeViewFromWM(detectedClothesCard)
                 additionalDetectedClothesViews.remove(tailView)
                 additionalDetectedClothesViews.remove(detectedClothesCard)
-                circle.isClickable = true
+//                circle.isClickable = true
             }
         }
     }
@@ -593,16 +722,19 @@ class AssistantDetector
             }
         }.launchIn(CoroutineScope(Main))
 
-        viewModel.clothesList.onEach { pair: Pair<View?, List<Clothes>> ->
+        viewModel.clothesList.onEach { pair: Pair<View?, FoundedClothesAssistant?> ->
             pair.first?.let{ circle ->
-                if (pair.second.isNotEmpty()) {
-                    addClothesCard(circle, pair.second)
-                    pair.second.forEach {
-                        if (!clothesList.contains(it)) {
-                            clothesList.add(it)
+                pair.second?.let { foundedClothes ->
+                    if (foundedClothes.clothes.isNotEmpty()) {
+                        addClothesCard(circle, foundedClothes)
+                        foundedClothes.clothes.forEach {
+                            if (!clothesList.contains(it)) {
+                                clothesList.add(it)
+                            }
                         }
                     }
                 }
+
             }
         }.launchIn(CoroutineScope(Main))
 

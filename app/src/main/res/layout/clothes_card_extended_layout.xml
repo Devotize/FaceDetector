@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="280dp"
+    android:layout_height="90dp"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:background="@drawable/detected_clothes_card_shape">
+
+    <ImageView
+        android:id="@+id/clothes_card_extended_image_view"
+        android:layout_width="57dp"
+        android:layout_height="71dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        />
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="95dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp"
+        >
+        <TextView
+            android:id="@+id/clothes_card_extended_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:lines="1"
+            tools:text="Пальто Westrenger..."
+            android:textSize="11dp"
+            android:textColor="@color/white"
+            />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="4dp"
+            >
+
+            <TextView
+                android:id="@+id/clothes_card_extended_retailer_first_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="wildberries"
+                android:textSize="9dp"
+                android:textColor="@color/white"
+                android:layout_gravity="center_horizontal|start"
+                android:layout_weight="1"
+                />
+
+            <TextView
+                android:id="@+id/clothes_card_extended_retailer_first_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="8 900 ₽"
+                android:textSize="10dp"
+                android:textColor="@color/grey"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0"
+                />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="2dp"
+            android:layout_marginStart="4dp"
+            >
+
+            <TextView
+                android:id="@+id/clothes_card_extended_retailer_second_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="lamoda"
+                android:textSize="9dp"
+                android:textColor="@color/white"
+                android:layout_gravity="center_horizontal|start"
+                android:layout_weight="1"
+                />
+
+            <TextView
+                android:id="@+id/clothes_card_extended_retailer_second_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="8 900 ₽"
+                android:textSize="10dp"
+                android:textColor="@color/grey"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0"
+                />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/clothes_card_extended_close_button"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end"
+                android:background="@drawable/ic_baseline_close_gray"
+                />
+        </FrameLayout>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="М"
+                android:textSize="12sp"
+                android:textColor="@color/white"/>
+
+            <Switch
+                android:id="@+id/clothes_card_extended_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+
+                />
+
+            <TextView
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ж"
+                android:textSize="12sp"
+                android:layout_marginEnd="12dp"
+                android:textColor="@color/white"/>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <Button
+                android:id="@+id/clothes_card_extended_forward"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end"
+                android:background="@drawable/ic_baseline_arrow_forward_white"
+                />
+        </FrameLayout>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</androidx.appcompat.widget.LinearLayoutCompat>

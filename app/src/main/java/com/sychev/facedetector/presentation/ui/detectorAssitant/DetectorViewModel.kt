@@ -3,6 +3,7 @@ package com.sychev.facedetector.presentation.ui.detectorAssitant
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.RectF
 import android.util.Log
 import android.view.View
 import com.sychev.facedetector.domain.Clothes
@@ -13,6 +14,7 @@ import com.sychev.facedetector.interactors.detected_clothes.InsertDetectedClothe
 import com.sychev.facedetector.interactors.gender.DefineGender
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorEvent.*
 import com.sychev.facedetector.presentation.ui.items.SnackbarItem
+import com.sychev.facedetector.presentation.ui.screen.feed_list.FoundedClothes
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -52,7 +54,7 @@ class DetectorViewModel(
     private val insertDetectedClothes = entryPoint.provideInsertDetectedClothes()
 
     private val _loading: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    private val _clothesList: MutableStateFlow<Pair<View?, List<Clothes>>> = MutableStateFlow(Pair(null, listOf()))
+    private val _clothesList: MutableStateFlow<Pair<View?, FoundedClothesAssistant?>> = MutableStateFlow(Pair(null, null))
     private val _favoriteClothesList: MutableStateFlow<List<Clothes>> = MutableStateFlow(listOf())
     private val _allClothesInCache: MutableStateFlow<List<Clothes>> = MutableStateFlow(listOf())
     private val _selectedButton: MutableStateFlow<SelectedButton?> = MutableStateFlow(null)
@@ -63,7 +65,7 @@ class DetectorViewModel(
     private val _drawMode: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val _insertedRowsLongArray: MutableStateFlow<LongArray> = MutableStateFlow(LongArray(0))
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
-    val clothesList: StateFlow<Pair<View?, List<Clothes>>> = _clothesList.asStateFlow()
+    val clothesList: StateFlow<Pair<View?, FoundedClothesAssistant?>> = _clothesList.asStateFlow()
     val favoriteClothesList = _favoriteClothesList.asStateFlow()
     val allDetectedClothesInCache = _allClothesInCache.asStateFlow()
     val selectedButton = _selectedButton.asStateFlow()
@@ -109,15 +111,40 @@ class DetectorViewModel(
             is InsertDetectedClothesEvent -> {
                 insertDetectedClothes(event.detectedClothes)
             }
+            is ChangeGenderForDetectedClothes -> {
+                changeGenderForDetectedClothes(event.location, event.newGender, event.circle, event.context)
+            }
         }
     }
 
-    private fun searchClothes(detectedClothes: DetectedClothes, context: Context, circle: View) {
+    private fun changeGenderForDetectedClothes(location: RectF, newGender: String, circle: View, context: Context) {
+        Log.d(TAG, "changeGenderForDetectedClothes: triggered: newGender: $newGender")
+        val oldDetectedClothesList = detectedClothesListLocal.value
+        val newDetectedClothesList = ArrayList<DetectedClothes>()
+        var detectedClothes: DetectedClothes? = null
+        oldDetectedClothesList.forEach {
+            if (it.location == location) {
+                Log.d(TAG, "changeGenderForDetectedClothes: changing gender... ")
+                it.gender = newGender
+                detectedClothes = it
+            }
+        }
+        newDetectedClothesList.addAll(oldDetectedClothesList)
+//        _detectedClothesListLocal.value = ArrayList()
+//        _detectedClothesListLocal.value = newDetectedClothesList
+        detectedClothes?.let {
+            searchClothes(it, context, circle, true)
+        }
+
+    }
+
+    private fun searchClothes(detectedClothes: DetectedClothes, context: Context, circle: View, showBigCard: Boolean = false) {
         searchClothes.execute(detectedClothes, context).onEach { dataState ->
             _loading.value = dataState.loading
             dataState.data?.let {
                 Log.d(TAG, "searchClothes: detectedClothesList value changed")
-                _clothesList.value = Pair(circle, it)
+                val foundedClothes = FoundedClothesAssistant(detectedClothes.location, it, showBigCard)
+                _clothesList.value = Pair(circle, foundedClothes)
             }
             dataState.error?.let{
                 circle.isClickable = true
@@ -256,6 +283,12 @@ class DetectorViewModel(
     }
 
 }
+
+data class FoundedClothesAssistant(
+    val location: RectF,
+    val clothes: List<Clothes>,
+    val showBigCard: Boolean = false,
+)
 
 
 

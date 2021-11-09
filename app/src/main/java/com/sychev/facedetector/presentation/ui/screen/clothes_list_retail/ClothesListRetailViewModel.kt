@@ -135,9 +135,13 @@ constructor(
                     cl.forEachIndexed { index, item ->
                         if (item.clothesUrl == clothesFromCache.clothesUrl) {
                             cl[index] = clothesFromCache
+                            cl[index] = cl[index].copy(isFavorite = clothesFromCache.isFavorite)
+
                         }
                     }
                 }
+                listOfClothesList.add(listOfClothesList[0])
+                listOfClothesList.removeLast()
             }
         }.launchIn(viewModelScope)
     }
