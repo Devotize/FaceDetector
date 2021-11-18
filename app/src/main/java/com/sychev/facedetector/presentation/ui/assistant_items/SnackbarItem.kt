@@ -1,4 +1,4 @@
-package com.sychev.facedetector.presentation.ui.items
+package com.sychev.facedetector.presentation.ui.assistant_items
 
 import android.content.Context
 import android.graphics.PixelFormat
@@ -11,7 +11,6 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.TextView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.snackbar.Snackbar
 import com.sychev.facedetector.R
 import com.sychev.facedetector.utils.TAG
 import java.util.*

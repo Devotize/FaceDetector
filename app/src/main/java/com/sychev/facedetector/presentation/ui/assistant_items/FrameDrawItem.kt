@@ -1,12 +1,10 @@
-package com.sychev.facedetector.presentation.ui.items
+package com.sychev.facedetector.presentation.ui.assistant_items
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.os.Build
-import android.util.Log
 import android.view.*
-import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.custom_view.FrameDrawView
 
 class FrameDrawItem(

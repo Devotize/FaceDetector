@@ -1,19 +1,15 @@
-package com.sychev.facedetector.presentation.ui.items
+package com.sychev.facedetector.presentation.ui.assistant_items
 
 import android.content.Context
 import android.graphics.PixelFormat
 import android.graphics.Point
 import android.graphics.Rect
 import android.os.Build
-import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.toRectF
 import com.sychev.facedetector.R
-import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.custom_view.ResizableRectangleView
-import com.sychev.facedetector.utils.TAG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.flow.launchIn

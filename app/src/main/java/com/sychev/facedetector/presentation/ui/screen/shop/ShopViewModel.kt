@@ -43,6 +43,7 @@ class ShopViewModel
     val queryBubbles = mutableStateListOf<String>()
     val topBrands = mutableStateListOf<Brand>()
     val customFilter = mutableStateOf<ClothesFilter>(ClothesFilter())
+    private val byDefaultClothesList = ArrayList<Clothes>()
 
 
     @Inject
@@ -171,8 +172,10 @@ class ShopViewModel
             dataState.data?.let {
                 Log.d(TAG, "performSearchByFilters: queryBubbles: ${it.bubbles}")
                 clothesList.clear()
+                byDefaultClothesList.clear()
                 if (it.clothes.isNotEmpty()) {
                     clothesList.addAll(it.clothes)
+                    byDefaultClothesList.addAll(it.clothes)
                 }else {
                     clothesList.add(Clothes.NothingFoundClothes.get())
                 }
@@ -210,6 +213,53 @@ class ShopViewModel
                 selectedFilter.value = newFilter
             }
         }.launchIn(viewModelScope)
+    }
+
+    fun sortClothesLowerFirst() {
+        val arr = clothesList.toMutableList()
+        var sorted = false
+        while (!sorted) {
+            sorted = true
+            for (i in 0 until arr.size - 1) {
+                if (arr[i].price > arr[i + 1].price) {
+                    val temp = arr[i + 1]
+                    arr[i + 1] = arr[i]
+                    arr[i] = temp
+                    sorted = false
+                }
+            }
+        }
+        if (arr.isNotEmpty()) {
+            clothesList.add(arr[0])
+            clothesList.clear()
+            clothesList.addAll(arr)
+        }
+    }
+
+    fun sortClothesHigherFirst() {
+        val arr = clothesList.toMutableList()
+        var sorted = false
+        while (!sorted) {
+            sorted = true
+            for (i in 0 until arr.size - 1) {
+                if (arr[i].price < arr[i + 1].price) {
+                    val temp = arr[i + 1]
+                    arr[i + 1] = arr[i]
+                    arr[i] = temp
+                    sorted = false
+                }
+            }
+        }
+        if (arr.isNotEmpty()) {
+            clothesList.add(arr[0])
+            clothesList.clear()
+            clothesList.addAll(arr)
+        }
+    }
+
+    fun sortClothesByDefault() {
+        clothesList.clear()
+        clothesList.addAll(byDefaultClothesList)
     }
 
     private fun changeQuery(newQuery: String) {

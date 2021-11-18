@@ -41,7 +41,7 @@ import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.ui.components.ClothesBigItem
 import com.sychev.facedetector.presentation.ui.components.ClothesChip
 import com.sychev.facedetector.presentation.ui.components.ShopComponent
-import com.sychev.facedetector.presentation.ui.screen.clothes_detail.SimilarClothesCard
+import com.sychev.facedetector.presentation.ui.components.SimilarClothesCard
 import com.sychev.facedetector.utils.TAG
 import com.sychev.facedetector.utils.toBitmap
 import com.sychev.facedetector.utils.toMoneyString
@@ -224,6 +224,11 @@ fun ClothesListRetailScreen(
                                                     )
                                                 },
                                             clothes = item,
+                                            onShoppingCartClick = {
+                                                detectedClothes.clear()
+                                                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(item.clothesUrl))
+                                                ContextCompat.startActivity(context, browserIntent, null)
+                                            }
                                         )
                                     }
                                 }

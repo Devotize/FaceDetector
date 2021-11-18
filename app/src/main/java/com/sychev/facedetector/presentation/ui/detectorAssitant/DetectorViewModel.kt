@@ -13,8 +13,7 @@ import com.sychev.facedetector.interactors.clothes_list.*
 import com.sychev.facedetector.interactors.detected_clothes.InsertDetectedClothes
 import com.sychev.facedetector.interactors.gender.DefineGender
 import com.sychev.facedetector.presentation.ui.detectorAssitant.DetectorEvent.*
-import com.sychev.facedetector.presentation.ui.items.SnackbarItem
-import com.sychev.facedetector.presentation.ui.screen.feed_list.FoundedClothes
+import com.sychev.facedetector.presentation.ui.assistant_items.SnackbarItem
 import com.sychev.facedetector.utils.TAG
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn

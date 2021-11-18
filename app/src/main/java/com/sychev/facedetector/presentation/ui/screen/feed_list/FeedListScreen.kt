@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.core.util.toRange
 import coil.ImageLoader
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
@@ -49,6 +50,7 @@ import com.sychev.facedetector.presentation.ui.components.ClothesPointer
 import com.sychev.facedetector.presentation.ui.components.FoundedClothesCard
 import com.sychev.facedetector.presentation.ui.components.FoundedClothesCardSmall
 import com.sychev.facedetector.presentation.ui.components.StaggeredVerticalGrid
+import com.sychev.facedetector.presentation.ui.screen.feed_list.components.FoundedClothesCardExtended
 import com.sychev.facedetector.utils.TAG
 import com.sychev.facedetector.utils.onShown
 import com.sychev.facedetector.utils.random
@@ -79,7 +81,9 @@ fun FeedListScreen(
     val celebImages = viewModel.celebImages.value
     val scrollState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    var screenHeight by remember{mutableStateOf(0)}
+    var screenHeight by remember { mutableStateOf(0) }
+    val isLoadCelebsCalled = viewModel.isLoadCelebsCalled.value
+    val foundedClothesExtendedToDisplay = viewModel.foundedClothesExtendedToDisplay.value
 
     BoxWithConstraints(
         modifier = Modifier
@@ -88,6 +92,11 @@ fun FeedListScreen(
             }
             .fillMaxSize(),
     ) {
+        val imageHeightSeed =
+            ((this@BoxWithConstraints.maxHeight.value / 5f).toInt()..(this@BoxWithConstraints.maxHeight.value / 2.1f).toInt())
+        if (!isLoadCelebsCalled) {
+            viewModel.onTriggerEvent(FeedEvent.GetCelebPicsEvent(imageHeightSeed))
+        }
         Column {
             LazyColumn(
                 state = scrollState,
@@ -103,10 +112,9 @@ fun FeedListScreen(
                             .padding(4.dp),
                     ) {
 //                        Log.d(TAG, "FeedListScreen: scrollState: ${scrollState.firstVisibleItemScrollOffset + screenHeight}")
+                        val passedIndexes = remember { mutableStateListOf<Int>() }
+                        celebImages.forEachIndexed { index, celebImage ->
 
-                        val passedIndexes = remember{ mutableStateListOf<Int>()}
-
-                        celebImages.forEachIndexed {index, celebImage ->
                             Box(
                                 modifier = Modifier.onGloballyPositioned {
                                     val rect = it.boundsInRoot()
@@ -119,16 +127,23 @@ fun FeedListScreen(
                                         //getting new page
                                         if (index == celebImages.size - 2) {
                                             if (!loading) {
-                                                Log.d(TAG, "FeedListScreen: triggering getCelebPicsEvent")
-                                                viewModel.onTriggerEvent(FeedEvent.GetCelebPicsEvent)
+                                                Log.d(
+                                                    TAG,
+                                                    "FeedListScreen: triggering getCelebPicsEvent"
+                                                )
+                                                viewModel.onTriggerEvent(
+                                                    FeedEvent.GetCelebPicsEvent(
+                                                        imageHeightSeed
+                                                    )
+                                                )
                                             }
                                         }
                                     }
                                 }
                             ) {
-                                val imageHeight = if (index % 2 == 0) this@BoxWithConstraints.maxWidth.value / 1.5f else  this@BoxWithConstraints.maxWidth.value / 1.8f
-                                var bitmapHeight by remember{ mutableStateOf(0)}
-                                var bitmapWidth by remember{ mutableStateOf(0)}
+//                                val imageHeight = if (index % 2 == 0) this@BoxWithConstraints.maxWidth.value / 1.5f else  this@BoxWithConstraints.maxWidth.value / 1.8f
+                                var bitmapHeight by remember { mutableStateOf(0) }
+                                var bitmapWidth by remember { mutableStateOf(0) }
                                 CelebCard(
                                     modifier = Modifier
                                         .onGloballyPositioned {
@@ -137,33 +152,35 @@ fun FeedListScreen(
                                         }
                                         .padding(4.dp),
                                     image = celebImage.image,
-                                    imageHeight = imageHeight.dp,
+                                    imageHeight = celebImage.height.dp,
                                     maxHeight = this@BoxWithConstraints.maxHeight,
                                     onClick = {
-                                        viewModel.onTriggerEvent(
-                                            FeedEvent.DetectClothesEvent(
-                                                context = context,
-                                                resizedBitmap = it,
-                                                celebImage = celebImage,
-                                                onLoaded = {
+                                        if (!celebImage.isProcessed) {
+                                            viewModel.onTriggerEvent(
+                                                FeedEvent.DetectClothesEvent(
+                                                    context = context,
+                                                    resizedBitmap = it,
+                                                    celebImage = celebImage,
+                                                    onLoaded = {
 
-                                                }
+                                                    }
+                                                )
                                             )
-                                        )
+                                        }
                                     }
                                 )
                                 scrollState.isScrollInProgress.also {
                                     var timer = Timer()
                                     val timerTask = object : TimerTask() {
                                         override fun run() {
-                                            if (viewModel.lastVisibleIndex - 2 == index && celebImage.isProcessed) {
-                                                    Log.d(TAG, "run: timerTask triggered")
-                                                    val resizedBitmap = Bitmap.createScaledBitmap(
-                                                        celebImage.image,
-                                                        bitmapWidth,
-                                                        bitmapHeight,
-                                                        false
-                                                    )
+                                            if (viewModel.lastVisibleIndex - 2 == index && !celebImage.isProcessed) {
+                                                Log.d(TAG, "run: timerTask triggered")
+                                                val resizedBitmap = Bitmap.createScaledBitmap(
+                                                    celebImage.image,
+                                                    bitmapWidth,
+                                                    bitmapHeight,
+                                                    false
+                                                )
                                                     viewModel.onTriggerEvent(
                                                         FeedEvent.DetectClothesEvent(
                                                             context = context,
@@ -192,9 +209,14 @@ fun FeedListScreen(
                                         location = it.location,
                                         clothes = it.clothes[0],
                                         onClick = {
+                                            val fce = FoundedClothesExtended(
+                                                it.location,
+                                                it.clothes,
+                                                celebImage.detectedClothes,
+                                            )
                                             viewModel.onTriggerEvent(
-                                                FeedEvent.GoToRetailScreen(
-                                                    celebImage.detectedClothes
+                                                FeedEvent.FoundedClothesToDisplayChange(
+                                                    newFoundedClothes = fce,
                                                 )
                                             )
                                         }
@@ -204,23 +226,39 @@ fun FeedListScreen(
                         }
                     }
                 }
-                item {
-//                        Box(modifier = Modifier
-//                            .onFocusChanged {
-//                                Log.d(TAG, "FeedListScreen: focuschanged")
-//                            }
-//                            .height(325.dp)){
-//                            Box(
-//                                modifier = Modifier.padding(6.dp)
-//                                    ,
-//                            ) {
-//
-//                            }
-//                        }
-                }
             }
         }
+        foundedClothesExtendedToDisplay?.let { fc ->
+            FoundedClothesCardExtended(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 6.dp),
+                foundedClothes = fc,
+                onClick = {
+                    viewModel.onTriggerEvent(
+                        FeedEvent.GoToRetailScreen(
+                            fc.detectedClothes
+                        )
+                    )
+                },
+                onCloseClick = {
+                    viewModel.onTriggerEvent(FeedEvent.FoundedClothesToDisplayChange())
+                },
+                onGenderChange = { gender ->
+                    fc.detectedClothes.forEach {
+                        if (it.location == fc.location) {
+                            it.gender = gender
+                            viewModel.onTriggerEvent(FeedEvent.FindClothesForChangedGenderFoundedClothesExtended(
+                                detectedClothes =it,
+                                context = context,
+                                foundedClothesExtended = fc
+                            ))
+                        }
+                    }
 
+                }
+            )
+        }
         if (loading) {
             CircularProgressIndicator(
                 modifier = Modifier
@@ -229,14 +267,6 @@ fun FeedListScreen(
             )
         }
     }
-//    if (celebImages.isNotEmpty()) {
-//        val visibleItems = scrollState.visibleItems(50f)
-//            .map { celebImages[it.index] }
-//
-//        Log.d(TAG, "App: ${visibleItems.map {
-//            celebImages.indexOf(it)
-//        }}")
-//    }
 
 }
 
@@ -475,12 +505,15 @@ private fun CelebCard(
         elevation = 8.dp,
         shape = RoundedCornerShape(8.dp)
     ) {
-        BoxWithConstraints (modifier = Modifier
-            .height(imageHeight)
-            .fillMaxWidth(),
+        BoxWithConstraints(
+            modifier = Modifier
+                .height(imageHeight)
+                .fillMaxWidth(),
         ) {
-            val imageWidthPx = with(LocalDensity.current){this@BoxWithConstraints.maxWidth.toPx()}
-            val imageHeightPx = with(LocalDensity.current){this@BoxWithConstraints.maxHeight.toPx()}
+            val imageWidthPx =
+                with(LocalDensity.current) { this@BoxWithConstraints.maxWidth.toPx() }
+            val imageHeightPx =
+                with(LocalDensity.current) { this@BoxWithConstraints.maxHeight.toPx() }
             val resizedBitmap = Bitmap.createScaledBitmap(
                 image,
                 imageWidthPx.toInt(),
@@ -492,8 +525,7 @@ private fun CelebCard(
                     .fillMaxSize()
                     .clickable {
                         onClick(resizedBitmap)
-                    }
-                ,
+                    },
                 bitmap = image.asImageBitmap(),
                 contentDescription = null,
                 contentScale = ContentScale.FillBounds

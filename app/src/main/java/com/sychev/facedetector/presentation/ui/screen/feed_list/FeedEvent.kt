@@ -33,6 +33,12 @@ sealed class FeedEvent() {
         val location: RectF,
         val onLoaded: (Boolean) -> Unit,
     ): FeedEvent()
-    object GetCelebPicsEvent: FeedEvent()
+    class GetCelebPicsEvent(val seed: IntRange): FeedEvent()
     class GoToRetailScreen(val clothesList: List<DetectedClothes>): FeedEvent()
+    class FoundedClothesToDisplayChange(val newFoundedClothes: FoundedClothesExtended? = null): FeedEvent()
+    class FindClothesForChangedGenderFoundedClothesExtended(
+        val detectedClothes: DetectedClothes,
+        val context: Context,
+        val foundedClothesExtended: FoundedClothesExtended
+        ): FeedEvent()
 }

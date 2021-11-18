@@ -20,6 +20,7 @@ import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.navigation.Screen
 import com.sychev.facedetector.utils.MessageDialog
 import com.sychev.facedetector.utils.TAG
+import com.sychev.facedetector.utils.random
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
@@ -43,6 +44,8 @@ constructor(
     val celebImages = mutableStateOf<ArrayList<CelebImage>>(arrayListOf())
     var page = 0
     var lastVisibleIndex = 0
+    val isLoadCelebsCalled = mutableStateOf(false)
+    val foundedClothesExtendedToDisplay = mutableStateOf<FoundedClothesExtended?>(null)
 
     init {
 //        val accessKey = "6mDdwXvOc4qruhG8SxW889oVVTKd5VUESYAQrYXKnTE"
@@ -51,7 +54,7 @@ constructor(
 //            query = "man",
 //            count = 25
 //        ))
-        onTriggerEvent(FeedEvent.GetCelebPicsEvent)
+//        onTriggerEvent(FeedEvent.GetCelebPicsEvent())
     }
 
     fun onTriggerEvent(event: FeedEvent) {
@@ -95,7 +98,7 @@ constructor(
             }
             is FeedEvent.GetCelebPicsEvent -> {
                 Log.d(TAG, "onTriggerEvent: getCelebPicsEvent called")
-                getCelebPics()
+                getCelebPics(event.seed)
             }
             is FeedEvent.GoToRetailScreen -> {
                 val retailScreen = Screen.ClothesListRetail.apply {
@@ -105,15 +108,39 @@ constructor(
                 }
                 navigationManager.navigate(retailScreen)
             }
+            is FeedEvent.FoundedClothesToDisplayChange -> {
+                changeFoundedClothesToDisplay(event.newFoundedClothes)
+            }
+            is FeedEvent.FindClothesForChangedGenderFoundedClothesExtended -> {
+                findClothesForChangedGenderFoundedClothesExtended(
+                    event.context,
+                    event.detectedClothes,
+                    event.foundedClothesExtended
+                )
+            }
         }
     }
 
-    private fun getCelebPics() {
+    private fun findClothesForChangedGenderFoundedClothesExtended(context: Context, detectedClothes: DetectedClothes, foundedClothesExtended: FoundedClothesExtended) {
+        searchClothes.execute(detectedClothes, context).onEach { dataState ->
+            dataState.data?.let { clothes ->
+                val newFoundedClothesExtended = FoundedClothesExtended(
+                    location = foundedClothesExtended.location,
+                    clothes = clothes,
+                    detectedClothes = foundedClothesExtended.detectedClothes
+                )
+                foundedClothesExtendedToDisplay.value = newFoundedClothesExtended
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun getCelebPics(seed: IntRange) {
         loading.value = true
+        isLoadCelebsCalled.value = true
         getCelebPics.execute(page).onEach { dataState ->
             loading.value = dataState.loading
             dataState.data?.let{ celebs ->
-                val mappedCelebs =  celebs.map { CelebImage(image = it.image) }
+                val mappedCelebs =  celebs.map { CelebImage(image = it.image, height = seed.random()) }
                 celebImages.value.addAll(mappedCelebs)
                 // api pagination not working for now
 //                page++
@@ -241,6 +268,10 @@ constructor(
         celebImages.value = newCelebImages
     }
 
+    private fun changeFoundedClothesToDisplay(newFoundedClothes: FoundedClothesExtended?) {
+        foundedClothesExtendedToDisplay.value = newFoundedClothes
+    }
+
 }
 
 data class CelebImage(
@@ -248,9 +279,16 @@ data class CelebImage(
     val detectedClothes: ArrayList<DetectedClothes> = arrayListOf(),
     var isProcessed: Boolean = false,
     val foundedClothes: ArrayList<FoundedClothes> = arrayListOf(),
+    val height: Int
 )
 
 data class FoundedClothes(
     val location: RectF,
     val clothes: List<Clothes>
+)
+
+data class FoundedClothesExtended(
+    val location: RectF,
+    val clothes: List<Clothes>,
+    val detectedClothes: List<DetectedClothes>,
 )

@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
 import coil.compose.rememberImagePainter
 import coil.transform.RoundedCornersTransformation
@@ -33,6 +34,7 @@ import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarStyle
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.presentation.ui.components.SimilarClothesCard
 import com.sychev.facedetector.utils.toBitmap
 import com.sychev.facedetector.utils.toMoneyString
 
@@ -284,89 +286,16 @@ fun ClothesDetailScreen(
                                 viewModel.onTriggerEvent(ClothesDetailEvent.GoToDetailScreen(item))
                             }
                             .padding(end = 12.dp),
-                        clothes = item
+                        clothes = item,
+                        onShoppingCartClick = {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.clothesUrl))
+                            ContextCompat.startActivity(context, intent, null)
+                        }
                     )
                 }
             }
 
         }
-    }
-}
-
-
-@Composable
-fun SimilarClothesCard(
-    modifier: Modifier = Modifier,
-    clothes: Clothes
-) {
-    Column(
-        modifier = modifier
-    ) {
-        val painter = rememberImagePainter(data = clothes.picUrl){
-            crossfade(true)
-            error(R.drawable.clothes_default_icon_gray)
-        }
-        Image(
-            modifier = Modifier
-                .width(114.dp)
-                .height(164.dp),
-            painter = painter,
-            contentDescription = null,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        val fullStr = "${clothes.itemCategory} ${clothes.brand}"
-        var text = ""
-        kotlin.run let@{ fullStr.forEach { char ->
-            text += char
-            if (text.length > 11) {
-                text += "..."
-                return@let
-            }
-        } }
-        Text(
-            modifier = Modifier
-                .widthIn(max = 114.dp),
-            text = text,
-            color = MaterialTheme.colors.onPrimary,
-            style = MaterialTheme.typography.subtitle2,
-            maxLines = 1,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Surface(
-            modifier = Modifier
-                .wrapContentSize(),
-            color = MaterialTheme.colors.onSurface,
-            shape = CircleShape
-        ) {
-            Row(
-                modifier = Modifier.wrapContentSize(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    modifier = Modifier
-                        .padding(8.dp, 2.dp, 0.dp, 2.dp)
-                        .size(13.dp),
-                    imageVector = Icons.Default.Star,
-                    contentDescription = null,
-                    tint = Color.Yellow
-                )
-                Text(
-                    modifier = Modifier.padding(2.dp, 2.dp, 8.dp, 2.dp),
-                    text = "${clothes.rating}",
-                    color = Color.White,
-                    style = MaterialTheme.typography.caption,
-                    fontWeight = FontWeight.W100
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = clothes.price.toString().toMoneyString().plus(" ₽"),
-            color = MaterialTheme.colors.onPrimary,
-            style = MaterialTheme.typography.h6
-        )
-        
     }
 }
 

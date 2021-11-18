@@ -51,10 +51,11 @@ fun ClothesBigItem(
 
     Card(
         modifier = modifier,
+        elevation = 0.dp,
     ) {
         Column(
             modifier = Modifier
-                .padding(8.dp)
+                .padding(top = 8.dp, start = 24.dp, end = 24.dp)
         ) {
             val imagePainter = rememberImagePainter(data = clothes.picUrl) {
                 crossfade(true)
@@ -68,7 +69,7 @@ fun ClothesBigItem(
                     Image(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(188.dp),
+                            .height(148.dp),
                         painter = imagePainter,
                         contentDescription = null,
                         contentScale = ContentScale.Crop
@@ -84,7 +85,7 @@ fun ClothesBigItem(
                 Text(
                     modifier = Modifier.fillMaxWidth(0.8f),
                     text = "${clothes.itemCategory} ${clothes.brand}",
-                    style = MaterialTheme.typography.h4,
+                    style = MaterialTheme.typography.h5,
                     color = Color.Black
                 )
 
@@ -124,7 +125,7 @@ fun ClothesBigItem(
                     modifier = Modifier
                         .padding(0.dp,4.dp,0.dp,0.dp),
                     text = "${clothes.price.toString().toMoneyString()} ₽",
-                    style = MaterialTheme.typography.h3,
+                    style = MaterialTheme.typography.h4,
                     color = MaterialTheme.colors.onSurface
                 )
                 if (clothes.brandLogo.isNotEmpty()) {
@@ -181,7 +182,7 @@ fun ClothesBigItem(
                 }
             }
             Column(modifier = Modifier.animateContentSize(spring(1.75f))) {
-                if (showDetails.value) {
+//                if (showDetails.value) {
                     Spacer(modifier = Modifier.height(4.dp))
                     clothesList.forEach {
                         ShopComponent(
@@ -191,25 +192,25 @@ fun ClothesBigItem(
                         )
                         Spacer(modifier = Modifier.padding(bottom = 8.dp))
                     }
-                }
+//                }
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    modifier = Modifier
-                        .clickable {
-                            showDetails.value = !showDetails.value
-                        },
-                    text = if (!showDetails.value) "Ещё" else "Скрыть",
-                    style = MaterialTheme.typography.subtitle2,
-                )
-
-            }
+//            Row(
+//                modifier = Modifier
+//                    .fillMaxWidth(),
+//                horizontalArrangement = Arrangement.SpaceBetween,
+//                verticalAlignment = Alignment.CenterVertically,
+//            ) {
+//                Text(
+//                    modifier = Modifier
+//                        .clickable {
+//                            showDetails.value = !showDetails.value
+//                        },
+//                    text = if (!showDetails.value) "Ещё" else "Скрыть",
+//                    style = MaterialTheme.typography.subtitle2,
+//                )
+//
+//            }
 
         }
     }

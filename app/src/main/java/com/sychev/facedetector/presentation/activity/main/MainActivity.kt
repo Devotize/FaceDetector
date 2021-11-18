@@ -153,6 +153,7 @@ class MainActivity : AppCompatActivity() {
                             }
                             composable(Screen.Shop.route) {
                                 hasNavBottomBar = true
+                                this@MainActivity.shopViewModel.clothesList.clear()
                                 ShopScreen(viewModel = this@MainActivity.shopViewModel)
                             }
 
