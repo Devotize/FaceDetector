@@ -5,7 +5,9 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -18,6 +20,9 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,6 +30,10 @@ import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.google.accompanist.flowlayout.FlowColumn
+import com.sychev.facedetector.domain.brand.Brand
 import com.sychev.facedetector.domain.filter.FilterValues
 import com.sychev.facedetector.domain.filter.Price
 import com.sychev.facedetector.presentation.ui.screen.shop.ShopEvent
@@ -32,8 +41,11 @@ import com.sychev.facedetector.presentation.ui.screen.shop.ShopViewModel
 import com.sychev.facedetector.presentation.ui.screen.shop.ClothesFilter
 import com.sychev.facedetector.utils.TAG
 import com.sychev.facedetector.utils.color
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalUnitApi::class, androidx.compose.material.ExperimentalMaterialApi::class)
+@OptIn(ExperimentalUnitApi::class, androidx.compose.material.ExperimentalMaterialApi::class,
+    androidx.compose.foundation.ExperimentalFoundationApi::class
+)
 @Composable
 fun FiltersScreen(
     viewModel: ShopViewModel
@@ -56,7 +68,6 @@ fun FiltersScreen(
         viewModel.customFilter.value.price = viewModel.filterValues.price
         firsLaunch = false
     }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -252,13 +263,24 @@ fun FiltersScreen(
                         )
                     }
                 }
+                val categoryScrollState = rememberScrollState()
+                var heightOfItemInDp by remember{ mutableStateOf(0.dp)}
+                var heightOfItemInPx by remember{mutableStateOf(0)}.also {
+                    heightOfItemInDp = with(LocalDensity.current) {it.value.toDp()}
+                }
+                val verticalSpaceBetweenItemsInDp = 8.dp
                 if (showItemsRow) {
-                    LazyRow(
-                        modifier = Modifier.padding(bottom = 6.dp)
+                    FlowColumn(
+                        modifier = Modifier
+                            .horizontalScroll(categoryScrollState, true)
+                            .height((heightOfItemInDp + verticalSpaceBetweenItemsInDp) * 3)
                     ) {
-                        itemsIndexed(viewModel.filterValues.itemCategories.second) { index: Int, category ->
+                        viewModel.filterValues.itemCategories.second.forEach { category ->
                             OutlinedButton(
                                 modifier = Modifier
+                                    .onGloballyPositioned {
+                                        heightOfItemInPx = it.size.height
+                                    }
                                     .padding(end = 6.dp),
                                 onClick = {
                                     if (customFilter.itemCategories.contains(category)) {
@@ -288,7 +310,9 @@ fun FiltersScreen(
                                 border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
                                 shape = CircleShape,
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = if (customFilter.itemCategories.contains(category)
+                                    backgroundColor = if (customFilter.itemCategories.contains(
+                                            category
+                                        )
                                     ) {
                                         MaterialTheme.colors.secondary
                                     } else {
@@ -303,6 +327,7 @@ fun FiltersScreen(
                                     style = MaterialTheme.typography.h6,
                                 )
                             }
+                            Spacer(modifier = Modifier.height(verticalSpaceBetweenItemsInDp))
                         }
                     }
                 }
@@ -344,69 +369,79 @@ fun FiltersScreen(
                         )
                     }
                 }
+                val colorScrollState = rememberScrollState()
+                val boxHeightInDp = 37.dp
                 if (showItemsRow) {
-                    LazyRow(
-                        modifier = Modifier.padding(bottom = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    FlowColumn(
+                        modifier = Modifier
+                            .horizontalScroll(colorScrollState, true)
+                            .height((boxHeightInDp) * 2),
                     ) {
-                        itemsIndexed(viewModel.filterValues.colors.second) { index: Int, ct ->
+                        viewModel.filterValues.colors.second.forEach { ct ->
                             var isAlreadySelected by remember{mutableStateOf(false)}
                             isAlreadySelected = customFilter.colors.contains(ct.colorName)
-                            val buttonSize = if (isAlreadySelected) 46.dp else 36.dp
+                            val buttonSize = if (isAlreadySelected) 33.dp else 26.dp
                             val borderStroke = if (isAlreadySelected)
                                 BorderStroke(2.dp, MaterialTheme.colors.secondary)
                             else
                                 BorderStroke(1.dp, MaterialTheme.colors.onPrimary)
-                            OutlinedButton(
-                                modifier = Modifier
-                                    .size(buttonSize),
-                                onClick = {
-                                    Log.d(TAG, "FiltersScreen: colors filters: ${isAlreadySelected}")
-                                    if (isAlreadySelected) {
-                                        try {
-                                            val newFilters = customFilter.also {
+                            Box(modifier = Modifier
+                                .size(boxHeightInDp)) {
+                                OutlinedButton(
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .size(buttonSize),
+                                    onClick = {
+                                        Log.d(
+                                            TAG,
+                                            "FiltersScreen: colors filters: ${isAlreadySelected}"
+                                        )
+                                        if (isAlreadySelected) {
+                                            try {
+                                                val newFilters = customFilter.also {
                                                     it.colors.remove(ct.colorName)
+                                                }
+                                                viewModel.onTriggerEvent(
+                                                    ShopEvent.ChangeCustomFilters(
+                                                        newFilters
+                                                    )
+                                                )
+                                            } catch (e: Exception) {
+                                                e.printStackTrace()
+                                            }
+                                        } else {
+                                            val newFilters = customFilter.also {
+                                                it.colors.add(ct.colorName)
                                             }
                                             viewModel.onTriggerEvent(
                                                 ShopEvent.ChangeCustomFilters(
                                                     newFilters
                                                 )
                                             )
-                                        } catch (e: Exception) {
-                                            e.printStackTrace()
                                         }
-                                    } else {
-                                        val newFilters = customFilter.also {
-                                            it.colors.add(ct.colorName)
-                                        }
-                                        viewModel.onTriggerEvent(
-                                            ShopEvent.ChangeCustomFilters(
-                                                newFilters
-                                            )
+                                    },
+                                    border = borderStroke,
+                                    shape = MaterialTheme.shapes.medium,
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        backgroundColor = ("#" + ct.colorHex).color,
+                                        contentColor = MaterialTheme.colors.onPrimary
+                                    ),
+                                    contentPadding = PaddingValues(1.dp)
+                                ) {
+                                    if (isAlreadySelected) {
+                                        Icon(
+                                            modifier = Modifier.fillMaxSize(),
+                                            imageVector = Icons.Default.Done,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colors.primary
                                         )
                                     }
-                                },
-                                border = borderStroke,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = ("#" + ct.colorHex).color,
-                                    contentColor = MaterialTheme.colors.onPrimary
-                                ),
-                                contentPadding = PaddingValues(1.dp)
-                            ) {
-                                if (isAlreadySelected) {
-                                    Icon(
-                                        modifier = Modifier.fillMaxSize(),
-                                        imageVector = Icons.Default.Done,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colors.primary
-                                    )
                                 }
                             }
-                            Spacer(modifier = Modifier.width(16.dp))
                         }
                     }
                 }
+//
             }
             Spacer(
                 modifier = Modifier
@@ -445,59 +480,123 @@ fun FiltersScreen(
                         )
                     }
                 }
-                if (showItemsRow) {
-                    LazyRow(
-                        modifier = Modifier.padding(bottom = 6.dp)
-                    ) {
-                        itemsIndexed(viewModel.filterValues.brands.second) { index: Int, ct ->
-                            OutlinedButton(
-                                modifier = Modifier
-                                    .padding(end = 6.dp),
-                                onClick = {
-                                    if (customFilter.brands.contains(ct)) {
-                                        try {
-                                            val newFilters = customFilter.also {
-                                                it.brands.remove(ct)
-                                            }
-                                            viewModel.onTriggerEvent(
-                                                ShopEvent.ChangeCustomFilters(
-                                                    newFilters
-                                                )
-                                            )
-                                        } catch (e: Exception) {
-                                            e.printStackTrace()
-                                        }
-                                    } else {
-                                        val newFilters = customFilter.also {
-                                            it.brands.add(ct)
-                                        }
-                                        viewModel.onTriggerEvent(
-                                            ShopEvent.ChangeCustomFilters(
-                                                newFilters
-                                            )
-                                        )
-                                    }
-                                },
-                                border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
-                                shape = CircleShape,
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = if (customFilter.brands.contains(ct)) {
-                                        MaterialTheme.colors.secondary
-                                    } else {
-                                        MaterialTheme.colors.primary
-                                    },
-                                    contentColor = MaterialTheme.colors.onPrimary
-                                )
-                            ) {
-                                Text(
-                                    modifier = Modifier,
-                                    text = ct,
-                                    style = MaterialTheme.typography.h6,
-                                )
-                            }
-                        }
-                    }
+                val brandScrollState = rememberScrollState()
+                var heightOfItemInDp by remember{ mutableStateOf(0.dp)}
+                var heightOfItemInPx by remember{mutableStateOf(0)}.also {
+                    heightOfItemInDp = with(LocalDensity.current) {it.value.toDp()}
                 }
+                val verticalSpaceBetweenItemsInDp = 8.dp
+                if (showItemsRow) {
+                            FlowColumn(
+                                modifier = Modifier
+                                    .horizontalScroll(brandScrollState)
+                                    .height((heightOfItemInDp + verticalSpaceBetweenItemsInDp)*3),
+                            ) {
+                                viewModel.topBrands.forEachIndexed { index, item ->
+                                    val ct = item.name
+                                    item.image?.let { image ->
+                                        Row(
+                                            modifier = Modifier,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Image(
+                                                modifier = Modifier
+                                                    .width(104.dp)
+                                                    .height(68.dp)
+                                                    .onGloballyPositioned {
+                                                                          heightOfItemInPx = it.size.height
+                                                    },
+                                                bitmap = image.asImageBitmap(),
+                                                contentDescription = null,
+                                            )
+                                            Spacer(modifier = Modifier.width(2.dp))
+                                            Checkbox(
+                                                checked = customFilter.brands.contains(ct),
+                                                onCheckedChange = {
+                                                    if (customFilter.brands.contains(ct)) {
+                                                        try {
+                                                            val newFilters = customFilter.also {
+                                                                it.brands.remove(ct)
+                                                            }
+                                                            viewModel.onTriggerEvent(
+                                                                ShopEvent.ChangeCustomFilters(
+                                                                    newFilters
+                                                                )
+                                                            )
+                                                        } catch (e: Exception) {
+                                                            e.printStackTrace()
+                                                        }
+                                                    } else {
+                                                        val newFilters = customFilter.also {
+                                                            it.brands.add(ct)
+                                                        }
+                                                        viewModel.onTriggerEvent(
+                                                            ShopEvent.ChangeCustomFilters(
+                                                                newFilters
+                                                            )
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                }
+//                if (showItemsRow) {
+//                    LazyRow(
+//                        modifier = Modifier.padding(bottom = 6.dp)
+//                    ) {
+//                        itemsIndexed(viewModel.filterValues.brands.second) { index: Int, ct ->
+//                            OutlinedButton(
+//                                modifier = Modifier
+//                                    .padding(end = 6.dp),
+//                                onClick = {
+//                                    if (customFilter.brands.contains(ct)) {
+//                                        try {
+//                                            val newFilters = customFilter.also {
+//                                                it.brands.remove(ct)
+//                                            }
+//                                            viewModel.onTriggerEvent(
+//                                                ShopEvent.ChangeCustomFilters(
+//                                                    newFilters
+//                                                )
+//                                            )
+//                                        } catch (e: Exception) {
+//                                            e.printStackTrace()
+//                                        }
+//                                    } else {
+//                                        val newFilters = customFilter.also {
+//                                            it.brands.add(ct)
+//                                        }
+//                                        viewModel.onTriggerEvent(
+//                                            ShopEvent.ChangeCustomFilters(
+//                                                newFilters
+//                                            )
+//                                        )
+//                                    }
+//                                },
+//                                border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
+//                                shape = CircleShape,
+//                                colors = ButtonDefaults.outlinedButtonColors(
+//                                    backgroundColor = if (customFilter.brands.contains(ct)) {
+//                                        MaterialTheme.colors.secondary
+//                                    } else {
+//                                        MaterialTheme.colors.primary
+//                                    },
+//                                    contentColor = MaterialTheme.colors.onPrimary
+//                                )
+//                            ) {
+//                                Text(
+//                                    modifier = Modifier,
+//                                    text = ct,
+//                                    style = MaterialTheme.typography.h6,
+//                                )
+//                            }
+//                        }
+//                    }
+//                }
             }
             Spacer(
                 modifier = Modifier
@@ -845,7 +944,49 @@ private fun RowWithCheckBox(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+private fun BrandsModalSheet(
+    sheetState: ModalBottomSheetState,
+    brands: List<Brand>
+) {
+    ModalBottomSheetLayout(
+        sheetContent = {
+            LazyVerticalGrid(
+                modifier = Modifier,
+                cells = GridCells.Fixed(3),
+            ) {
+                itemsIndexed(brands){index, item ->
+                    item.image?.let { image ->
+                        Row(
+                            modifier = Modifier,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                modifier = Modifier
+                                    .width(83.dp)
+                                    .height(38.dp),
+                                bitmap = image.asImageBitmap(),
+                                contentDescription = null,
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Checkbox(
+                                checked = false,
+                                onCheckedChange = {
 
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        sheetState = sheetState
+    ) {
+        
+    }
+
+}
 
 
 
