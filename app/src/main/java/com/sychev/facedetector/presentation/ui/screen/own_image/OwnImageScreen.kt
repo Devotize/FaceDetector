@@ -3,13 +3,16 @@ package com.sychev.facedetector.presentation.ui.screen.own_image
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
@@ -26,20 +29,23 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.sychev.facedetector.presentation.ui.components.FoundedClothesCardSmall
+import com.sychev.facedetector.R
+import com.sychev.facedetector.presentation.ui.screen.own_image.components.FoundedClothesCardExtended
+import com.sychev.facedetector.presentation.ui.screen.own_image.components.FoundedClothesCardSmall
 import com.sychev.facedetector.utils.TAG
 
 
 @Composable
 fun OwnImageScreen(
     viewModel: OwnImageViewModel,
+    goToRetailScreen: () -> Unit,
 ) {
     val context = LocalContext.current
     val imageUri = viewModel.imageUri.value
     val foundedClothes = viewModel.foundedClothes
+    val selectedClothesList = viewModel.selectedClothesList
     var imageWidthPx by remember {
         mutableStateOf(0f)
     }
@@ -48,7 +54,7 @@ fun OwnImageScreen(
     }
     val isImageAlreadyProcessed = viewModel.isImageAlreadyProcessed.value
 
-    var image by remember{mutableStateOf<Bitmap?>(null)}
+    var image by remember{mutableStateOf<Bitmap?>(BitmapFactory.decodeResource(context.resources, R.drawable.default_own_img))}
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = {
@@ -61,9 +67,6 @@ fun OwnImageScreen(
         onResult = {
             if (it) {
                 Log.d(TAG, "OwnImageScreen: picture activity reslut: $it")
-                val oldUri = viewModel.imageUri.value
-                viewModel.imageUri.value = null
-                viewModel.imageUri.value = oldUri
                 viewModel.isImageAlreadyProcessed.value = false
             }
         }
@@ -79,47 +82,58 @@ fun OwnImageScreen(
         }
     )
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colors.primary)
     ) {
         Text(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .padding(8.dp),
+                .padding(top = 4.dp, bottom = 0.dp),
             text = "Коснитесь, чтобы посмотреть товары и узнать стоимость",
-            style = MaterialTheme.typography.subtitle2,
+            style = MaterialTheme.typography.body2,
             color = MaterialTheme.colors.onPrimary,
-            fontWeight = FontWeight.W100,
         )
         BoxWithConstraints(
             modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.7f)
-                .padding(top = 8.dp, start = 24.dp, end = 24.dp),
+                .wrapContentWidth()
+                .fillMaxHeight(0.85f)
+                .padding(top = 4.dp, start = 6.dp, end = 6.dp),
         ) {
             imageWidthPx = with(LocalDensity.current){this@BoxWithConstraints.maxWidth.toPx()}
             imageHeightPx = with(LocalDensity.current){this@BoxWithConstraints.maxHeight.toPx()}
             Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colors.background,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .wrapContentWidth(),
+                color = MaterialTheme.colors.primary,
                 shape = MaterialTheme.shapes.large,
-                elevation = 16.dp
+                elevation = 0.dp
             ) {
-                Icon(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxSize(),
-                    imageVector = Icons.Outlined.CameraAlt,
-                    contentDescription = null,
-                    tint = MaterialTheme.colors.primary
-                )
                 image?.let {
+                    if (!isImageAlreadyProcessed) {
+                        viewModel.isImageAlreadyProcessed.value = true
+                        val resizedBitmap = it.let { it1 ->
+                            Bitmap.createScaledBitmap(
+                                it1,
+                                imageWidthPx.toInt(),
+                                imageHeightPx.toInt(),
+                                false
+                            )
+                        }
+                        resizedBitmap?.let {
+                            viewModel.onTriggerEvent(OwnImageEvent.DetectClothesLocal(context, resizedBitmap))
+                        }
+                    }
                     Image(
                         modifier = Modifier.fillMaxSize(),
                         bitmap = it.asImageBitmap(),
                         contentDescription = null,
-                        contentScale = ContentScale.FillBounds
+                        contentScale = ContentScale.Inside
                     )
                 }
+
+
 
             }
             foundedClothes.forEach {
@@ -127,100 +141,130 @@ fun OwnImageScreen(
                     location = it.location,
                     clothes = it.clothes[0],
                     onClick = {
-                        viewModel.onTriggerEvent(OwnImageEvent.GoToRetailScreen)
+                        viewModel.onSelectedClothesListChange(it.clothes)
+                    }
+                )
+            }
+            if (selectedClothesList.isNotEmpty()) {
+                FoundedClothesCardExtended(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(94.dp)
+                        .align(Alignment.BottomCenter)
+                    ,
+                    foundedClothes = selectedClothesList,
+                    onClick = {
+                        goToRetailScreen()
+                    },
+                    onCloseClick = {
+                        viewModel.onSelectedClothesListChange(listOf())
+                    },
+                    onGenderChange = {
+
                     }
                 )
             }
         }
-
-        Surface(
+        Spacer(modifier = Modifier.height(14.dp))
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 24.dp, end = 24.dp, top = 16.dp)
-                .align(Alignment.CenterHorizontally),
-            shape = MaterialTheme.shapes.large,
-            color = MaterialTheme.colors.secondary
+                .padding(start = 8.dp, end = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Box() {
-                Text(
+            Surface(
+                modifier = Modifier
+                    .width(145.dp)
+                    .align(Alignment.CenterVertically),
+                shape = MaterialTheme.shapes.large,
+                color = MaterialTheme.colors.primary,
+                border = BorderStroke(1.dp, MaterialTheme.colors.primaryVariant)
+            ) {
+                Box(
                     modifier = Modifier
-                        .padding(start = 60.dp, top = 18.dp, bottom = 18.dp),
-                    text = "Загрузить изображение",
-                    style = MaterialTheme.typography.h5,
-                    color = MaterialTheme.colors.onSecondary
-                )
-                Column(modifier = Modifier
-                    .clickable {
-                        galleryLauncher.launch("image/*")
-                    }
-                    .fillMaxWidth()) {
-                    Surface(
+                ) {
+                    Text(
                         modifier = Modifier
-                            .padding(4.dp)
-                            .align(Alignment.End),
-                        shape = MaterialTheme.shapes.large,
-                        color = MaterialTheme.colors.onPrimary.copy(alpha = .1f)
-                    ) {
-                        Icon(
+                            .align(Alignment.CenterStart)
+                            .padding(start = 12.dp),
+                        text = "Галерея",
+                        style = MaterialTheme.typography.h4,
+                        color = MaterialTheme.colors.onPrimary
+                    )
+                    Column(modifier = Modifier
+                        .clickable {
+                            galleryLauncher.launch("image/*")
+                        }
+                        .fillMaxWidth()) {
+                        Surface(
                             modifier = Modifier
-                                .padding(12.dp)
-                                .size(24.dp),
-                            imageVector = Icons.Outlined.Panorama,
-                            contentDescription = null,
-                            tint = MaterialTheme.colors.onSecondary,
-                        )
+                                .padding(4.dp)
+                                .align(Alignment.End),
+                            shape = MaterialTheme.shapes.large,
+                            color = MaterialTheme.colors.primaryVariant
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .padding(12.dp)
+                                    .size(24.dp),
+                                imageVector = Icons.Outlined.Panorama,
+                                contentDescription = null,
+                                tint = MaterialTheme.colors.primary,
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 24.dp, end = 24.dp, top = 16.dp)
-                .align(Alignment.CenterHorizontally),
-            shape = MaterialTheme.shapes.large,
-            color = MaterialTheme.colors.secondary
-        ) {
-            Box() {
-                Text(
-                    modifier = Modifier
-                        .padding(start = 60.dp, top = 18.dp, bottom = 18.dp),
-                    text = "Сфотографировать объект",
-                    style = MaterialTheme.typography.h5,
-                    color = MaterialTheme.colors.onSecondary
-                )
-                Column(modifier = Modifier
-                    .clickable {
-                        if (ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.CAMERA
-                            ) == PackageManager.PERMISSION_GRANTED
-                        ) {
-                            Log.d(TAG, "OwnImageScreen: launching ")
-                            viewModel.onTriggerEvent(OwnImageEvent.CreateImageUri(context) {
-                                cameraLauncher.launch(it)
-                            })
-                        } else {
-                            requestCameraPermission.launch(Manifest.permission.CAMERA)
-                        }
-                    }
-                    .fillMaxWidth()) {
-                    Surface(
+            Surface(
+                modifier = Modifier
+                    .width(145.dp)
+                    .align(Alignment.CenterVertically),
+                shape = MaterialTheme.shapes.large,
+                color = MaterialTheme.colors.primary,
+                border = BorderStroke(1.dp, MaterialTheme.colors.primaryVariant)
+            ) {
+                Box() {
+                    Text(
                         modifier = Modifier
-                            .padding(4.dp)
-                            .align(Alignment.End),
-                        shape = MaterialTheme.shapes.large,
-                        color = MaterialTheme.colors.onPrimary.copy(alpha = .1f)
-                    ) {
-                        Icon(
+                            .align(Alignment.CenterStart)
+                            .padding(start = 12.dp),
+                        text = "Фото",
+                        style = MaterialTheme.typography.h4,
+                        color = MaterialTheme.colors.onPrimary
+                    )
+                    Column(modifier = Modifier
+                        .clickable {
+                            if (ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.CAMERA
+                                ) == PackageManager.PERMISSION_GRANTED
+                            ) {
+                                Log.d(TAG, "OwnImageScreen: launching ")
+                                viewModel.onTriggerEvent(OwnImageEvent.CreateImageUri(context) {
+                                    cameraLauncher.launch(it)
+                                })
+                            } else {
+                                requestCameraPermission.launch(Manifest.permission.CAMERA)
+                            }
+                        }
+                        .fillMaxWidth()) {
+                        Surface(
                             modifier = Modifier
-                                .padding(12.dp)
-                                .size(24.dp),
-                            imageVector = Icons.Outlined.CameraAlt,
-                            contentDescription = null,
-                            tint = MaterialTheme.colors.onSecondary,
-                        )
+                                .padding(4.dp)
+                                .align(Alignment.End),
+                            shape = MaterialTheme.shapes.large,
+                            color = MaterialTheme.colors.primaryVariant
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .padding(12.dp)
+                                    .size(24.dp),
+                                imageVector = Icons.Outlined.CameraAlt,
+                                contentDescription = null,
+                                tint = MaterialTheme.colors.primary,
+                            )
+                        }
                     }
                 }
             }
@@ -237,24 +281,8 @@ fun OwnImageScreen(
                     ImageDecoder.decodeBitmap(source).copy(Bitmap.Config.RGBA_F16, true)
                 }
             }catch (e: Exception) {
-
                 e.printStackTrace()
             }
-
-            if (!isImageAlreadyProcessed) {
-                val resizedBitmap = image?.let { it1 ->
-                    Bitmap.createScaledBitmap(
-                        it1,
-                        imageWidthPx.toInt(),
-                        imageHeightPx.toInt(),
-                        false
-                    )
-                }
-                resizedBitmap?.let {
-                    viewModel.onTriggerEvent(OwnImageEvent.DetectClothesLocal(context, resizedBitmap))
-                }
-            }
-
         }
     }
 }

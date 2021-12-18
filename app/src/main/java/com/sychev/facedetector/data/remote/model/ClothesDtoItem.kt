@@ -30,13 +30,13 @@ data class ClothesDtoItem(
     @SerializedName("material")
     val material: String,
     @SerializedName("novice_flg")
-    val noviceFlg: String,
+    val noviceFlg: Int,
     @SerializedName("num_reviews")
     val numReviews: String,
     @SerializedName("pic_url")
     val picUrl: String,
     @SerializedName("popular_flg")
-    val popularFlg: String,
+    val popularFlg: Int,
     @SerializedName("premium")
     val premium: String,
     @SerializedName("price")

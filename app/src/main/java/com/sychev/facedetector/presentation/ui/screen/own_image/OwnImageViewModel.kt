@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.interactors.clothes_list.DetectClothesLocal
 import com.sychev.facedetector.interactors.clothes_list.SearchClothes
@@ -35,6 +36,8 @@ class OwnImageViewModel @Inject constructor(
     val foundedClothes = mutableStateListOf<FoundedClothes>()
     val detectedClothes = mutableStateListOf<DetectedClothes>()
     val isImageAlreadyProcessed = mutableStateOf(false)
+    val selectedClothesList = mutableStateListOf<Clothes>()
+
 
     fun onTriggerEvent(event: OwnImageEvent) {
         when (event) {
@@ -100,6 +103,11 @@ class OwnImageViewModel @Inject constructor(
                 ))
             }
         }.launchIn(viewModelScope)
+    }
+
+    fun onSelectedClothesListChange(newList: List<Clothes>) {
+        selectedClothesList.clear()
+        selectedClothesList.addAll(newList)
     }
 
 }

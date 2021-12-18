@@ -59,8 +59,6 @@ const val MEDIA_PROJECTION_REQUEST_CODE = 21
 class MainActivity : AppCompatActivity() {
 
     private val mainViewModel: MainViewModel by viewModels()
-    private val shopViewModel: ShopViewModel by viewModels()
-    private val retailViewModel: ClothesListRetailViewModel by viewModels()
     private val ownImageViewModel: OwnImageViewModel by viewModels()
 
     @Inject
@@ -112,8 +110,7 @@ class MainActivity : AppCompatActivity() {
                 val scaffoldState = rememberScaffoldState()
                 val scope = rememberCoroutineScope()
                 val dialogMessages = MessageDialog.dialogMessages
-                var hasNavBottomBar by remember{ mutableStateOf(true)}
-
+                var hasNavBottomBar by remember{ mutableStateOf(false)}
 
                 Scaffold(
                     scaffoldState = scaffoldState,
@@ -140,65 +137,17 @@ class MainActivity : AppCompatActivity() {
                     ) {
                         NavHost(
                             navController,
-                            startDestination = Screen.FeedList.route,
+                            startDestination = Screen.OwnImage.route,
                             Modifier.padding(it)
                         ) {
-                            composable(Screen.FavoriteClothesList.route) {
-                                val viewModel = hiltViewModel<FavoriteClothesListViewModel>(
-                                    navController.getBackStackEntry(Screen.FavoriteClothesList.route)
-                                )
-                                hasNavBottomBar = true
-                                FavoriteClothesListScreen(
-                                    viewModel = viewModel,
-                                )
-                            }
-                            composable(Screen.Shop.route) {
-                                hasNavBottomBar = true
-                                this@MainActivity.shopViewModel.clothesList.clear()
-                                ShopScreen(viewModel = this@MainActivity.shopViewModel)
-                            }
-
-                            composable(Screen.FiltersScreen.route) {
-                                hasNavBottomBar = false
-                                EnterAnimation {
-                                    FiltersScreen(viewModel = this@MainActivity.shopViewModel)
-                                }
-                            }
-
                             composable(Screen.OwnImage.route) {
-                                hasNavBottomBar = true
-                                OwnImageScreen(viewModel = ownImageViewModel)
-                            }
-                            composable(Screen.ClothesListRetail.route) {
-
-                            }
-                            composable(Screen.FeedList.route) { backStackEntry ->
-                                val fvm: FeedViewModel = hiltViewModel<FeedViewModel>(
-                                    navController.getBackStackEntry(Screen.FeedList.route)
-                                )
-                                hasNavBottomBar = true
-                                FeedListScreen(viewModel = fvm)
-                            }
-                            composable(
-                                route = Screen.ClothesDetail.route,
-                            ) { backStackEntry ->
-                                hasNavBottomBar = true
-                                Log.d(TAG, "onCreate: destination: DetailScreen")
-                                navController.previousBackStackEntry?.arguments?.getParcelableArrayList<Clothes>(
-                                    "args"
-                                )?.let {
-                                    val detailViewModel = hiltViewModel<ClothesDetailViewModel>(navController.getBackStackEntry(Screen.ClothesDetail.route))
-                                    EnterAnimation {
-                                        ClothesDetailScreen(
-                                            clothes = it[0],
-                                            viewModel = detailViewModel,
-                                            onBackClick = { onBackPressed() }
-                                        )
-                                    }
+//                                hasNavBottomBar = true
+                                OwnImageScreen(viewModel = ownImageViewModel) {
+                                    navController.navigate(Screen.ClothesListRetail.route)
                                 }
                             }
                             composable(Screen.ClothesListRetail.route) { navBackStackEntry ->
-                                hasNavBottomBar = false
+//                                hasNavBottomBar = false
                                 var clothesList = mutableListOf<DetectedClothes>()
 
                                 if (mainViewModel.detectedClothesList.isNotEmpty()) {
@@ -215,24 +164,10 @@ class MainActivity : AppCompatActivity() {
                                 EnterAnimation {
                                     ClothesListRetailScreen(
                                         viewModel = retailViewModel,
-                                        detectedClothes = clothesList,
+                                        detectedClothes = ownImageViewModel.detectedClothes.toMutableList(),
                                         onBackClick = { onBackPressed() },
                                     )
                                 }
-                            }
-                            if (firstLaunch) {
-                                    navigationManager.navigate(Screen.FavoriteClothesList)
-                                    navigationManager.navigate(Screen.FeedList)
-                                if (mainViewModel.detectedClothesList.isNotEmpty()) {
-                                    val screen = Screen.ClothesListRetail.apply {
-                                            arguments = arrayListOf<Parcelable>().apply {
-                                                addAll(mainViewModel.detectedClothesList)
-                                            }
-                                        }
-                                        navigationManager.navigate(screen)
-                                }
-
-                                    firstLaunch = false
                             }
                         }
                     }
