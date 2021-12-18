@@ -52,7 +52,7 @@ class ShopViewModel
 
     init {
         findClothesForFilters()
-        onTriggerEvent(ShopEvent.GetTopBrandsEvent)
+        getTopBrands()
     }
 
 
@@ -309,11 +309,13 @@ class ShopViewModel
                 .onEach { dataState ->
                     loading.value = dataState.loading
                     dataState.data?.let {
-                        filter.clothes = it.clothes
-                        val clothesFilters = ArrayList<ClothesFilter>()
-                        clothesFilters.addAll(filters)
-                        filters.clear()
-                        filters.addAll(clothesFilters)
+                        if (it.clothes.isNotEmpty()) {
+                            filter.clothes = it.clothes
+                            val clothesFilters = ArrayList<ClothesFilter>()
+                            clothesFilters.addAll(filters)
+                            filters.clear()
+                            filters.addAll(clothesFilters)
+                        }
                     }
                 }.launchIn(viewModelScope)
         }

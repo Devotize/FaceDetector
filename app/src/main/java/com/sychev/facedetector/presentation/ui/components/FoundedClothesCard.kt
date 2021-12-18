@@ -102,30 +102,7 @@ fun FoundedClothesCard(
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.End
                 ) {
-                    Surface(
-                        modifier = Modifier
-                            .height(24.dp),
-                        shape = CircleShape,
-                        color = MaterialTheme.colors.onPrimary
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(top = 4.dp, bottom = 4.dp, start =  10.dp, end = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.StarRate,
-                                contentDescription = null,
-                                tint = MaterialTheme.colors.secondary
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "${clothes.rating}",
-                                color = Color.White,
-                                style = MaterialTheme.typography.subtitle2
-                            )
-                        }
-                    }
+
                     Row {
                         //male toggle button
                         val isMale = clothes.gender == FilterValues.Constants.Gender.male

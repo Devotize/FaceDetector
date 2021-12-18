@@ -8,7 +8,7 @@ import com.sychev.facedetector.utils.toBitmap
 import com.sychev.facedetector.utils.toByteArray
 
 class CelebDtoConverter : DomainMapper<Celeb, CelebDto> {
-    override fun fromDomainModel(model: Celeb): CelebDto {
+    fun fromDomainModel(model: Celeb): CelebDto {
         val bytes = model.image.toByteArray()
         return CelebDto(
             model.name,

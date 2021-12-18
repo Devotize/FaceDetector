@@ -14,5 +14,5 @@ data class FilterValuesDtoItem(
     @SerializedName("value")
     val value: String,
     @SerializedName("values")
-    val values: List<Any>?
+    val values: List<Any?>?
 )

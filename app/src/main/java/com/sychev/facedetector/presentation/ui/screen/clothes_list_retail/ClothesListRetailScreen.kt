@@ -177,7 +177,6 @@ fun ClothesListRetailScreen(
                                     val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(item.clothesUrl))
                                     ContextCompat.startActivity(context, browserIntent, null)
                                 },
-                                filterValues = viewModel.filterValues,
                             )
                             if (!viewModel.similarClothes.contains(index)) {
                                 viewModel.onTriggerEvent(
@@ -213,7 +212,7 @@ fun ClothesListRetailScreen(
                             viewModel.similarClothes[index]?.let { clothesList ->
                                 LazyRow() {
                                     itemsIndexed(clothesList) { index, item ->
-                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Spacer(modifier = Modifier.width(6.dp))
                                         SimilarClothesCard(
                                             modifier = Modifier
                                                 .clickable {
@@ -230,6 +229,7 @@ fun ClothesListRetailScreen(
                                                 ContextCompat.startActivity(context, browserIntent, null)
                                             }
                                         )
+                                        Spacer(modifier = Modifier.width(6.dp))
                                     }
                                 }
                             }

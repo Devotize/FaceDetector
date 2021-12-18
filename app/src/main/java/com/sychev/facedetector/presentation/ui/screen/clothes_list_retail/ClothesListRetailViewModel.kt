@@ -94,7 +94,7 @@ constructor(
                     indexesToAdd.add(containIndexToAdd)
                     containIndexToAdd++
                 }
-                clothesChipsContainsIndexes.add(indexesToAdd )
+                clothesChipsContainsIndexes.add(indexesToAdd)
             }
             dataState.error?.let {
                 Log.d(TAG, "findClothes: error: $it")

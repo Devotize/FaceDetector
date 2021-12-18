@@ -40,7 +40,6 @@ fun ClothesItem(
     onRemoveFromFavoriteClick: (Clothes) -> Unit,
 ) {
     val context = LocalContext.current
-    val rating = remember{mutableStateOf(clothes.rating.toFloat())}
 
     Surface(
         modifier = modifier,
@@ -96,33 +95,12 @@ fun ClothesItem(
                     ,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Surface(
-                        modifier = Modifier
-                            .wrapContentSize(),
-                        color = MaterialTheme.colors.onSurface,
-                        shape = CircleShape
-                    ) {
-                        Row(
-                            modifier = Modifier.wrapContentSize(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(8.dp, 2.dp, 0.dp, 2.dp)
-                                    .width(15.dp)
-                                    .height(15.dp),
-                                imageVector = Icons.Default.Star,
-                                contentDescription = null,
-                                tint = Color.Yellow
-                            )
-                            Text(
-                                modifier = Modifier.padding(2.dp, 2.dp, 8.dp, 2.dp),
-                                text = "${clothes.rating}",
-                                color = Color.White,
-                                style = MaterialTheme.typography.subtitle2
-                            )
-                        }
-                    }
+
+                    Rating(
+                        rating = clothes.rating,
+                        textStyle = MaterialTheme.typography.subtitle1,
+                        starSize = 18.dp,
+                    )
                 }
 
                 Text(

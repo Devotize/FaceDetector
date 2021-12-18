@@ -2,6 +2,7 @@ package com.sychev.facedetector.presentation.ui.screen.shop.filters_screen
 
 import android.util.Log
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -21,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -39,6 +41,7 @@ import com.sychev.facedetector.domain.filter.Price
 import com.sychev.facedetector.presentation.ui.screen.shop.ShopEvent
 import com.sychev.facedetector.presentation.ui.screen.shop.ShopViewModel
 import com.sychev.facedetector.presentation.ui.screen.shop.ClothesFilter
+import com.sychev.facedetector.presentation.ui.screen.shop.components.ExpandButton
 import com.sychev.facedetector.utils.TAG
 import com.sychev.facedetector.utils.color
 import kotlinx.coroutines.launch
@@ -131,7 +134,7 @@ fun FiltersScreen(
             Row(modifier = Modifier.fillMaxWidth()) {
                 RowWithCheckBox(
                     modifier = Modifier
-                        .padding(top = 12.dp, bottom = 12.dp, end = 18.dp)
+                        .padding(top = 4.dp, bottom = 4.dp, end = 18.dp)
                         .fillMaxWidth(.5f),
                     title = "Женщинам",
                     checked = customFilter.genders.contains(FilterValues.Constants.Gender.female),
@@ -156,7 +159,7 @@ fun FiltersScreen(
                 Spacer(modifier = Modifier.width(24.dp))
                 RowWithCheckBox(
                     modifier = Modifier
-                        .padding(top = 12.dp, bottom = 12.dp)
+                        .padding(top = 4.dp, bottom = 4.dp)
                         .fillMaxWidth(),
                     title = "Мужчинам",
                     checked = customFilter.genders.contains(FilterValues.Constants.Gender.male),
@@ -180,11 +183,9 @@ fun FiltersScreen(
                 )
             }
             Row(modifier = Modifier.fillMaxWidth()) {
-
-
                 RowWithCheckBox(
                     modifier = Modifier
-                        .padding(top = 12.dp, bottom = 12.dp, end = 18.dp)
+                        .padding(top = 4.dp, bottom = 4.dp, end = 18.dp)
                         .fillMaxWidth(.5f),
                     title = "Новинки",
                     checked = customFilter.novice == FilterValues.Constants.Novice.new,
@@ -209,7 +210,7 @@ fun FiltersScreen(
                 Spacer(modifier = Modifier.width(24.dp))
                 RowWithCheckBox(
                     modifier = Modifier
-                        .padding(top = 12.dp, bottom = 12.dp)
+                        .padding(top = 4.dp, bottom = 4.dp)
                         .fillMaxWidth(),
                     title = "Популярные",
                     checked = customFilter.popular == FilterValues.Constants.Popular.popular,
@@ -241,7 +242,7 @@ fun FiltersScreen(
                 var showItemsRow by remember { mutableStateOf(false) }
                 Row(
                     modifier = Modifier
-                        .padding(top = 12.dp, bottom = 6.dp)
+                        .padding(top = 6.dp, bottom = 6.dp)
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -251,24 +252,20 @@ fun FiltersScreen(
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary,
                     )
-                    IconButton(
+                    ExpandButton(
+                        isExpanded = showItemsRow,
                         onClick = {
                             showItemsRow = !showItemsRow
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowForwardIos,
-                            contentDescription = null,
-                            tint = MaterialTheme.colors.onPrimary
-                        )
-                    }
+                    )
+
                 }
                 val categoryScrollState = rememberScrollState()
                 var heightOfItemInDp by remember{ mutableStateOf(0.dp)}
                 var heightOfItemInPx by remember{mutableStateOf(0)}.also {
                     heightOfItemInDp = with(LocalDensity.current) {it.value.toDp()}
                 }
-                val verticalSpaceBetweenItemsInDp = 8.dp
+                val verticalSpaceBetweenItemsInDp = 2.dp
                 if (showItemsRow) {
                     FlowColumn(
                         modifier = Modifier
@@ -357,17 +354,12 @@ fun FiltersScreen(
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary,
                     )
-                    IconButton(
+                    ExpandButton(
+                        isExpanded = showItemsRow,
                         onClick = {
                             showItemsRow = !showItemsRow
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowForwardIos,
-                            contentDescription = null,
-                            tint = MaterialTheme.colors.onPrimary
-                        )
-                    }
+                    )
                 }
                 val colorScrollState = rememberScrollState()
                 val boxHeightInDp = 37.dp
@@ -468,17 +460,12 @@ fun FiltersScreen(
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary,
                     )
-                    IconButton(
+                    ExpandButton(
+                        isExpanded = showItemsRow,
                         onClick = {
                             showItemsRow = !showItemsRow
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowForwardIos,
-                            contentDescription = null,
-                            tint = MaterialTheme.colors.onPrimary
-                        )
-                    }
+                    )
                 }
                 val brandScrollState = rememberScrollState()
                 var heightOfItemInDp by remember{ mutableStateOf(0.dp)}
@@ -490,7 +477,7 @@ fun FiltersScreen(
                             FlowColumn(
                                 modifier = Modifier
                                     .horizontalScroll(brandScrollState)
-                                    .height((heightOfItemInDp + verticalSpaceBetweenItemsInDp)*3),
+                                    .height((heightOfItemInDp + verticalSpaceBetweenItemsInDp) * 3),
                             ) {
                                 viewModel.topBrands.forEachIndexed { index, item ->
                                     val ct = item.name
@@ -504,7 +491,7 @@ fun FiltersScreen(
                                                     .width(104.dp)
                                                     .height(68.dp)
                                                     .onGloballyPositioned {
-                                                                          heightOfItemInPx = it.size.height
+                                                        heightOfItemInPx = it.size.height
                                                     },
                                                 bitmap = image.asImageBitmap(),
                                                 contentDescription = null,
@@ -623,17 +610,12 @@ fun FiltersScreen(
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary,
                     )
-                    IconButton(
+                    ExpandButton(
+                        isExpanded = showItemsRow,
                         onClick = {
                             showItemsRow = !showItemsRow
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowForwardIos,
-                            contentDescription = null,
-                            tint = MaterialTheme.colors.onPrimary
-                        )
-                    }
+                    )
                 }
                 if (showItemsRow) {
                     Column(
@@ -782,23 +764,20 @@ fun FiltersScreen(
                         style = MaterialTheme.typography.subtitle1,
                         color = MaterialTheme.colors.onPrimary,
                     )
-                    IconButton(
+                    ExpandButton(
+                        isExpanded = showItemsRow,
                         onClick = {
                             showItemsRow = !showItemsRow
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowForwardIos,
-                            contentDescription = null,
-                            tint = MaterialTheme.colors.onPrimary
-                        )
-                    }
+                    )
                 }
+                Log.d(TAG, "FiltersScreen: filtersizes: ${viewModel.filterValues.itemSizes}")
                 if (showItemsRow) {
                     LazyRow(
                         modifier = Modifier.padding(bottom = 6.dp)
                     ) {
                         itemsIndexed(viewModel.filterValues.itemSizes.sorted()) { index: Int, ct ->
+                            Log.d(TAG, "FiltersScreen: itemsize: $ct")
                             OutlinedButton(
                                 modifier = Modifier
                                     .padding(end = 6.dp),
@@ -844,6 +823,7 @@ fun FiltersScreen(
                                     style = MaterialTheme.typography.h6,
                                 )
                             }
+                            Spacer(modifier = Modifier.width(2.dp))
                         }
                     }
                 }

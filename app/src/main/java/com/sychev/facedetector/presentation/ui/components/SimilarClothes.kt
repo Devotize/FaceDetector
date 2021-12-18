@@ -32,7 +32,7 @@ fun SimilarClothesCard(
     Column(
         modifier = modifier
     ) {
-        val painter = rememberImagePainter(data = clothes.picUrl){
+        val painter = rememberImagePainter(data = clothes.picUrl) {
             crossfade(true)
             error(R.drawable.clothes_default_icon_gray)
         }
@@ -46,80 +46,61 @@ fun SimilarClothesCard(
         Spacer(modifier = Modifier.height(4.dp))
         val fullStr = "${clothes.itemCategory} ${clothes.brand}"
         var text = ""
-        kotlin.run let@{ fullStr.forEach { char ->
-            text += char
-            if (text.length > 11) {
-                text += "..."
-                return@let
+        kotlin.run let@{
+            fullStr.forEach { char ->
+                text += char
+                if (text.length > 30) {
+                    text += "..."
+                    return@let
+                }
             }
-        } }
+        }
         Text(
             modifier = Modifier
-                .widthIn(max = 114.dp),
+                .widthIn(max = 100.dp)
+                .height(25.dp),
             text = text,
             color = MaterialTheme.colors.onPrimary,
             style = MaterialTheme.typography.subtitle2,
-            maxLines = 1,
+            maxLines = 2,
         )
-        Spacer(modifier = Modifier.height(4.dp))
-        Row (
+        Spacer(modifier = Modifier.height(2.dp))
+        Row(
             modifier = Modifier.width(94.dp),
         ) {
             Column() {
-                Surface(
-                    modifier = Modifier
-                        .wrapContentSize(),
-                    color = MaterialTheme.colors.onSurface,
-                    shape = CircleShape
-                ) {
-                    Row(
-                        modifier = Modifier.wrapContentSize(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .padding(8.dp, 2.dp, 0.dp, 2.dp)
-                                .size(13.dp),
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = Color.Yellow
-                        )
-                        Text(
-                            modifier = Modifier.padding(2.dp, 2.dp, 8.dp, 2.dp),
-                            text = "${clothes.rating}",
-                            color = Color.White,
-                            style = MaterialTheme.typography.caption,
-                            fontWeight = FontWeight.W100
-                        )
-                    }
-                }
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
                     text = clothes.price.toString().toMoneyString().plus(" ₽"),
                     color = MaterialTheme.colors.onPrimary,
-                    style = MaterialTheme.typography.h6
+                    style = MaterialTheme.typography.subtitle2
                 )
+
+                Spacer(modifier = Modifier.height(4.dp))
+                if (clothes.rating > 0.0) {
+                    Rating(rating = clothes.rating)
+                }
+
             }
-           Box(
-               modifier = Modifier
-                   .fillMaxWidth()
-                   .align(Alignment.CenterVertically),
-           ) {
-               IconButton(
-                   modifier = Modifier
-                       .size(18.dp)
-                       .align(Alignment.Center)
-                   ,
-                   onClick = onShoppingCartClick,
-               ) {
-                   Icon(
-                       imageVector = Icons.Outlined.ShoppingCart,
-                       contentDescription = null,
-                       tint = MaterialTheme.colors.onPrimary
-                   )
-               }
-           }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    ,
+            ) {
+                IconButton(
+                    modifier = Modifier
+                        .size(18.dp)
+                        .align(Alignment.Center),
+                    onClick = onShoppingCartClick,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.ShoppingCart,
+                        contentDescription = null,
+                        tint = MaterialTheme.colors.onPrimary
+                    )
+                }
+            }
 
 
         }

@@ -39,66 +39,9 @@ fun ShopFilterBubbles(
     }
     Column(
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp, start = 12.dp, end = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                modifier = Modifier.clickable {
-                    viewModel.onTriggerEvent(
-                        ShopEvent.GoToFiltersScreen(
-                            selectedFilter
-                        )
-                    )
-                },
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.FilterAlt,
-                    contentDescription = null,
-                    tint = MaterialTheme.colors.onPrimary
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "Выбрать",
-                    style = MaterialTheme.typography.subtitle1,
-                    color = MaterialTheme.colors.onPrimary
-                )
-            }
-            if (isTitleAlreadyExsists && !filters.contains(selectedFilter)) {
-                Row(
-                    modifier = Modifier.clickable {
-                        selectedFilterIndex?.let {
-                            viewModel.filters[it] = selectedFilter
-//                            viewModel.onTriggerEvent(
-//                                ShopEvent.SearchByFilters(
-//                                    filters = selectedFilter
-//                                )
-//                            )
-                        }
-                    },
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Done,
-                        contentDescription = null,
-                        tint = MaterialTheme.colors.onPrimary
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Сохранить",
-                        style = MaterialTheme.typography.subtitle1,
-                        color = MaterialTheme.colors.onPrimary
-                    )
-                }
-            }
-        }
-
         ExpandableStaggeredHorizontalGrid(
-            modifier = Modifier.padding(4.dp),
+            modifier = Modifier
+                .padding(4.dp),
             isExpanded = isGridExpanded,
             expandButton = {
                 Button(
@@ -126,6 +69,59 @@ fun ShopFilterBubbles(
                 }
             }
         ) {
+            Row(
+                modifier = Modifier
+                    .clickable {
+                    viewModel.onTriggerEvent(
+                        ShopEvent.GoToFiltersScreen(
+                            selectedFilter
+                        )
+                    )
+                }
+                    .padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.FilterAlt,
+                    contentDescription = null,
+                    tint = MaterialTheme.colors.onPrimary
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Выбрать",
+                    style = MaterialTheme.typography.subtitle1,
+                    color = MaterialTheme.colors.onPrimary
+                )
+            }
+            if (isTitleAlreadyExsists && !filters.contains(selectedFilter)) {
+                Row(
+                    modifier = Modifier
+                        .clickable {
+                        selectedFilterIndex?.let {
+                            viewModel.filters[it] = selectedFilter
+//                            viewModel.onTriggerEvent(
+//                                ShopEvent.SearchByFilters(
+//                                    filters = selectedFilter
+//                                )
+//                            )
+                        }
+                    }
+                        .padding(top = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Done,
+                        contentDescription = null,
+                        tint = MaterialTheme.colors.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Сохранить",
+                        style = MaterialTheme.typography.subtitle1,
+                        color = MaterialTheme.colors.onPrimary
+                    )
+                }
+            }
             //gender
             selectedFilter.genders.forEach {
                 FilterBubble(

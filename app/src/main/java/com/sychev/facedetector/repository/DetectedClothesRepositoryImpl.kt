@@ -273,12 +273,6 @@ class DetectedClothesRepositoryImpl(
         return clothesWithBubbles
     }
 
-    override suspend fun getFilterValues(): List<FilterValuesDtoItem> {
-        val result = clothesDetectionApi.getFilterValues()
-        Log.d(TAG, "getFilterValues: $result")
-        return result
-    }
-
     override suspend fun getTopBrands(): List<Brand> {
         val result = clothesDetectionApi.getTopBrands()
         return brandDtoConverter.toDomainModelList(result)

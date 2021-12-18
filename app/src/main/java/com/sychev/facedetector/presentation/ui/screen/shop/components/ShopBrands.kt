@@ -2,6 +2,7 @@ package com.sychev.facedetector.presentation.ui.screen.shop.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
@@ -46,6 +47,35 @@ fun ShopBrands(
         LazyRow(
             state = brandListScrollState,
         ) {
+            if (topBrands.isEmpty()) {
+                repeat(10) {
+                    item {
+                        if (it == 0) {
+                            Spacer(modifier = Modifier.width(28.dp))
+                        }
+                        Column(
+                            modifier = Modifier
+                                .padding(end = 6.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                        Surface(
+                            modifier = Modifier.size(62.dp),
+                            shape = CircleShape,
+                            color = MaterialTheme.colors.background
+                        ) {
+
+                        }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Box(
+                                modifier = Modifier
+                                    .width(62.dp)
+                                    .height(12.dp)
+                                    .background(MaterialTheme.colors.background, MaterialTheme.shapes.large),
+                            )
+                        }
+                    }
+                }
+            }
             itemsIndexed(topBrands) { index: Int, item: Brand ->
                 if (index == 0) {
                     Spacer(modifier = Modifier.width(28.dp))

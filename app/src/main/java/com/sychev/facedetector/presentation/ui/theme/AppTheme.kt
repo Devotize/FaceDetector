@@ -7,7 +7,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 
 private val lightThemeColors = lightColors(
     primary = White,
@@ -28,7 +27,7 @@ fun AppTheme(
 ) {
     MaterialTheme(
         colors = lightThemeColors,
-        typography = RobotoTypography,
+        typography = RubikTypography,
         shapes = AppShapes
     ) {
         Box(

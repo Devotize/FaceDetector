@@ -3,7 +3,6 @@ package com.sychev.facedetector.data.remote.converter
 import android.graphics.Bitmap
 import android.util.Base64
 import com.sychev.facedetector.data.remote.model.BrandDto
-import com.sychev.facedetector.domain.DomainMapper
 import com.sychev.facedetector.domain.brand.Brand
 import com.sychev.facedetector.utils.toBitmap
 

@@ -7,7 +7,7 @@ data class FilterValues (
     var brands: Pair<FilterValue, List<String>> = Pair(FilterValue(), listOf()),
     var itemSizes: List<String> = listOf(),
     var colors: Pair<FilterValue, List<ColorsFilterValue>> = Pair(FilterValue(), listOf()),
-    var providers: List<String> = listOf(),
+    var providers: List<Provider> = listOf(),
     var price: Price = Price()
 ) {
     object Constants{
@@ -39,7 +39,11 @@ data class FilterValue(
 
 data class Price(
     var min: Int = 0,
-    var max: Int? = null,
+    var max: Int = 10000000,
+)
+data class Provider(
+    val id: String,
+    val displayName: String,
 )
 
 

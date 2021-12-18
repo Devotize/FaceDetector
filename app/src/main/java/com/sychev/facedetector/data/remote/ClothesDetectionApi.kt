@@ -6,7 +6,8 @@ import okhttp3.ResponseBody
 import retrofit2.http.*
 
 
-//https://rgsb-back-ml02.mlcrm.rgsbank.ru:8083
+//https://rgsb-back-ml02.mlcrm.rgsbank.ru:8083 - old
+//http://51.250.20.12:5001 - current
 
 interface ClothesDetectionApi {
 
@@ -33,9 +34,6 @@ interface ClothesDetectionApi {
     suspend fun searchClothesByFilters(
         @Body body: HashMap<String, Any>
     ): SearchResult
-
-    @GET("getFilterValues")
-    suspend fun getFilterValues(): List<FilterValuesDtoItem>
 
     @GET("getTopBrands")
     suspend fun getTopBrands(): List<BrandDto>

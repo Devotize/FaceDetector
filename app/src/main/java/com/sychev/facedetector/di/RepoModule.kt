@@ -6,16 +6,14 @@ import com.sychev.facedetector.data.local.dao.ScreenshotDao
 import com.sychev.facedetector.data.local.mapper.ClothesEntityConverter
 import com.sychev.facedetector.data.local.mapper.DetectedClothesEntityConverter
 import com.sychev.facedetector.data.local.mapper.SavedScreenshotConverter
+import com.sychev.facedetector.data.remote.AdminApi
 import com.sychev.facedetector.data.remote.CelebDetectionApi
 import com.sychev.facedetector.data.remote.ClothesDetectionApi
 import com.sychev.facedetector.data.remote.UnsplashApi
 import com.sychev.facedetector.data.remote.converter.BrandDtoConverter
 import com.sychev.facedetector.data.remote.converter.CelebDtoConverter
 import com.sychev.facedetector.data.remote.converter.ClothesDtoConverter
-import com.sychev.facedetector.repository.DetectedClothesRepository
-import com.sychev.facedetector.repository.DetectedClothesRepositoryImpl
-import com.sychev.facedetector.repository.SavedScreenshotRepo
-import com.sychev.facedetector.repository.SavedScreenshotRepoImpl
+import com.sychev.facedetector.repository.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -67,6 +65,10 @@ object RepoModule {
             celebDtoConverter
         )
     }
+
+    @Singleton
+    @Provides
+    fun provideAdminRepo(adminApi: AdminApi): AdminRepository = AdminRepositoryImpl(adminApi)
 
 
 

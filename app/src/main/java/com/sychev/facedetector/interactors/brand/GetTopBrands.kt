@@ -3,6 +3,7 @@ package com.sychev.facedetector.interactors.brand
 import com.sychev.facedetector.domain.brand.Brand
 import com.sychev.facedetector.domain.data.DataState
 import com.sychev.facedetector.repository.DetectedClothesRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 

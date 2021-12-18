@@ -8,7 +8,7 @@ import com.sychev.facedetector.utils.toByteArray
 
 class DetectedClothesEntityConverter: DomainMapper<DetectedClothes, ClothesDetectedEntity> {
 
-    override fun fromDomainModel(model: DetectedClothes): ClothesDetectedEntity {
+    fun fromDomainModel(model: DetectedClothes): ClothesDetectedEntity {
         return ClothesDetectedEntity(
             title = model.title,
             confidence = model.confidence,

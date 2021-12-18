@@ -17,6 +17,8 @@ data class ClothesDtoItem(
     val brandLogo: String,
     @SerializedName("category")
     val category: String,
+    @SerializedName("celebrities")
+    val celebrities: CelebritiesDto,
     @SerializedName("colour")
     val colour: String,
     @SerializedName("description")
@@ -28,13 +30,13 @@ data class ClothesDtoItem(
     @SerializedName("material")
     val material: String,
     @SerializedName("novice_flg")
-    val noviceFlg: Int,
+    val noviceFlg: String,
     @SerializedName("num_reviews")
-    val numReviews: Double,
+    val numReviews: String,
     @SerializedName("pic_url")
     val picUrl: String,
     @SerializedName("popular_flg")
-    val popularFlg: Int,
+    val popularFlg: String,
     @SerializedName("premium")
     val premium: String,
     @SerializedName("price")
@@ -44,11 +46,18 @@ data class ClothesDtoItem(
     @SerializedName("provider")
     val provider: String,
     @SerializedName("rating")
-    val rating: Double,
+    val rating: String,
     @SerializedName("size")
     val size: String,
     @SerializedName("subcategory")
     val subcategory: String,
     @SerializedName("url")
     val url: String
+)
+
+data class CelebritiesDto(
+    @SerializedName("image")
+    val image: String,
+    @SerializedName("name")
+    val name: String
 )

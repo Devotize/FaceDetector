@@ -135,12 +135,13 @@ constructor(
     }
 
     private fun getCelebPics(seed: IntRange) {
+        val sizes = arrayOf(seed.first, (seed.last / 1.5).toInt(), seed.last)
         loading.value = true
         isLoadCelebsCalled.value = true
         getCelebPics.execute(page).onEach { dataState ->
             loading.value = dataState.loading
             dataState.data?.let{ celebs ->
-                val mappedCelebs =  celebs.map { CelebImage(image = it.image, height = seed.random()) }
+                val mappedCelebs =  celebs.map { CelebImage(image = it.image, height = sizes[(sizes.indices).random()]) }
                 celebImages.value.addAll(mappedCelebs)
                 // api pagination not working for now
 //                page++
@@ -182,12 +183,16 @@ constructor(
     private fun detectClothes(context: Context, resizedBitmap: Bitmap, celebImage: CelebImage, callback: (Boolean) -> Unit) {
         detectClothesLocal.execute(context = context, bitmap = resizedBitmap)
             .onEach {dataState ->
+                celebImages.value.forEachIndexed { index, it ->
+                    if (it == celebImage) {
+                        celebImages.value[index].isProcessed = true
+                    }
+                }
                 callback(dataState.loading)
                 dataState.data?.let{
                     celebImages.value.forEachIndexed() { index, ci ->
                         if (ci == celebImage) {
                             celebImages.value[index].detectedClothes.addAll(it)
-                            celebImages.value[index].isProcessed = true
                             refreshCelebImagesData()
                             it.forEach {
                                 searchClothes(

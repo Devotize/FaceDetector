@@ -1,6 +1,7 @@
 package com.sychev.facedetector.di
 
 import com.google.gson.GsonBuilder
+import com.sychev.facedetector.data.remote.AdminApi
 import com.sychev.facedetector.data.remote.CelebDetectionApi
 import com.sychev.facedetector.data.remote.ClothesDetectionApi
 import com.sychev.facedetector.data.remote.UnsplashApi
@@ -78,11 +79,22 @@ object NetworkModule {
     @Provides
     fun provideClothesDetectionService(okHttpClient: OkHttpClient): ClothesDetectionApi {
         return Retrofit.Builder()
-            .baseUrl("https://rgsb-back-ml02.mlcrm.rgsbank.ru:8083/")
+            .baseUrl("http://51.250.20.12:5001/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
             .build()
             .create(ClothesDetectionApi::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideClothesAdminApi(okHttpClient: OkHttpClient): AdminApi {
+        return Retrofit.Builder()
+            .baseUrl("http://51.250.20.12:5002")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
+            .build()
+            .create(AdminApi::class.java)
     }
 
     @Singleton

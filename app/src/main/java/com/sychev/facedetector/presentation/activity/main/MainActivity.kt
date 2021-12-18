@@ -26,6 +26,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.ui.components.BottomNavigationBar
+import com.sychev.facedetector.presentation.ui.components.EnterAnimation
 import com.sychev.facedetector.presentation.ui.components.GenericDialog
 import com.sychev.facedetector.presentation.ui.detectorAssitant.AssistantDetector
 import com.sychev.facedetector.presentation.ui.detectorAssitant.AssistantManager
@@ -102,7 +103,7 @@ class MainActivity : AppCompatActivity() {
             bundle?.getBoolean("from_assistant_launch") ?: false
         var firstLaunch = true
         mainViewModel.onTriggerEvent(MainEvent.GetDetectedClothesEvent)
-
+        supportFragmentManager
 
         setContent {
 
@@ -159,7 +160,9 @@ class MainActivity : AppCompatActivity() {
 
                             composable(Screen.FiltersScreen.route) {
                                 hasNavBottomBar = false
-                                FiltersScreen(viewModel = this@MainActivity.shopViewModel)
+                                EnterAnimation {
+                                    FiltersScreen(viewModel = this@MainActivity.shopViewModel)
+                                }
                             }
 
                             composable(Screen.OwnImage.route) {
@@ -185,11 +188,13 @@ class MainActivity : AppCompatActivity() {
                                     "args"
                                 )?.let {
                                     val detailViewModel = hiltViewModel<ClothesDetailViewModel>(navController.getBackStackEntry(Screen.ClothesDetail.route))
-                                    ClothesDetailScreen(
-                                        clothes = it[0],
-                                        viewModel = detailViewModel,
-                                        onBackClick = {onBackPressed()}
-                                    )
+                                    EnterAnimation {
+                                        ClothesDetailScreen(
+                                            clothes = it[0],
+                                            viewModel = detailViewModel,
+                                            onBackClick = { onBackPressed() }
+                                        )
+                                    }
                                 }
                             }
                             composable(Screen.ClothesListRetail.route) { navBackStackEntry ->
@@ -207,11 +212,13 @@ class MainActivity : AppCompatActivity() {
                                 }
 
                                 val retailViewModel = hiltViewModel<ClothesListRetailViewModel>(navController.getBackStackEntry(Screen.ClothesListRetail.route))
-                                ClothesListRetailScreen(
-                                    viewModel = retailViewModel,
-                                    detectedClothes = clothesList,
-                                    onBackClick = {onBackPressed()},
-                                )
+                                EnterAnimation {
+                                    ClothesListRetailScreen(
+                                        viewModel = retailViewModel,
+                                        detectedClothes = clothesList,
+                                        onBackClick = { onBackPressed() },
+                                    )
+                                }
                             }
                             if (firstLaunch) {
                                     navigationManager.navigate(Screen.FavoriteClothesList)

@@ -155,6 +155,8 @@ class DetectClothesLocal {
                         gender = gender,
                     ))
                 }
+            } else {
+                Log.d(TAG, "detectClothes: sclore lower than min")
             }
         }
         return detections

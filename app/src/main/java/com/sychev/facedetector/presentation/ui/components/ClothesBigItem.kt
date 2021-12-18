@@ -43,9 +43,8 @@ fun ClothesBigItem(
     onRemoveFromFavoriteClick: (Clothes) -> Unit,
     onShoppingCartClick: () -> Unit = {},
     onShareClick: () -> Unit,
-    filterValues: FilterValues,
 ) {
-    val showDetails = remember{ mutableStateOf(false) }
+    val showDetails = remember { mutableStateOf(false) }
     val context = LocalContext.current
 
 
@@ -61,139 +60,113 @@ fun ClothesBigItem(
                 crossfade(true)
                 error(R.drawable.clothes_default_icon_gray)
             }
-                Surface(
+            Surface(
+                modifier = Modifier
+                    .wrapContentSize(),
+                shape = MaterialTheme.shapes.large,
+            ) {
+                Image(
                     modifier = Modifier
-                        .wrapContentSize(),
-                    shape = MaterialTheme.shapes.large,
-                ){
-                    Image(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(148.dp),
-                        painter = imagePainter,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop
-                    )
-                }
+                        .fillMaxWidth()
+                        .height(214.dp),
+                    painter = imagePainter,
+                    contentDescription = null,
+                    contentScale = ContentScale.FillHeight
+                )
+            }
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    modifier = Modifier.fillMaxWidth(0.8f),
-                    text = "${clothes.itemCategory} ${clothes.brand}",
-                    style = MaterialTheme.typography.h5,
-                    color = Color.Black
-                )
-
-                Surface(
-                    modifier = Modifier
-                        .wrapContentSize(),
-                    color = MaterialTheme.colors.onSurface,
-                    shape = CircleShape
-                ) {
+                Row(modifier = Modifier.fillMaxWidth(0.6f)) {
+                    Text(
+                        modifier = Modifier,
+                        text = "${clothes.itemCategory} ${clothes.brand}    ${clothes.price.toString().toMoneyString()} ₽",
+                        style = MaterialTheme.typography.h6,
+                        color = Color.Black
+                    )
+//                    Spacer(modifier = Modifier.width(6.dp))
+//                    Text(
+//                        modifier = Modifier,
+//                        text = "${clothes.price.toString().toMoneyString()} ₽",
+//                        style = MaterialTheme.typography.h6,
+//                        maxLines = 1,
+//                        color = MaterialTheme.colors.onSurface
+//                    )
+                }
                     Row(
                         modifier = Modifier.wrapContentSize(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            modifier = Modifier
-                                .padding(8.dp, 2.dp, 0.dp, 2.dp)
-                                .width(15.dp)
-                                .height(15.dp),
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = Color.Yellow
-                        )
-                        Text(
-                            modifier = Modifier.padding(2.dp, 2.dp, 8.dp, 2.dp),
-                            text = "${clothes.rating}",
-                            color = Color.White,
-                            style = MaterialTheme.typography.subtitle2
-                        )
-                    }
-                }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    modifier = Modifier
-                        .padding(0.dp,4.dp,0.dp,0.dp),
-                    text = "${clothes.price.toString().toMoneyString()} ₽",
-                    style = MaterialTheme.typography.h4,
-                    color = MaterialTheme.colors.onSurface
-                )
-                if (clothes.brandLogo.isNotEmpty()) {
-                    val bytes = Base64.decode(clothes.brandLogo, 0)
-                    Image(
-                        modifier = Modifier
-                            .fillMaxWidth(.3f)
-                            .height(50.dp),
-                        bitmap = bytes.toBitmap().asImageBitmap(),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop
-                    )
-                }
-                Row(
-                    modifier = Modifier.wrapContentSize(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconButton(
-                        modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp)
-                            .padding(0.dp, 0.dp, 0.dp, 4.dp),
-                        onClick = {
-                            if (clothes.isFavorite) {
-                                onRemoveFromFavoriteClick(clothes)
-                            } else {
-                                onAddToFavoriteClick(clothes)
+                        Row(
+                            modifier = Modifier.wrapContentSize(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            IconButton(
+                                modifier = Modifier
+                                    .width(24.dp)
+                                    .height(24.dp),
+                                onClick = {
+                                    if (clothes.isFavorite) {
+                                        onRemoveFromFavoriteClick(clothes)
+                                    } else {
+                                        onAddToFavoriteClick(clothes)
+                                    }
+                                },
+                            ) {
+                                Icon(
+                                    modifier = Modifier,
+                                    imageVector = Icons.Default.Favorite,
+                                    contentDescription = null,
+                                    tint = if (clothes.isFavorite) Color.Red else MaterialTheme.colors.primaryVariant
+                                )
                             }
-                        },
-                    ) {
-                        Icon(
-                            modifier = Modifier,
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = null,
-                            tint = if (clothes.isFavorite) Color.Red else MaterialTheme.colors.primaryVariant
-                        )
-                    }
-                    IconButton(
-                        modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp)
-                            .padding(4.dp, 0.dp, 0.dp, 0.dp),
-                        onClick = {
-                            onShareClick()
+                            Spacer(modifier = Modifier.width(12.dp))
+                            IconButton(
+                                modifier = Modifier
+                                    .width(24.dp)
+                                    .height(24.dp),
+                                onClick = {
+                                    onShareClick()
+                                }
+                            ) {
+                                Icon(
+                                    modifier = Modifier,
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colors.primaryVariant
+                                )
+                            }
                         }
-                    ) {
-                        Icon(
-                            modifier = Modifier,
-                            imageVector = Icons.Default.Share,
-                            contentDescription = null,
-                            tint = MaterialTheme.colors.primaryVariant
-                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        if (clothes.rating > 0.0) {
+                            Rating(rating = clothes.rating)
+                        }
+
+
                     }
-                }
+                    
             }
-            Column(modifier = Modifier.animateContentSize(spring(1.75f))) {
+            //price
+            
+            Row(modifier = Modifier.animateContentSize(spring(1.75f))) {
 //                if (showDetails.value) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    clothesList.forEach {
-                        ShopComponent(
-                            clothes = it,
-                            filterValues = filterValues,
-                            onShoppingCartClick = onShoppingCartClick
-                        )
-                        Spacer(modifier = Modifier.padding(bottom = 8.dp))
-                    }
+                Spacer(modifier = Modifier.height(4.dp))
+                clothesList.forEach {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    ShopComponent(
+                        clothes = it,
+                        onShoppingCartClick = onShoppingCartClick
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                }
 //                }
             }
+            Spacer(modifier = Modifier.height(8.dp))
 
 //            Row(
 //                modifier = Modifier
@@ -219,167 +192,32 @@ fun ClothesBigItem(
 @Composable
 fun ShopComponent(
     clothes: Clothes,
-    filterValues: FilterValues,
     onShoppingCartClick: () -> Unit
 ) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        shape = MaterialTheme.shapes.large,
-        border = BorderStroke(1.dp, MaterialTheme.colors.primaryVariant)
-    ) {
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
+    Column {
+        Text(
+            text = clothes.provider,
+            style = MaterialTheme.typography.caption,
+            color = MaterialTheme.colors.onBackground
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = "${clothes.price.toString().toMoneyString()} ₽",
+            style = MaterialTheme.typography.subtitle2,
+            color = MaterialTheme.colors.onSurface
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        IconButton(
+            modifier = Modifier
+                .size(18.dp),
+            onClick = onShoppingCartClick,
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(0.70f),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp, 8.dp, 8.dp, 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = clothes.provider,
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onBackground
-                    )
-                    Text(
-                        text = "${clothes.price.toString().toMoneyString()} ₽",
-                        style = MaterialTheme.typography.overline,
-                        color = MaterialTheme.colors.onSurface
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp, 0.dp, 8.dp, 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Size",
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onBackground
-                    )
-                    Text(
-                        text = clothes.size,
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onSurface
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp, 0.dp, 8.dp, 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Color",
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onBackground
-                    )
-                    Row {
-                        filterValues.colors.second.forEach {
-                            if (it.colorName == clothes.color) {
-                                OutlinedButton(
-                                    modifier = Modifier
-                                        .width(15.dp)
-                                        .height(15.dp)
-                                        .clickable {},
-                                    shape = CircleShape,
-                                    border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
-                                    onClick = {},
-                                    colors = ButtonDefaults.buttonColors(backgroundColor = ("#" + it.colorHex).color)
-                                ){}
-                                Spacer(modifier = Modifier.width(6.dp))
-                            }
-                        }
-//                        OutlinedButton(
-//                            modifier = Modifier
-//                                .width(15.dp)
-//                                .height(15.dp)
-//                                .clickable {},
-//                            shape = CircleShape,
-//                            border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
-//                            onClick = {},
-//                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
-//                        ){}
-//                        Spacer(modifier = Modifier.width(6.dp))
-//                        OutlinedButton(
-//                            modifier = Modifier
-//                                .width(15.dp)
-//                                .height(15.dp)
-//                                .clickable {},
-//                            shape = CircleShape,
-//                            border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
-//                            onClick = {},
-//                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF8C8C))
-//                        ){
-//                        }
-//                        Spacer(modifier = Modifier.width(6.dp))
-//                        OutlinedButton(
-//                            modifier = Modifier
-//                                .width(15.dp)
-//                                .height(15.dp)
-//                                .clickable {},
-//                            shape = CircleShape,
-//                            border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
-//                            onClick = {},
-//                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF00790C))
-//                        ){
-//                        }
-//                        Spacer(modifier = Modifier.width(6.dp))
-//                        OutlinedButton(
-//                            modifier = Modifier
-//                                .width(15.dp)
-//                                .height(15.dp)
-//                                .clickable {},
-//                            shape = CircleShape,
-//                            border = BorderStroke(1.dp, MaterialTheme.colors.onPrimary),
-//                            onClick = {},
-//                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF00A3FF))
-//                        ){
-//                        }
-
-                    }
-                }
-
-            }
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .align(Alignment.CenterVertically)) {
-                Button(
-                    modifier = Modifier
-                        .width(45.dp)
-                        .height(45.dp)
-                        .align(Alignment.Center),
-                    onClick = {
-                              onShoppingCartClick()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = MaterialTheme.colors.onPrimary,
-                        contentColor = MaterialTheme.colors.primary
-                    ),
-                    shape = CircleShape,
-                    contentPadding = PaddingValues(2.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.ShoppingCart,
-                        contentDescription = null,
-                    )
-                }
-            }
+            Icon(
+                imageVector = Icons.Outlined.ShoppingCart,
+                contentDescription = null,
+                tint = MaterialTheme.colors.onPrimary
+            )
         }
-
     }
 }
 

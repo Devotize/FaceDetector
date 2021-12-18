@@ -12,7 +12,7 @@ import java.io.ByteArrayOutputStream
 
 
 class SavedScreenshotConverter: DomainMapper<SavedScreenshot, ScreenshotEntity> {
-    override fun fromDomainModel(model: SavedScreenshot): ScreenshotEntity {
+    fun fromDomainModel(model: SavedScreenshot): ScreenshotEntity {
         return ScreenshotEntity(
             image = model.image.toByteArray(),
             celebName = model.celebName

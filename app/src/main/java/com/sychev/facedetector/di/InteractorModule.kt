@@ -13,6 +13,7 @@ import com.sychev.facedetector.interactors.filter.GetFilterValues
 import com.sychev.facedetector.interactors.gender.DefineGender
 import com.sychev.facedetector.interactors.pics.GetCelebPics
 import com.sychev.facedetector.interactors.pics.GetRandomPics
+import com.sychev.facedetector.repository.AdminRepository
 import com.sychev.facedetector.repository.DetectedClothesRepository
 import dagger.Module
 import dagger.Provides
@@ -92,9 +93,9 @@ object InteractorModule {
 
     @Provides
     fun provideGetFilterValues(
-        clothesRepository: DetectedClothesRepository,
+        adminRepository: AdminRepository,
         filterValues: FilterValues
-    ): GetFilterValues = GetFilterValues(clothesRepository, filterValues)
+    ): GetFilterValues = GetFilterValues(adminRepository, filterValues)
 
     @Provides
     fun provideGetTopBrands(
@@ -115,7 +116,6 @@ object InteractorModule {
     fun provideClearDetectedClothes(
         clothesRepository: DetectedClothesRepository
     ) = ClearDetectedClothes(clothesRepository)
-
 }
 
 

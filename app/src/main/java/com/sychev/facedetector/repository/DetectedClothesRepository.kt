@@ -47,7 +47,6 @@ interface DetectedClothesRepository {
         clothesFilter: ClothesFilter,
     ): ClothesWithBubbles
 
-    suspend fun getFilterValues(): List<FilterValuesDtoItem>
 
     suspend fun getTopBrands(): List<Brand>
 

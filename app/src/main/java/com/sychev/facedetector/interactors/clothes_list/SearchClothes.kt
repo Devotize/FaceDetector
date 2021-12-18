@@ -7,6 +7,7 @@ import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.data.DataState
 import com.sychev.facedetector.presentation.ui.screen.shop.ClothesFilter
 import com.sychev.facedetector.repository.DetectedClothesRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlin.Exception

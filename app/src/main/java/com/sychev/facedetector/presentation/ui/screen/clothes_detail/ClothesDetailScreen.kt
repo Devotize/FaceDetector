@@ -30,10 +30,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
 import coil.compose.rememberImagePainter
 import coil.transform.RoundedCornersTransformation
-import com.gowtham.ratingbar.RatingBar
-import com.gowtham.ratingbar.RatingBarStyle
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.presentation.ui.components.Rating
 import com.sychev.facedetector.presentation.ui.components.SimilarClothesCard
 import com.sychev.facedetector.utils.toBitmap
 import com.sychev.facedetector.utils.toMoneyString
@@ -161,36 +160,19 @@ fun ClothesDetailScreen(
                         style = MaterialTheme.typography.h3,
                         color = MaterialTheme.colors.onPrimary
                     )
-                    Surface(
-                        modifier = Modifier
-                            .wrapContentSize(),
-                        color = MaterialTheme.colors.onSurface,
-                        shape = CircleShape
-                    ) {
-                        Row(
-                            modifier = Modifier.wrapContentSize(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(8.dp, 2.dp, 0.dp, 2.dp)
-                                    .width(15.dp)
-                                    .height(15.dp),
-                                imageVector = Icons.Default.Star,
-                                contentDescription = null,
-                                tint = Color.Yellow
-                            )
-                            Text(
-                                modifier = Modifier.padding(2.dp, 2.dp, 8.dp, 2.dp),
-                                text = "${clothes.rating}",
-                                color = Color.White,
-                                style = MaterialTheme.typography.subtitle2
-                            )
-                        }
-                    }
+
                     Row(
                         modifier = Modifier,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        Rating(
+                            rating = clothes.rating,
+                            starSize = 24.dp,
+                            textStyle = MaterialTheme.typography.subtitle1
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+
                         IconButton(
                             modifier = Modifier
                                 .wrapContentSize(),
@@ -213,7 +195,6 @@ fun ClothesDetailScreen(
                         }
                         Spacer(
                             modifier = Modifier
-                                .height(2.dp)
                                 .width(8.dp),
                         )
                         IconButton(
@@ -239,13 +220,13 @@ fun ClothesDetailScreen(
                             startActivity(context, browserIntent, null)
                         },
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = MaterialTheme.colors.secondary
+                            backgroundColor = MaterialTheme.colors.onPrimary
                         )
                     ) {
                         Text(
                             text = "Купить",
                             style = MaterialTheme.typography.button,
-                            color = MaterialTheme.colors.onPrimary
+                            color = MaterialTheme.colors.primary
                         )
 
                     }

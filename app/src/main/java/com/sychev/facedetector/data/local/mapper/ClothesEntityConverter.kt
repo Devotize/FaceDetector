@@ -6,7 +6,7 @@ import com.sychev.facedetector.domain.DomainMapper
 
 class ClothesEntityConverter: DomainMapper<Clothes, ClothesEntity> {
 
-    override fun fromDomainModel(model: Clothes): ClothesEntity {
+    fun fromDomainModel(model: Clothes): ClothesEntity {
         return ClothesEntity(
             url = model.clothesUrl,
             image = model.picUrl,
