@@ -1,8 +1,13 @@
 package com.sychev.facedetector.utils
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
@@ -117,6 +122,17 @@ fun String.toWordsList(): List<String> {
     }
 
     return words
+}
+
+fun Uri.toBitmap(context: Context): Bitmap {
+    return if (Build.VERSION.SDK_INT < 28) {
+        MediaStore.Images
+            .Media.getBitmap(context.contentResolver, this)
+    } else {
+        val source = ImageDecoder
+            .createSource(context.contentResolver, this)
+        ImageDecoder.decodeBitmap(source).copy(Bitmap.Config.RGBA_F16, true)
+    }
 }
 
 fun IntRange.random() =

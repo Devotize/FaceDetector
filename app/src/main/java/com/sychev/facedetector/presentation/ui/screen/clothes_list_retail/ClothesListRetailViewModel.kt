@@ -46,7 +46,7 @@ constructor(
     private val searchClothes: SearchClothes,
     private val navigationManager: NavigationManager,
 ): ViewModel() {
-    val clothesChips = mutableStateListOf<Clothes>()
+    val clothesChips = mutableStateOf<List<Clothes>>(listOf())
     val clothesChipsContainsIndexes = mutableStateListOf<List<Int>>()
     val listOfClothesList = mutableStateListOf<ArrayList<Clothes>>()
     val similarClothes = mutableStateMapOf<Int, List<Clothes>>()
@@ -88,7 +88,7 @@ constructor(
             loading.value = dataState.loading
             dataState.data?.let {
                 listOfClothesList.add(it as ArrayList<Clothes>)
-                clothesChips.add(it[0])
+                addChip(it[0])
                 val indexesToAdd = ArrayList<Int>()
                 for (i in 0 until it.size) {
                     indexesToAdd.add(containIndexToAdd)
@@ -209,6 +209,19 @@ constructor(
 
                 })
 
+    }
+
+    private fun addChip(chipToAdd: Clothes) {
+        val oldChips = clothesChips.value
+        val newChips = ArrayList<Clothes>()
+        newChips.addAll(oldChips + chipToAdd)
+        clothesChips.value = newChips
+    }
+
+    fun addItem(item: Clothes) {
+        addChip(item)
+        listOfClothesList.add(arrayListOf(item))
+        clothesChipsContainsIndexes.add(listOf(listOfClothesList.lastIndex + 1))
     }
 
 }

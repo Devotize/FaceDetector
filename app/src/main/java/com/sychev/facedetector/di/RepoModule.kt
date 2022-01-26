@@ -2,6 +2,7 @@ package com.sychev.facedetector.di
 
 import com.sychev.facedetector.data.local.dao.ClothesDao
 import com.sychev.facedetector.data.local.dao.DetectedClothesDao
+import com.sychev.facedetector.data.local.dao.ImageDataDao
 import com.sychev.facedetector.data.local.dao.ScreenshotDao
 import com.sychev.facedetector.data.local.mapper.ClothesEntityConverter
 import com.sychev.facedetector.data.local.mapper.DetectedClothesEntityConverter
@@ -70,6 +71,8 @@ object RepoModule {
     @Provides
     fun provideAdminRepo(adminApi: AdminApi): AdminRepository = AdminRepositoryImpl(adminApi)
 
-
+    @Singleton
+    @Provides
+    fun provideImageDataRepo(imageDataDao: ImageDataDao): ImageDataRepository = ImageDataRepositoryImpl(imageDataDao = imageDataDao)
 
 }

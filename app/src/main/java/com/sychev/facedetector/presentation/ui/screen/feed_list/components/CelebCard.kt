@@ -4,10 +4,7 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -23,9 +20,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CelebCard(
     modifier: Modifier = Modifier,
-    imageHeight: Dp,
     image: Bitmap,
-    maxHeight: Dp,
     onClick: (Bitmap) -> Unit,
 ) {
     Surface(
@@ -36,7 +31,7 @@ fun CelebCard(
     ) {
         BoxWithConstraints(
             modifier = Modifier
-                .height(imageHeight)
+                .wrapContentHeight()
                 .fillMaxWidth(),
         ) {
             val imageWidthPx =
@@ -64,7 +59,7 @@ fun CelebCard(
                     },
                 bitmap = image.asImageBitmap(),
                 contentDescription = null,
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.FillWidth
             )
 
 

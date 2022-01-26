@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 private val lightThemeColors = lightColors(
     primary = White,
     primaryVariant = Grey4,
-    secondary = Yellow,
+    secondary = Blue1,
     background = Grey1,
     surface = White,
     error = Red1,

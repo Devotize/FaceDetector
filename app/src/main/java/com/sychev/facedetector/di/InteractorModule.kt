@@ -11,10 +11,13 @@ import com.sychev.facedetector.interactors.detected_clothes.GetDetectedClothes
 import com.sychev.facedetector.interactors.detected_clothes.InsertDetectedClothes
 import com.sychev.facedetector.interactors.filter.GetFilterValues
 import com.sychev.facedetector.interactors.gender.DefineGender
+import com.sychev.facedetector.interactors.image.GetImagesFromCache
+import com.sychev.facedetector.interactors.image.InsertImageToCache
 import com.sychev.facedetector.interactors.pics.GetCelebPics
 import com.sychev.facedetector.interactors.pics.GetRandomPics
 import com.sychev.facedetector.repository.AdminRepository
 import com.sychev.facedetector.repository.DetectedClothesRepository
+import com.sychev.facedetector.repository.ImageDataRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -116,7 +119,18 @@ object InteractorModule {
     fun provideClearDetectedClothes(
         clothesRepository: DetectedClothesRepository
     ) = ClearDetectedClothes(clothesRepository)
+
+    @Provides
+    fun provideInsertImageToCache(
+        imageDataRepository: ImageDataRepository
+    ) = InsertImageToCache(imageDataRepository)
+
+    @Provides
+    fun provideGetImagesFromCache(
+        imageDataRepository: ImageDataRepository
+    ) = GetImagesFromCache(imageDataRepository)
 }
+
 
 
 

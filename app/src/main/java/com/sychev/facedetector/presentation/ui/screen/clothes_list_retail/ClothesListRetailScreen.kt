@@ -2,52 +2,28 @@ package com.sychev.facedetector.presentation.ui.screen.clothes_list_retail
 
 import android.content.Intent
 import android.net.Uri
-import android.util.Base64
 import android.util.Log
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import coil.compose.rememberImagePainter
 import com.google.accompanist.pager.*
-import com.gowtham.ratingbar.RatingBar
-import com.gowtham.ratingbar.RatingBarStyle
-import com.sychev.facedetector.R
-import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.ui.components.ClothesBigItem
 import com.sychev.facedetector.presentation.ui.components.ClothesChip
-import com.sychev.facedetector.presentation.ui.components.ShopComponent
 import com.sychev.facedetector.presentation.ui.components.SimilarClothesCard
 import com.sychev.facedetector.utils.TAG
-import com.sychev.facedetector.utils.toBitmap
-import com.sychev.facedetector.utils.toMoneyString
 import io.iamjosephmj.flinger.bahaviours.StockFlingBehaviours
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 
 @ExperimentalPagerApi
@@ -72,9 +48,9 @@ fun ClothesListRetailScreen(
         }
     }
 
-    val clothesChips = viewModel.clothesChips
+    val clothesChips = viewModel.clothesChips.value
     // looking for wich list of clothes is active
-    val bigClothesLazyList = rememberLazyListState()
+    val bigClothesLazyListState = rememberLazyListState()
     val clothesChipsContainsIndexes = viewModel.clothesChipsContainsIndexes
 
     if (viewModel.listOfClothesList.isEmpty()) {
@@ -114,16 +90,15 @@ fun ClothesListRetailScreen(
                             ClothesChip(
                                 clothes = item,
                                 isSelected = clothesChipsContainsIndexes[index].contains(
-                                    bigClothesLazyList.firstVisibleItemIndex
+                                    bigClothesLazyListState.firstVisibleItemIndex + 1
                                 ),
                                 onClick = {
                                     coroutineScope.launch {
-                                        bigClothesLazyList.animateScrollToItem(
+                                        bigClothesLazyListState.animateScrollToItem(
                                             clothesChipsContainsIndexes[index].first()
                                         )
 
                                     }
-//                            viewModel.onTriggerEvent(ClothesListRetailEvent.OnSelectChipEvent(item, context = context))
                                 }
                             )
                         }
@@ -132,12 +107,12 @@ fun ClothesListRetailScreen(
 
             }
             LazyColumn(
-                state = bigClothesLazyList,
+                state = bigClothesLazyListState,
                 flingBehavior = StockFlingBehaviours.smoothScroll(),
             ) {
                 Log.d(
                     TAG,
-                    "ClothesListRetailScreen: bigClothesLazyList: ${bigClothesLazyList.firstVisibleItemIndex}"
+                    "ClothesListRetailScreen: bigClothesLazyList: ${bigClothesLazyListState.firstVisibleItemIndex}"
                 )
                 viewModel.listOfClothesList.forEachIndexed { listIndex, it ->
                     itemsIndexed(it) { index, item ->
@@ -216,11 +191,12 @@ fun ClothesListRetailScreen(
                                         SimilarClothesCard(
                                             modifier = Modifier
                                                 .clickable {
-                                                    viewModel.onTriggerEvent(
-                                                        ClothesListRetailEvent.GoToDetailScreen(
-                                                            clothes = item
-                                                        )
-                                                    )
+                                                    if (!viewModel.listOfClothesList.contains(arrayListOf(item))) {
+                                                        viewModel.addItem(item)
+                                                    }
+                                                    coroutineScope.launch {
+                                                        bigClothesLazyListState.animateScrollToItem(viewModel.listOfClothesList.indexOf(arrayListOf(item)))
+                                                    }
                                                 },
                                             clothes = item,
                                             onShoppingCartClick = {

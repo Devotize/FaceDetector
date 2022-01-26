@@ -55,79 +55,17 @@ fun BottomNavigationBar(
             selectedContentColor = MaterialTheme.colors.secondary,
             unselectedContentColor = MaterialTheme.colors.onBackground
         )
-        //fav screen
-        BottomNavigationItem(
-            icon = {
-                if (Screen.FavoriteClothesList.route != backStackEntry.value?.destination?.route)
-                    Icon(
-                    imageVector = Icons.Outlined.FavoriteBorder,
-                    contentDescription = null
-                    )
-                else
-                    Icon(
-                    imageVector = Icons.Filled.Favorite,
-                    contentDescription = null
-                    )
-            },
-            selected = Screen.FavoriteClothesList.route == backStackEntry.value?.destination?.route,
-            onClick = {
-                navController.navigate(Screen.FavoriteClothesList.route) {
-                    popUpTo(navController.graph.findStartDestination().id)
-                    launchSingleTop = true
-                }
-            },
-            selectedContentColor = MaterialTheme.colors.secondary,
-            unselectedContentColor = MaterialTheme.colors.onBackground
-        )
-        //assistant
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    modifier = Modifier.size(35.dp),
-                    imageVector = Icons.Filled.CenterFocusStrong,
-                    contentDescription = null
-                )
-                   },
-            selected = false,
-            onClick = { if (!AssistantDetector.isShown) {
-                launchAssistant()
-            } },
-        )
-        //shop screen
-        BottomNavigationItem(
-            icon = {
-                if (Screen.Shop.route != backStackEntry.value?.destination?.route)
-                    Icon(
-                     imageVector = Icons.Outlined.ShoppingCart,
-                     contentDescription = null
-                    )
-                else
-                    Icon(
-                        imageVector = Icons.Filled.ShoppingCart,
-                        contentDescription = null
-                    )
-            },
-            selected = Screen.Shop.route == backStackEntry.value?.destination?.route,
-            onClick = {
-                navController.navigate(Screen.Shop.route) {
-                    popUpTo(navController.graph.findStartDestination().id)
-                    launchSingleTop = true
-                }
-            },
-            selectedContentColor = MaterialTheme.colors.secondary,
-            unselectedContentColor = MaterialTheme.colors.onBackground
-        )
         //own image screen
         BottomNavigationItem(
             icon = {
                 if (Screen.OwnImage.route != backStackEntry.value?.destination?.route)
                     Icon(
-                        imageVector = Icons.Outlined.IosShare,
+                        imageVector = Icons.Outlined.Panorama,
                         contentDescription = null
                     )
                 else
                     Icon(
-                        imageVector = Icons.Filled.IosShare,
+                        imageVector = Icons.Filled.Panorama,
                         contentDescription = null
                     )
             },
@@ -137,6 +75,31 @@ fun BottomNavigationBar(
                         popUpTo(navController.graph.findStartDestination().id)
                         launchSingleTop = true
                     }
+
+            },
+            selectedContentColor = MaterialTheme.colors.secondary,
+            unselectedContentColor = MaterialTheme.colors.onBackground
+        )
+        //camera screen
+        BottomNavigationItem(
+            icon = {
+                if (Screen.CameraScreen.route != backStackEntry.value?.destination?.route)
+                    Icon(
+                        imageVector = Icons.Outlined.CameraAlt,
+                        contentDescription = null
+                    )
+                else
+                    Icon(
+                        imageVector = Icons.Filled.CameraAlt,
+                        contentDescription = null
+                    )
+            },
+            selected = Screen.CameraScreen.route == backStackEntry.value?.destination?.route,
+            onClick = {
+                navController.navigate(Screen.CameraScreen.route) {
+                    popUpTo(navController.graph.findStartDestination().id)
+                    launchSingleTop = true
+                }
 
             },
             selectedContentColor = MaterialTheme.colors.secondary,

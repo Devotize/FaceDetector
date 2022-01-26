@@ -112,6 +112,38 @@ class SearchClothes(
         }
     }
 
+    fun fakeExecute(
+        detectedClothes: DetectedClothes, context: Context
+    ) : Flow<DataState<List<Clothes>>> = flow {
+        emit(DataState.loading())
+        delay(1000)
+        val clothes: List<Clothes> = listOf(
+            Clothes(
+                brand = "Gucci",
+                gender = "женский",
+                itemId = "1",
+                picUrl = "https://images.wbstatic.net/big/new/47870000/47871278-1.avif",
+                price = 865,
+                priceDiscount = 0.0,
+                provider = "wildberries",
+                rating = 4.7,
+                clothesUrl = "https://www.wildberries.ru/catalog/47871278/detail.aspx?targetUrl=EX",
+                itemCategory = "scarf",
+                color = "blue",
+                brandLogo = "",
+                description = "description here",
+                material = "silk",
+                noviceFlg = 1,
+                numReviews = 4.0,
+                popularFlg = 1,
+                premium = "premium",
+                size = "size",
+                subcategory = "scarf",
+            )
+        )
+        emit(DataState.success(clothes))
+    }
+
 
 
 }

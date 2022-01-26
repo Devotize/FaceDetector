@@ -79,7 +79,7 @@ object NetworkModule {
     @Provides
     fun provideClothesDetectionService(okHttpClient: OkHttpClient): ClothesDetectionApi {
         return Retrofit.Builder()
-            .baseUrl("http://51.250.20.12:5001/")
+            .baseUrl("http://51.250.16.91:5001/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
             .build()

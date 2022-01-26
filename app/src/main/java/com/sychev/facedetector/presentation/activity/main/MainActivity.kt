@@ -2,6 +2,7 @@ package com.sychev.facedetector.presentation.activity.main
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -19,10 +20,12 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.presentation.ui.components.BottomNavigationBar
@@ -33,11 +36,14 @@ import com.sychev.facedetector.presentation.ui.detectorAssitant.AssistantManager
 import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
 import com.sychev.facedetector.presentation.ui.screen.FavoriteClothesListScreen
 import com.sychev.facedetector.presentation.ui.navigation.Screen
+import com.sychev.facedetector.presentation.ui.screen.camera.CameraScree
+import com.sychev.facedetector.presentation.ui.screen.camera.CameraScreenViewModel
 import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailScreen
 import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailViewModel
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.FavoriteClothesListViewModel
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailScreen
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailViewModel
+import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedEvent
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedListScreen
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedViewModel
 import com.sychev.facedetector.presentation.ui.screen.own_image.OwnImageScreen
@@ -60,6 +66,8 @@ class MainActivity : AppCompatActivity() {
 
     private val mainViewModel: MainViewModel by viewModels()
     private val ownImageViewModel: OwnImageViewModel by viewModels()
+    private val feedViewModel: FeedViewModel by viewModels()
+    private val cameraViewModel: CameraScreenViewModel by viewModels()
 
     @Inject
     lateinit var navigationManager: NavigationManager
@@ -101,7 +109,11 @@ class MainActivity : AppCompatActivity() {
             bundle?.getBoolean("from_assistant_launch") ?: false
         var firstLaunch = true
         mainViewModel.onTriggerEvent(MainEvent.GetDetectedClothesEvent)
-        supportFragmentManager
+        val image = BitmapFactory.decodeResource(
+            applicationContext.resources,
+            R.drawable.default_own_img
+        )
+        ownImageViewModel.onInit(applicationContext, image)
 
         setContent {
 
@@ -141,7 +153,7 @@ class MainActivity : AppCompatActivity() {
                             Modifier.padding(it)
                         ) {
                             composable(Screen.OwnImage.route) {
-//                                hasNavBottomBar = true
+                                hasNavBottomBar = true
                                 OwnImageScreen(viewModel = ownImageViewModel) {
                                     navController.navigate(Screen.ClothesListRetail.route)
                                 }
@@ -168,6 +180,14 @@ class MainActivity : AppCompatActivity() {
                                         onBackClick = { onBackPressed() },
                                     )
                                 }
+                            }
+                            composable(Screen.FeedList.route) {
+                                hasNavBottomBar = true
+                                FeedListScreen(viewModel = feedViewModel)
+                            }
+                            composable(Screen.CameraScreen.route) {
+                                hasNavBottomBar = true
+                                CameraScree(viewModel = cameraViewModel)
                             }
                         }
                     }

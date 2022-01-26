@@ -12,6 +12,7 @@ sealed class Screen(val route: String, var arguments: ArrayList<Parcelable>?) {
     object FeedList: Screen(route = "feed_list", arguments = null)
     object ClothesDetail: Screen(route = "clothes_detail", arguments = null)
     object FiltersScreen: Screen(route = "filters_screen", arguments = null)
+    object CameraScreen: Screen(route = "camera_screen", arguments = null)
 }
 
 

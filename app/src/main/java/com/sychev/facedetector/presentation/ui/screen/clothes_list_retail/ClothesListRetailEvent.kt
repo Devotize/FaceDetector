@@ -1,6 +1,7 @@
 package com.sychev.facedetector.presentation.ui.screen.clothes_list_retail
 
 import android.content.Context
+import android.graphics.Bitmap
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.DetectedClothes
 

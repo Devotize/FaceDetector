@@ -41,6 +41,10 @@ object CacheModule {
     @Singleton
     fun provideDetectedClothesDao(appDb: AppDatabase) = appDb.detectedClothesDao()
 
+    @Provides
+    @Singleton
+    fun provideImageDataDao(appDb: AppDatabase) = appDb.imageDataDao()
+
     @Singleton
     @Provides
     fun provideEntityMapper() = SavedScreenshotConverter()

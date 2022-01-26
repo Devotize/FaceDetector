@@ -98,7 +98,7 @@ constructor(
             }
             is FeedEvent.GetCelebPicsEvent -> {
                 Log.d(TAG, "onTriggerEvent: getCelebPicsEvent called")
-                getCelebPics(event.seed)
+                getCelebPics(event.seed, event.context)
             }
             is FeedEvent.GoToRetailScreen -> {
                 val retailScreen = Screen.ClothesListRetail.apply {
@@ -134,11 +134,11 @@ constructor(
         }.launchIn(viewModelScope)
     }
 
-    private fun getCelebPics(seed: IntRange) {
+    private fun getCelebPics(seed: IntRange, context: Context) {
         val sizes = arrayOf(seed.first, (seed.last / 1.5).toInt(), seed.last)
         loading.value = true
         isLoadCelebsCalled.value = true
-        getCelebPics.execute(page).onEach { dataState ->
+        getCelebPics.fakeExecute(page, context).onEach { dataState ->
             loading.value = dataState.loading
             dataState.data?.let{ celebs ->
                 val mappedCelebs =  celebs.map { CelebImage(image = it.image, height = sizes[(sizes.indices).random()]) }
@@ -181,6 +181,7 @@ constructor(
     }
 
     private fun detectClothes(context: Context, resizedBitmap: Bitmap, celebImage: CelebImage, callback: (Boolean) -> Unit) {
+        Log.d(TAG, "detectClothes: detectClothes called")
         detectClothesLocal.execute(context = context, bitmap = resizedBitmap)
             .onEach {dataState ->
                 celebImages.value.forEachIndexed { index, it ->
@@ -208,11 +209,11 @@ constructor(
                         }
                     }
                 }
-            }.launchIn(CoroutineScope(IO))
+            }.launchIn(viewModelScope)
     }
 
     private fun searchClothes(celebImage: CelebImage, detectedClothes: DetectedClothes, context: Context, location: RectF, callback: (Boolean?) -> Unit) {
-        searchClothes.execute(detectedClothes = detectedClothes, context = context)
+        searchClothes.fakeExecute(detectedClothes = detectedClothes, context = context)
             .onEach { dataState ->
                 callback(dataState.loading)
                 dataState.data?.let {
@@ -243,7 +244,7 @@ constructor(
 //                            .build()
 //                    )
                 }
-            }.launchIn(CoroutineScope(IO))
+            }.launchIn(viewModelScope)
     }
 
     fun removeFromFoundedClothes(celebImage: CelebImage, vararg fc: FoundedClothes) {

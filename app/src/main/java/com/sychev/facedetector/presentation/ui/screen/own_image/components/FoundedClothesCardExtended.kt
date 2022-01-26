@@ -1,5 +1,6 @@
 package com.sychev.facedetector.presentation.ui.screen.own_image.components
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -22,12 +23,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.filter.FilterValues
+import com.sychev.facedetector.utils.TAG
 import com.sychev.facedetector.utils.toMoneyString
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun FoundedClothesCardExtended(
     modifier: Modifier = Modifier,
@@ -49,16 +53,17 @@ fun FoundedClothesCardExtended(
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Row() {
                 val painter = rememberImagePainter(data = clothes.picUrl) {
                     crossfade(true)
                     error(R.drawable.clothes_default_icon_gray)
                 }
+                Log.d(TAG, "FoundedClothesCardExtended: clothes.picUrl: ${clothes.picUrl}")
                 Image(
                     modifier = Modifier
-                        .padding(start = 17.dp, top = 7.dp, bottom = 7.dp),
+                        .padding(start = 12.dp, top = 7.dp, bottom = 7.dp),
                     painter = painter,
                     contentDescription = null,
                     contentScale = ContentScale.Inside,

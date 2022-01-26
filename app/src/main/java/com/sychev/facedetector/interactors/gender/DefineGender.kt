@@ -36,7 +36,7 @@ class DefineGender {
 
     companion object{
         fun defineGender(context: Context, bitmap: Bitmap): String {
-            val module = LiteModuleLoader.load(assetFilePath(context, "gender_android_lite.ptl"))
+            val module = LiteModuleLoader.load(assetFilePath(context, "mobile_model-2.ptl"))
             Log.d(TAG, "execute: module = $module")
             val tensorInput = TensorImageUtils.bitmapToFloat32Tensor(bitmap,
                 TensorImageUtils.TORCHVISION_NORM_MEAN_RGB, TensorImageUtils.TORCHVISION_NORM_STD_RGB, MemoryFormat.CHANNELS_LAST)

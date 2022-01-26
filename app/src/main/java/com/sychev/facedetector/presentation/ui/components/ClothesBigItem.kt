@@ -13,6 +13,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.runtime.Composable
@@ -24,15 +25,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.sychev.facedetector.R
 import com.sychev.facedetector.domain.Clothes
 import com.sychev.facedetector.domain.filter.FilterValues
-import com.sychev.facedetector.utils.color
-import com.sychev.facedetector.utils.loadPicture
-import com.sychev.facedetector.utils.toBitmap
-import com.sychev.facedetector.utils.toMoneyString
+import com.sychev.facedetector.utils.*
 
 @Composable
 fun ClothesBigItem(
@@ -44,9 +43,6 @@ fun ClothesBigItem(
     onShoppingCartClick: () -> Unit = {},
     onShareClick: () -> Unit,
 ) {
-    val showDetails = remember { mutableStateOf(false) }
-    val context = LocalContext.current
-
 
     Card(
         modifier = modifier,
@@ -74,116 +70,80 @@ fun ClothesBigItem(
                     contentScale = ContentScale.FillHeight
                 )
             }
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(modifier = Modifier.fillMaxWidth(0.6f)) {
+                Column(modifier = Modifier) {
+                        Text(
+                            modifier = Modifier,
+                            text = "${clothes.itemCategory} ${clothes.brand}",
+                            style = MaterialTheme.typography.h5,
+                            color = Color.Black
+                        )
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         modifier = Modifier,
-                        text = "${clothes.itemCategory} ${clothes.brand}    ${clothes.price.toString().toMoneyString()} ₽",
-                        style = MaterialTheme.typography.h6,
-                        color = Color.Black
+                        text = "${clothes.price.toString().toMoneyString()} ₽",
+                        style = MaterialTheme.typography.h3,
+                        maxLines = 1,
+                        color = MaterialTheme.colors.onSurface
                     )
-//                    Spacer(modifier = Modifier.width(6.dp))
-//                    Text(
-//                        modifier = Modifier,
-//                        text = "${clothes.price.toString().toMoneyString()} ₽",
-//                        style = MaterialTheme.typography.h6,
-//                        maxLines = 1,
-//                        color = MaterialTheme.colors.onSurface
-//                    )
                 }
-                    Row(
-                        modifier = Modifier.wrapContentSize(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            modifier = Modifier.wrapContentSize(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            IconButton(
-                                modifier = Modifier
-                                    .width(24.dp)
-                                    .height(24.dp),
-                                onClick = {
-                                    if (clothes.isFavorite) {
-                                        onRemoveFromFavoriteClick(clothes)
-                                    } else {
-                                        onAddToFavoriteClick(clothes)
-                                    }
-                                },
-                            ) {
-                                Icon(
-                                    modifier = Modifier,
-                                    imageVector = Icons.Default.Favorite,
-                                    contentDescription = null,
-                                    tint = if (clothes.isFavorite) Color.Red else MaterialTheme.colors.primaryVariant
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            IconButton(
-                                modifier = Modifier
-                                    .width(24.dp)
-                                    .height(24.dp),
-                                onClick = {
-                                    onShareClick()
-                                }
-                            ) {
-                                Icon(
-                                    modifier = Modifier,
-                                    imageVector = Icons.Default.Share,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colors.primaryVariant
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        if (clothes.rating > 0.0) {
-                            Rating(rating = clothes.rating)
-                        }
-
-
+                clothes.brandLogo.let {
+                    if (it.isNotEmpty()) {
+                        Image(
+                            modifier = Modifier
+                                .size(62.dp),
+                            bitmap = clothes.brandLogo.decodeToBitmap().asImageBitmap(),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop
+                        )
                     }
-                    
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Column() {
+                    if (clothes.rating > 0.0) {
+                        Rating(
+                            modifier = Modifier,
+                            rating = clothes.rating
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(14.dp))
+                    IconButton(
+                        modifier = Modifier
+                            .width(24.dp)
+                            .height(24.dp),
+                        onClick = {
+                            onShareClick()
+                        }
+                    ) {
+                        Icon(
+                            modifier = Modifier,
+                            imageVector = Icons.Default.Share,
+                            contentDescription = null,
+                            tint = MaterialTheme.colors.primaryVariant
+                        )
+                    }
+                }
+
             }
-            //price
-            
             Row(modifier = Modifier.animateContentSize(spring(1.75f))) {
-//                if (showDetails.value) {
                 Spacer(modifier = Modifier.height(4.dp))
                 clothesList.forEach {
                     Spacer(modifier = Modifier.width(6.dp))
                     ShopComponent(
+                        modifier = Modifier.width(72.dp),
                         clothes = it,
                         onShoppingCartClick = onShoppingCartClick
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                 }
-//                }
             }
             Spacer(modifier = Modifier.height(8.dp))
-
-//            Row(
-//                modifier = Modifier
-//                    .fillMaxWidth(),
-//                horizontalArrangement = Arrangement.SpaceBetween,
-//                verticalAlignment = Alignment.CenterVertically,
-//            ) {
-//                Text(
-//                    modifier = Modifier
-//                        .clickable {
-//                            showDetails.value = !showDetails.value
-//                        },
-//                    text = if (!showDetails.value) "Ещё" else "Скрыть",
-//                    style = MaterialTheme.typography.subtitle2,
-//                )
-//
-//            }
 
         }
     }
@@ -191,38 +151,40 @@ fun ClothesBigItem(
 
 @Composable
 fun ShopComponent(
+    modifier: Modifier = Modifier,
     clothes: Clothes,
     onShoppingCartClick: () -> Unit
 ) {
-    Column {
+    Column(
+        modifier = modifier
+    ) {
         Text(
             text = clothes.provider,
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme.typography.h6,
             color = MaterialTheme.colors.onBackground
         )
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = "${clothes.price.toString().toMoneyString()} ₽",
-            style = MaterialTheme.typography.subtitle2,
-            color = MaterialTheme.colors.onSurface
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        IconButton(
-            modifier = Modifier
-                .size(18.dp),
-            onClick = onShoppingCartClick,
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Icon(
-                imageVector = Icons.Outlined.ShoppingCart,
-                contentDescription = null,
-                tint = MaterialTheme.colors.onPrimary
+            Text(
+                modifier = Modifier.align(Alignment.Bottom),
+                text = "${clothes.price.toString().toMoneyString()} ₽",
+                style = MaterialTheme.typography.caption,
+                fontWeight = FontWeight.W500,
+                color = MaterialTheme.colors.onPrimary
             )
+            IconButton(
+                modifier = Modifier
+                    .size(18.dp),
+                onClick = onShoppingCartClick,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ShoppingCart,
+                    contentDescription = null,
+                    tint = MaterialTheme.colors.onPrimary
+                )
+            }
         }
     }
 }
-
-//data class Shop(
-//    val name: String = "Wildberries",
-//    val price: String = "11 549 ₽",
-//    val size: String = "S, M, L, XL, XXL",
-//)

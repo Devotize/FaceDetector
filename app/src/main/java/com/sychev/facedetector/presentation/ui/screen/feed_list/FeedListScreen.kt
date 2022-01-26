@@ -88,97 +88,95 @@ fun FeedListScreen(
     var screenHeight by remember { mutableStateOf(0) }
     val isLoadCelebsCalled = viewModel.isLoadCelebsCalled.value
     val foundedClothesExtendedToDisplay = viewModel.foundedClothesExtendedToDisplay.value
-    
-    
-    val refreshState = rememberSwipeRefreshState(isRefreshing = (loading && celebImages.isEmpty()))
 
-        BoxWithConstraints(
-            modifier = Modifier
-                .onGloballyPositioned {
-                    screenHeight = it.size.height
-                }
-                .fillMaxSize(),
+    val refreshState = rememberSwipeRefreshState(isRefreshing = (loading && celebImages.isEmpty()))
+    var currentlyVisibleIndex by remember { mutableStateOf(0) }
+
+    BoxWithConstraints(
+        modifier = Modifier
+            .onGloballyPositioned {
+                screenHeight = it.size.height
+            }
+            .fillMaxSize(),
+    ) {
+        val imageHeightSeed =
+            ((this@BoxWithConstraints.maxHeight.value / 5f).toInt()..(this@BoxWithConstraints.maxHeight.value / 2.5f).toInt())
+        SwipeRefresh(
+            state = refreshState,
+            onRefresh = {
+                viewModel.celebImages.value.clear()
+                viewModel.page = 0
+                viewModel.onTriggerEvent(FeedEvent.GetCelebPicsEvent(imageHeightSeed, context))
+                Log.d(TAG, "FeedListScreen: onRefresh: called")
+            }
         ) {
-            val imageHeightSeed =
-                ((this@BoxWithConstraints.maxHeight.value / 5f).toInt()..(this@BoxWithConstraints.maxHeight.value / 2.5f).toInt())
-            SwipeRefresh(
-                state = refreshState,
-                onRefresh = {
-                    viewModel.celebImages.value.clear()
-                    viewModel.page = 0
-                    viewModel.onTriggerEvent(FeedEvent.GetCelebPicsEvent(imageHeightSeed))
-                    Log.d(TAG, "FeedListScreen: onRefresh: called")
-                }
-            ) {
             if (!isLoadCelebsCalled) {
-                viewModel.onTriggerEvent(FeedEvent.GetCelebPicsEvent(imageHeightSeed))
+                viewModel.onTriggerEvent(FeedEvent.GetCelebPicsEvent(imageHeightSeed, context))
             }
             Column {
+                Text(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 4.dp, bottom = 0.dp),
+                    text = "Коснитесь стикера, чтобы узнать подробнее",
+                    style = MaterialTheme.typography.body2,
+                    color = MaterialTheme.colors.onPrimary,
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+
                 LazyColumn(
                     state = scrollState,
                     flingBehavior = StockFlingBehaviours.presetTwo(),
                 ) {
-                    if (celebImages.isEmpty() && loading) {
-                        item {
-                            LoadingFeedGrid(
-                                maxColumnWidth = this@BoxWithConstraints.maxWidth / 2,
-                                maxScreenHeight = this@BoxWithConstraints.maxHeight,
-                            )
-                        }
-                    }
-                    item {
-                        StaggeredVerticalGrid(
-                            maxColumnWidth = (this@BoxWithConstraints.maxWidth / 2),
-                            modifier = Modifier
-                                .padding(8.dp),
-                        ) {
-                            val passedIndexes = remember { mutableStateListOf<Int>() }
-                            celebImages.forEachIndexed { index, celebImage ->
-                                Box(
-                                    modifier = Modifier.onGloballyPositioned {
-                                        val rect = it.boundsInRoot()
-                                        if (rect.topLeft.x != 0f || rect.topLeft.y != 0f) {
-                                            if (!passedIndexes.contains(index)) {
-                                                viewModel.onScrollPositionChanged(index)
-                                                passedIndexes.add(index)
 
-                                            }
-                                            //getting new page
-                                            if (index == celebImages.size - 2) {
-                                                if (!loading) {
-                                                    Log.d(
-                                                        TAG,
-                                                        "FeedListScreen: triggering getCelebPicsEvent"
-                                                    )
-                                                    viewModel.onTriggerEvent(
-                                                        FeedEvent.GetCelebPicsEvent(
-                                                            imageHeightSeed
-                                                        )
-                                                    )
-                                                }
-                                            }
-                                        }
+                    itemsIndexed(celebImages) { index, celebImage ->
+                        Box(
+                            modifier = Modifier
+                                .background(color = if (celebImage.isProcessed) Color.Yellow.copy(.8f) else Color.Transparent),
+                        ) {
+                            currentlyVisibleIndex = scrollState.firstVisibleItemIndex
+                            var bitmapHeight by remember { mutableStateOf(0) }
+                            var bitmapWidth by remember { mutableStateOf(0) }
+                            CelebCard(
+                                modifier = Modifier
+                                    .onGloballyPositioned {
+                                        bitmapHeight = it.size.height
+                                        bitmapWidth = it.size.width
                                     }
-                                ) {
-//                                val imageHeight = if (index % 2 == 0) this@BoxWithConstraints.maxWidth.value / 1.5f else  this@BoxWithConstraints.maxWidth.value / 1.8f
-                                    var bitmapHeight by remember { mutableStateOf(0) }
-                                    var bitmapWidth by remember { mutableStateOf(0) }
-                                    CelebCard(
-                                        modifier = Modifier
-                                            .onGloballyPositioned {
-                                                bitmapHeight = it.size.height
-                                                bitmapWidth = it.size.width
-                                            }
-                                            .padding(8.dp),
-                                        image = celebImage.image,
-                                        imageHeight = celebImage.height.dp,
-                                        maxHeight = this@BoxWithConstraints.maxHeight,
-                                        onClick = {
-                                            if (!celebImage.isProcessed) {
+                                    .padding(8.dp),
+                                image = celebImage.image,
+                                onClick = {
+//                                if (!celebImage.isProcessed) {
+//                                    viewModel.onTriggerEvent(
+//                                        FeedEvent.DetectClothesEvent(
+//                                            context = context,
+//                                            resizedBitmap = it,
+//                                            celebImage = celebImage,
+//                                            onLoaded = {
+//
+//                                            }
+//                                        )
+//                                    )
+//                                }
+                                }
+                            )
+                            scrollState.isScrollInProgress.also {
+                                var timer = Timer()
+                                val timerTask = object : TimerTask() {
+                                    override fun run() {
+                                        try {
+                                            if (!celebImage.isProcessed && (currentlyVisibleIndex == index || currentlyVisibleIndex == index - 1 || currentlyVisibleIndex == index + 1)) {
+                                                Log.d(TAG, "run: timerTask triggered")
+                                                val resizedBitmap = Bitmap.createScaledBitmap(
+                                                    celebImage.image,
+                                                    bitmapWidth,
+                                                    bitmapHeight,
+                                                    false
+                                                )
                                                 viewModel.onTriggerEvent(
                                                     FeedEvent.DetectClothesEvent(
                                                         context = context,
-                                                        resizedBitmap = it,
+                                                        resizedBitmap = resizedBitmap,
                                                         celebImage = celebImage,
                                                         onLoaded = {
 
@@ -186,69 +184,58 @@ fun FeedListScreen(
                                                     )
                                                 )
                                             }
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
                                         }
-                                    )
-                                    scrollState.isScrollInProgress.also {
-                                        var timer = Timer()
-                                        val timerTask = object : TimerTask() {
-                                            override fun run() {
-                                                try {
-                                                    if (viewModel.lastVisibleIndex - 2 == index && !celebImage.isProcessed) {
-                                                        Log.d(TAG, "run: timerTask triggered")
-                                                        val resizedBitmap = Bitmap.createScaledBitmap(
-                                                            celebImage.image,
-                                                            bitmapWidth,
-                                                            bitmapHeight,
-                                                            false
-                                                        )
-                                                        viewModel.onTriggerEvent(
-                                                            FeedEvent.DetectClothesEvent(
-                                                                context = context,
-                                                                resizedBitmap = resizedBitmap,
-                                                                celebImage = celebImage,
-                                                                onLoaded = {
 
-                                                                }
-                                                            )
-                                                        )
-
-                                                    }
-                                                }catch (e: Exception) {
-                                                    e.printStackTrace()
-                                                }
-
-                                            }
-                                        }
-                                        if (it) {
-                                            Log.d(TAG, "FeedListScreen: scrollInProgress")
-                                            timer.cancel()
-                                            timer.purge()
-                                        } else {
-                                            timer.schedule(timerTask, 1000)
-                                        }
                                     }
-                                    celebImage.foundedClothes.forEach {
-                                        FoundedClothesCardSmall(
-                                            location = it.location,
-                                            clothes = it.clothes[0],
-                                            onClick = {
-                                                val fce = FoundedClothesExtended(
-                                                    it.location,
-                                                    it.clothes,
-                                                    celebImage.detectedClothes,
-                                                )
-                                                viewModel.onTriggerEvent(
-                                                    FeedEvent.FoundedClothesToDisplayChange(
-                                                        newFoundedClothes = fce,
-                                                    )
-                                                )
-                                            }
+                                }
+                                if (it) {
+                                    Log.d(TAG, "FeedListScreen: scrollInProgress")
+                                    timer.cancel()
+                                    timer.purge()
+                                } else {
+                                    timer.schedule(timerTask, 1500)
+                                }
+                            }
+                            celebImage.foundedClothes.forEach {
+                                FoundedClothesCardSmall(
+                                    location = it.location,
+                                    clothes = it.clothes[0],
+                                    onClick = {
+                                        val fce = FoundedClothesExtended(
+                                            it.location,
+                                            it.clothes,
+                                            celebImage.detectedClothes,
+                                        )
+                                        viewModel.onTriggerEvent(
+                                            FeedEvent.FoundedClothesToDisplayChange(
+                                                newFoundedClothes = fce,
+                                            )
                                         )
                                     }
+                                )
+                            }
+                            //getting new page of celebs
+                            var alreadyGetForThisIndex by remember { mutableStateOf(0) }
+                            if (index == celebImages.lastIndex - 1 && alreadyGetForThisIndex != index) {
+                                alreadyGetForThisIndex = index
+                                if (!loading) {
+                                    Log.d(
+                                        TAG,
+                                        "FeedListScreen: triggering getCelebPicsEvent"
+                                    )
+                                    viewModel.onTriggerEvent(
+                                        FeedEvent.GetCelebPicsEvent(
+                                            imageHeightSeed, context
+                                        )
+                                    )
                                 }
                             }
                         }
                     }
+
+//
                 }
             }
             foundedClothesExtendedToDisplay?.let { fc ->
