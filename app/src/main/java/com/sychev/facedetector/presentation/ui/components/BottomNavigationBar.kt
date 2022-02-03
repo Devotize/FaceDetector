@@ -1,30 +1,27 @@
 package com.sychev.facedetector.presentation.ui.components
 
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.*
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Panorama
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Panorama
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.sychev.facedetector.R
-import com.sychev.facedetector.presentation.ui.detectorAssitant.AssistantDetector
+import com.sychev.common.Destinations
 import com.sychev.facedetector.presentation.ui.navigation.Screen
 
 @Composable
 fun BottomNavigationBar(
     navController: NavController,
+    destinations: Destinations,
     launchAssistant: () -> Unit,
 ) {
     val backStackEntry = navController.currentBackStackEntryAsState()
@@ -100,6 +97,8 @@ fun BottomNavigationBar(
                     popUpTo(navController.graph.findStartDestination().id)
                     launchSingleTop = true
                 }
+//                      val route = destinations.find<CameraEntryPoint>().destination()
+//                navController.navigate(route)
 
             },
             selectedContentColor = MaterialTheme.colors.secondary,

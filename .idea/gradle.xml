@@ -11,6 +11,14 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/common" />
+            <option value="$PROJECT_DIR$/feature camera api" />
+            <option value="$PROJECT_DIR$/feature camera impl" />
+            <option value="$PROJECT_DIR$/feature define gender api" />
+            <option value="$PROJECT_DIR$/feature define gender impl" />
+            <option value="$PROJECT_DIR$/feature preferences api" />
+            <option value="$PROJECT_DIR$/feature preferences impl" />
+            <option value="$PROJECT_DIR$/utils" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

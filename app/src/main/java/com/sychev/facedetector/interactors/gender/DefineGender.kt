@@ -47,7 +47,6 @@ class DefineGender {
             var maxScoreIdx: Int = -1
             for (i in scores.indices) {
                 val score = softmax(scores[i].toDouble(), scores)
-//                Log.d(TAG, "execute: score $i: $score")
                 if (scores[i] > maxScore) {
                     maxScore = score
                     maxScoreIdx = i

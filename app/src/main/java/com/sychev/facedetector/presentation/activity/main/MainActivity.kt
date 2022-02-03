@@ -5,64 +5,61 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.media.projection.MediaProjectionManager
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Parcelable
 import android.provider.Settings
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.sychev.camera.api.CameraEntryPoint
+import com.sychev.common.Destinations
+import com.sychev.common.di.LocalCommonProvider
+import com.sychev.common.find
 import com.sychev.facedetector.R
-import com.sychev.facedetector.domain.Clothes
+import com.sychev.facedetector.dagger_di.LocalAppProvider
 import com.sychev.facedetector.domain.DetectedClothes
+import com.sychev.facedetector.presentation.appProvider
 import com.sychev.facedetector.presentation.ui.components.BottomNavigationBar
 import com.sychev.facedetector.presentation.ui.components.EnterAnimation
 import com.sychev.facedetector.presentation.ui.components.GenericDialog
 import com.sychev.facedetector.presentation.ui.detectorAssitant.AssistantDetector
 import com.sychev.facedetector.presentation.ui.detectorAssitant.AssistantManager
 import com.sychev.facedetector.presentation.ui.navigation.NavigationManager
-import com.sychev.facedetector.presentation.ui.screen.FavoriteClothesListScreen
 import com.sychev.facedetector.presentation.ui.navigation.Screen
 import com.sychev.facedetector.presentation.ui.screen.camera.CameraScree
 import com.sychev.facedetector.presentation.ui.screen.camera.CameraScreenViewModel
-import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailScreen
-import com.sychev.facedetector.presentation.ui.screen.clothes_detail.ClothesDetailViewModel
-import com.sychev.facedetector.presentation.ui.screen.clothes_list_favorite.FavoriteClothesListViewModel
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailScreen
 import com.sychev.facedetector.presentation.ui.screen.clothes_list_retail.ClothesListRetailViewModel
-import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedEvent
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedListScreen
 import com.sychev.facedetector.presentation.ui.screen.feed_list.FeedViewModel
 import com.sychev.facedetector.presentation.ui.screen.own_image.OwnImageScreen
 import com.sychev.facedetector.presentation.ui.screen.own_image.OwnImageViewModel
-import com.sychev.facedetector.presentation.ui.screen.shop.ShopScreen
-import com.sychev.facedetector.presentation.ui.screen.shop.ShopViewModel
-import com.sychev.facedetector.presentation.ui.screen.shop.filters_screen.FiltersScreen
 import com.sychev.facedetector.presentation.ui.theme.AppTheme
 import com.sychev.facedetector.service.FaceDetectorService
 import com.sychev.facedetector.utils.MessageDialog
 import com.sychev.facedetector.utils.TAG
+import com.sychev.feature.preferences.api.LocalPreferencesProvider
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-const val OVERLAY_PERMISSION_REQUEST_CODE = 2001
-const val MEDIA_PROJECTION_REQUEST_CODE = 21
-
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity: AppCompatActivity() {
 
     private val mainViewModel: MainViewModel by viewModels()
     private val ownImageViewModel: OwnImageViewModel by viewModels()
@@ -118,76 +115,92 @@ class MainActivity : AppCompatActivity() {
         setContent {
 
             AppTheme {
-                val navController = rememberNavController()
-                val scaffoldState = rememberScaffoldState()
-                val scope = rememberCoroutineScope()
-                val dialogMessages = MessageDialog.dialogMessages
-                var hasNavBottomBar by remember{ mutableStateOf(false)}
-
-                Scaffold(
-                    scaffoldState = scaffoldState,
-                    bottomBar = {
-                        if (hasNavBottomBar) {
-                            BottomNavigationBar(
-                                navController = navController,
-                                launchAssistant = {
-                                    mainViewModel.onTriggerEvent(
-                                        MainEvent.LaunchDetector(
-                                            this,
-                                            true
-                                        )
-                                    )
-                                }
-                            )
-                        }
-                    },
+                CompositionLocalProvider(
+                    LocalAppProvider provides application.appProvider,
+                    LocalCommonProvider provides application.appProvider,
+                    LocalPreferencesProvider provides application.appProvider,
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .background(MaterialTheme.colors.primary)
-                            .fillMaxSize()
+                    val navController = rememberNavController()
+                    val scaffoldState = rememberScaffoldState()
+                    val scope = rememberCoroutineScope()
+                    val dialogMessages = MessageDialog.dialogMessages
+                    var hasNavBottomBar by remember { mutableStateOf(false) }
+                    val destinations: Destinations = LocalAppProvider.current.destinations
+                    val cameraScreen = destinations.find<CameraEntryPoint>()
+
+                    Scaffold(
+                        scaffoldState = scaffoldState,
+                        bottomBar = {
+                            if (hasNavBottomBar) {
+                                BottomNavigationBar(
+                                    navController = navController,
+                                    destinations = destinations,
+                                    launchAssistant = {
+                                        mainViewModel.onTriggerEvent(
+                                            MainEvent.LaunchDetector(
+                                                this,
+                                                true
+                                            )
+                                        )
+                                    }
+                                )
+                            }
+                        },
                     ) {
-                        NavHost(
-                            navController,
-                            startDestination = Screen.OwnImage.route,
-                            Modifier.padding(it)
+                        Column(
+                            modifier = Modifier
+                                .background(MaterialTheme.colors.primary)
+                                .fillMaxSize()
                         ) {
-                            composable(Screen.OwnImage.route) {
-                                hasNavBottomBar = true
-                                OwnImageScreen(viewModel = ownImageViewModel) {
-                                    navController.navigate(Screen.ClothesListRetail.route)
+                            NavHost(
+                                navController,
+                                startDestination = Screen.OwnImage.route,
+                                Modifier.padding(it)
+                            ) {
+                                with(cameraScreen) {
+                                    composable(navController, destinations) {
+                                        hasNavBottomBar = false
+                                    }
                                 }
-                            }
-                            composable(Screen.ClothesListRetail.route) { navBackStackEntry ->
+                                composable(Screen.OwnImage.route) {
+                                    hasNavBottomBar = true
+                                    OwnImageScreen(viewModel = ownImageViewModel) {
+                                        navController.navigate(Screen.ClothesListRetail.route)
+                                    }
+                                }
+                                composable(Screen.ClothesListRetail.route) { navBackStackEntry ->
 //                                hasNavBottomBar = false
-                                var clothesList = mutableListOf<DetectedClothes>()
+                                    var clothesList = mutableListOf<DetectedClothes>()
 
-                                if (mainViewModel.detectedClothesList.isNotEmpty()) {
-                                    clothesList = mainViewModel.detectedClothesList
-                                }
-                                navController.previousBackStackEntry?.arguments?.getParcelableArrayList<DetectedClothes>(
-                                    "args"
-                                )?.let {
-                                    Log.d(TAG, "onCreate: retailArgs: $it")
-                                    clothesList = it
-                                }
+                                    if (mainViewModel.detectedClothesList.isNotEmpty()) {
+                                        clothesList = mainViewModel.detectedClothesList
+                                    }
+                                    navController.previousBackStackEntry?.arguments?.getParcelableArrayList<DetectedClothes>(
+                                        "args"
+                                    )?.let {
+                                        Log.d(TAG, "onCreate: retailArgs: $it")
+                                        clothesList = it
+                                    }
 
-                                val retailViewModel = hiltViewModel<ClothesListRetailViewModel>(navController.getBackStackEntry(Screen.ClothesListRetail.route))
-                                EnterAnimation {
-                                    ClothesListRetailScreen(
-                                        viewModel = retailViewModel,
-                                        detectedClothes = ownImageViewModel.detectedClothes.toMutableList(),
-                                        onBackClick = { onBackPressed() },
+                                    val retailViewModel = hiltViewModel<ClothesListRetailViewModel>(
+                                        navController.getBackStackEntry(Screen.ClothesListRetail.route)
                                     )
+                                    EnterAnimation {
+                                        ClothesListRetailScreen(
+                                            viewModel = retailViewModel,
+                                            detectedClothes = ownImageViewModel.detectedClothes.toMutableList(),
+                                            onBackClick = { onBackPressed() },
+                                        )
+                                    }
                                 }
-                            }
-                            composable(Screen.FeedList.route) {
-                                hasNavBottomBar = true
-                                FeedListScreen(viewModel = feedViewModel)
-                            }
-                            composable(Screen.CameraScreen.route) {
-                                hasNavBottomBar = true
-                                CameraScree(viewModel = cameraViewModel)
+                                composable(Screen.FeedList.route) {
+                                    hasNavBottomBar = true
+                                    FeedListScreen(viewModel = feedViewModel)
+                                }
+                                composable(Screen.CameraScreen.route) {
+                                    hasNavBottomBar = true
+                                    CameraScree(viewModel = cameraViewModel)
+                                }
                             }
                         }
                     }
@@ -205,22 +218,25 @@ class MainActivity : AppCompatActivity() {
                             )
                         }
                     }
-                }
-                navigationManager.commands.value.also { pairScreenNavBuider ->
-                    if (pairScreenNavBuider.first is Screen.Default) {
-                        return@also
-                    }
-                    Log.d(TAG, "onCreate: arguments: ${pairScreenNavBuider.first.arguments}")
-                    if (pairScreenNavBuider.first.arguments != null) {
-                        navController.currentBackStackEntry?.arguments?.putParcelableArrayList(
-                            "args",
-                            pairScreenNavBuider.first.arguments
-                        )
-                    }
-                    try {
-                        navController.navigate(route = pairScreenNavBuider.first.route, builder = pairScreenNavBuider.second)
-                    }catch (e: Exception) {
-                        e.printStackTrace()
+                    navigationManager.commands.value.also { pairScreenNavBuider ->
+                        if (pairScreenNavBuider.first is Screen.Default) {
+                            return@also
+                        }
+                        Log.d(TAG, "onCreate: arguments: ${pairScreenNavBuider.first.arguments}")
+                        if (pairScreenNavBuider.first.arguments != null) {
+                            navController.currentBackStackEntry?.arguments?.putParcelableArrayList(
+                                "args",
+                                pairScreenNavBuider.first.arguments
+                            )
+                        }
+                        try {
+                            navController.navigate(
+                                route = pairScreenNavBuider.first.route,
+                                builder = pairScreenNavBuider.second
+                            )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
                 }
             }

@@ -36,6 +36,8 @@
         <entry key="app/src/main/res/layout/message_card.xml" value="0.21920289855072464" />
         <entry key="app/src/main/res/layout/save_screenshot_item.xml" value="0.21920289855072464" />
         <entry key="app/src/main/res/layout/snackbar_item_layout.xml" value="0.21920289855072464" />
+        <entry key="feature camera impl/src/main/res/layout/test.xml" value="0.13385416666666666" />
+        <entry key="feature define gender impl/src/main/res/layout/camera_host.xml" value="0.15070921985815602" />
       </map>
     </option>
   </component>

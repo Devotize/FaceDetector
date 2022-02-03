@@ -1,31 +1,24 @@
 package com.sychev.facedetector.presentation.ui.screen.camera
 
+import CameraPreview
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.util.Log
-import android.view.View
 import android.view.ViewGroup
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.sychev.facedetector.presentation.ui.screen.camera.components.CameraPreview
-import com.sychev.facedetector.presentation.ui.screen.own_image.OwnImageEvent
 import com.sychev.facedetector.utils.TAG
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun CameraScree(
@@ -78,7 +71,7 @@ fun CameraScree(
         ) {
             CameraPreview(
                 modifier = Modifier.fillMaxSize(),
-                previewView = previewView
+//                previewView = previewView
             )
         }
 
