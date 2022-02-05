@@ -1,6 +1,5 @@
 package com.sychev.facedetector.presentation.ui.screen.camera
 
-import CameraPreview
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -18,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.sychev.camera.impl.ui.components.CameraPreview
 import com.sychev.facedetector.utils.TAG
 
 @Composable
@@ -71,7 +71,7 @@ fun CameraScree(
         ) {
             CameraPreview(
                 modifier = Modifier.fillMaxSize(),
-//                previewView = previewView
+                previewView = previewView
             )
         }
 

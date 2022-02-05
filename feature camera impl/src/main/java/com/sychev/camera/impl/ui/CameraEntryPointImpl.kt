@@ -1,7 +1,7 @@
 package com.sychev.camera.impl.ui
 
-import CameraPreview
 import android.content.Context
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,8 +14,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
@@ -23,12 +25,14 @@ import androidx.navigation.NavHostController
 import com.sychev.camera.api.CameraEntryPoint
 import com.sychev.camera.impl.di.CameraComponent
 import com.sychev.camera.impl.di.DaggerCameraComponent
+import com.sychev.camera.impl.ui.components.CameraPreview
 import com.sychev.common.Destinations
 import com.sychev.common.PermissionManager
 import com.sychev.common.di.DaggerCommonComponent
 import com.sychev.common.di.injectedViewModel
 import com.sychev.feature.define.gender.impl.di.DaggerDefineGenderComponent
 import com.sychev.feature.preferences.api.LocalPreferencesProvider
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class CameraEntryPointImpl @Inject constructor(
@@ -46,12 +50,17 @@ class CameraEntryPointImpl @Inject constructor(
         val viewModel = injectedViewModel {
             cameraComponent.viewModel
         }
+        val previewView = PreviewView(context)
+        val scope = rememberCoroutineScope()
         val shouldShowCamera = viewModel.shouldShowCamera.collectAsState(initial = null).value
+        val lifecycleOwner = LocalLifecycleOwner.current
         shouldShowCamera?.let {
             if (!shouldShowCamera) {
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colors.onSurface))
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colors.onSurface)
+                )
                 permissionManager.askForCameraPermission() { isGranted ->
                     if (!isGranted) {
                         navController.popBackStack()
@@ -60,16 +69,32 @@ class CameraEntryPointImpl @Inject constructor(
                     }
                 }
             } else {
-                Content(navController = navController)
+                Content(navController = navController, previewView)
+
+                previewView.previewStreamState.observe(lifecycleOwner) {
+                    if (it == PreviewView.StreamState.STREAMING) {
+                        scope.launch {
+                            viewModel.needStartJob.emit(Unit)
+                        }
+                    }
+                }
+                scope.launch {
+                    viewModel.needStartJob.collect {
+                        previewView.bitmap?.let {
+                            viewModel.startProcessingJob(bitmap = it)
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun initCameraComponent(context: Context): CameraComponent {
+private fun initCameraComponent(context: Context): CameraComponent {
     val commonComponent = DaggerCommonComponent.factory().create(context)
-    val defineGenderComponent = DaggerDefineGenderComponent.builder().commonProvider(commonComponent).build()
+    val defineGenderComponent =
+        DaggerDefineGenderComponent.builder().commonProvider(commonComponent).build()
     return DaggerCameraComponent.builder()
         .preferencesProvider(LocalPreferencesProvider.current)
         .defineGenderComponent(defineGenderComponent)
@@ -79,6 +104,7 @@ fun initCameraComponent(context: Context): CameraComponent {
 @Composable
 private fun Content(
     navController: NavHostController,
+    previewView: PreviewView,
 ) {
     Surface(
         modifier = Modifier
@@ -87,6 +113,7 @@ private fun Content(
         CameraPreview(
             modifier = Modifier
                 .fillMaxSize(),
+            previewView,
         )
         Box(modifier = Modifier.fillMaxSize()) {
             IconButton(

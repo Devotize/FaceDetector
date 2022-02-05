@@ -1,3 +1,4 @@
+package com.sychev.camera.impl.ui.components
 
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
@@ -17,6 +18,7 @@ import androidx.lifecycle.LifecycleOwner
 @Composable
 fun CameraPreview(
     modifier: Modifier = Modifier,
+    previewView: PreviewView,
 ){
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
@@ -24,7 +26,7 @@ fun CameraPreview(
     AndroidView(
         modifier = modifier,
         factory = {
-            PreviewView(context).apply {
+            previewView.apply {
                 layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
                 scaleType = PreviewView.ScaleType.FILL_CENTER
                 implementationMode = PreviewView.ImplementationMode.COMPATIBLE
@@ -54,6 +56,6 @@ fun bindPreview(
         .build()
 
     preview.setSurfaceProvider(previewView.surfaceProvider)
-
+    cameraProvider.unbindAll()
     var camera = cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview)
 }
