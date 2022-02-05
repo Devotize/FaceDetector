@@ -1,5 +1,6 @@
 
-import android.view.LayoutInflater
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.LinearLayout
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -12,7 +13,6 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.sychev.camera.impl.R
 
 @Composable
 fun CameraPreview(
@@ -22,32 +22,32 @@ fun CameraPreview(
     val context = LocalContext.current
     val cameraProviderFuture = remember {ProcessCameraProvider.getInstance(context)}
     AndroidView(
-//        modifier = modifier,
+        modifier = modifier,
         factory = {
-            val view = LayoutInflater.from(context).inflate(R.layout.camera_host, null, false)
-            val cameraView = view.findViewById<PreviewView>(R.id.previewView)
-            cameraView
+            PreviewView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                scaleType = PreviewView.ScaleType.FILL_CENTER
+                implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+            }
         }) {
         cameraProviderFuture.addListener(Runnable {
             val cameraProvider = cameraProviderFuture.get()
             bindPreview(
                 lifecycleOwner,
-                it as PreviewView /*the inflated layout*/,
-                cameraProvider)
+                it,
+                cameraProvider
+            )
         }, ContextCompat.getMainExecutor(context))
-        it.apply {
-            scaleType = PreviewView.ScaleType.FILL_CENTER
-            implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-        }
     }
 }
 
 fun bindPreview(
     lifecycleOwner: LifecycleOwner,
     previewView: PreviewView,
-    cameraProvider: ProcessCameraProvider
+    cameraProvider: ProcessCameraProvider,
 ) {
-    val preview: Preview = Preview.Builder().build()
+    val preview: Preview = Preview.Builder()
+        .build()
 
     val cameraSelector: CameraSelector = CameraSelector.Builder()
         .requireLensFacing(CameraSelector.LENS_FACING_BACK)

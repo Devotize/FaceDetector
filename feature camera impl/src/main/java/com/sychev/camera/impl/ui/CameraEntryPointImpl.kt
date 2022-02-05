@@ -2,13 +2,19 @@ package com.sychev.camera.impl.ui
 
 import CameraPreview
 import android.content.Context
-import androidx.camera.view.PreviewView
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
@@ -40,27 +46,23 @@ class CameraEntryPointImpl @Inject constructor(
         val viewModel = injectedViewModel {
             cameraComponent.viewModel
         }
-//        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.onSurface))
-        val previewView = PreviewView(context)
-
-        CameraPreview(
-            modifier = Modifier.fillMaxSize(),
-        )
-
-//            val shouldShowCamera = viewModel.shouldShowCamera.collectAsState(initial = null).value
-//            shouldShowCamera?.let{
-//                if (!shouldShowCamera) {
-//                    permissionManager.askForCameraPermission() { isGranted ->
-//                        if (!isGranted) {
-//                            navController.popBackStack()
-//                        } else {
-//                            viewModel.setCameraPermission(isGranted)
-//                        }
-//                    }
-//                } else {
-//                    Content(context = context, navController = navController)
-//                }
-//            }
+        val shouldShowCamera = viewModel.shouldShowCamera.collectAsState(initial = null).value
+        shouldShowCamera?.let {
+            if (!shouldShowCamera) {
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colors.onSurface))
+                permissionManager.askForCameraPermission() { isGranted ->
+                    if (!isGranted) {
+                        navController.popBackStack()
+                    } else {
+                        viewModel.setCameraPermission(isGranted)
+                    }
+                }
+            } else {
+                Content(navController = navController)
+            }
+        }
     }
 }
 
@@ -76,33 +78,30 @@ fun initCameraComponent(context: Context): CameraComponent {
 
 @Composable
 private fun Content(
-    context: Context,
     navController: NavHostController,
 ) {
     Surface(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        val previewView = PreviewView(context)
         CameraPreview(
             modifier = Modifier
-                .border(2.dp, Color.Red)
                 .fillMaxSize(),
         )
-//        Box(modifier = Modifier.fillMaxSize()) {
-//            IconButton(
-//                modifier = Modifier
-//                    .padding(8.dp),
-//                onClick = {
-//                    navController.popBackStack()
-//                },
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.ArrowBackIos,
-//                    contentDescription = null,
-//                    tint = MaterialTheme.colors.primary
-//                )
-//            }
-//        }
+        Box(modifier = Modifier.fillMaxSize()) {
+            IconButton(
+                modifier = Modifier
+                    .padding(8.dp),
+                onClick = {
+                    navController.popBackStack()
+                },
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBackIos,
+                    contentDescription = null,
+                    tint = MaterialTheme.colors.primary
+                )
+            }
+        }
     }
 }

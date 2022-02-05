@@ -15,7 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.sychev.camera.api.CameraEntryPoint
 import com.sychev.common.Destinations
+import com.sychev.common.find
 import com.sychev.facedetector.presentation.ui.navigation.Screen
 
 @Composable
@@ -93,12 +95,12 @@ fun BottomNavigationBar(
             },
             selected = Screen.CameraScreen.route == backStackEntry.value?.destination?.route,
             onClick = {
-                navController.navigate(Screen.CameraScreen.route) {
-                    popUpTo(navController.graph.findStartDestination().id)
-                    launchSingleTop = true
-                }
-//                      val route = destinations.find<CameraEntryPoint>().destination()
-//                navController.navigate(route)
+//                navController.navigate(Screen.CameraScreen.route) {
+//                    popUpTo(navController.graph.findStartDestination().id)
+//                    launchSingleTop = true
+//                }
+                val route = destinations.find<CameraEntryPoint>().destination()
+                navController.navigate(route)
 
             },
             selectedContentColor = MaterialTheme.colors.secondary,
