@@ -1,28 +1,25 @@
 package com.sychev.facedetector.interactors.clothes_list
 
 import android.content.Context
-import android.graphics.*
-import android.os.Build
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.RectF
 import android.util.Log
 import com.sychev.facedetector.domain.DetectedClothes
 import com.sychev.facedetector.domain.data.DataState
 import com.sychev.facedetector.interactors.gender.DefineGender
 import com.sychev.facedetector.utils.MIN_SCORE
 import com.sychev.facedetector.utils.TAG
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.gpu.GpuDelegate
 import org.tensorflow.lite.support.common.FileUtil
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
-import kotlin.collections.ArrayList
 
 class DetectClothesLocal {
 
@@ -56,25 +53,11 @@ class DetectClothesLocal {
             line = br.readLine()
         }
         br.close()
-//        val croppedBitmap = processBitmap(BitmapFactory.decodeResource(context.resources, R.drawable.clothes_detect_test_2))
         val transformedBitmap = processBitmap(bitmap)
 
         val OUTPUT_WIDTH = 2535
         val tfliteModel = FileUtil.loadMappedFile(context, "yolov4-tiny_clothes_416_weights.tflite")
-//        val options = Interpreter.Options().apply {
-//            setNumThreads(4)
-//            addDelegate(GpuDelegate())
-//
-//            // Initialize interpreter with NNAPI delegate for Android Pie or above
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-////                val nnApiDelegate = NnApiDelegate()
-////                addDelegate(nnApiDelegate)
-////                setUseNNAPI(true)
-//                setNumThreads(4)
-//                setAllowFp16PrecisionForFp32(true)
-//                setAllowBufferHandleOutput(true)
-//            }
-//        }
+
         val tfliteInterpreter = Interpreter(tfliteModel, Interpreter.Options())
         val byteBuffer = convertBitmapToByteBuffer(transformedBitmap)
 

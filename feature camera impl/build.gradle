@@ -39,11 +39,13 @@ android {
 }
 
 dependencies {
-
     api project(':feature camera api')
     api project(":utils")
     implementation project(":feature define gender impl")
     implementation project(":feature preferences impl")
+    implementation project(":feature define clothes impl")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutunes_core_version")
 
     implementation "com.google.dagger:dagger:$dagger_version"
     kapt "com.google.dagger:dagger-compiler:$dagger_version"

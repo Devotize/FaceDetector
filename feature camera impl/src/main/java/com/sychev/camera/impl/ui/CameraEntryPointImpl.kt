@@ -30,6 +30,7 @@ import com.sychev.common.Destinations
 import com.sychev.common.PermissionManager
 import com.sychev.common.di.DaggerCommonComponent
 import com.sychev.common.di.injectedViewModel
+import com.sychev.feature.define.clothes.impl.di.DaggerDefineClothesComponent
 import com.sychev.feature.define.gender.impl.di.DaggerDefineGenderComponent
 import com.sychev.feature.preferences.api.LocalPreferencesProvider
 import kotlinx.coroutines.launch
@@ -95,9 +96,12 @@ private fun initCameraComponent(context: Context): CameraComponent {
     val commonComponent = DaggerCommonComponent.factory().create(context)
     val defineGenderComponent =
         DaggerDefineGenderComponent.builder().commonProvider(commonComponent).build()
+    val defineClothesComponent =
+        DaggerDefineClothesComponent.builder().commonProvider(commonComponent).build()
     return DaggerCameraComponent.builder()
         .preferencesProvider(LocalPreferencesProvider.current)
         .defineGenderComponent(defineGenderComponent)
+        .defineClothesComponent(defineClothesComponent)
         .build()
 }
 

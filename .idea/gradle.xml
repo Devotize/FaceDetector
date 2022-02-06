@@ -14,6 +14,8 @@
             <option value="$PROJECT_DIR$/common" />
             <option value="$PROJECT_DIR$/feature camera api" />
             <option value="$PROJECT_DIR$/feature camera impl" />
+            <option value="$PROJECT_DIR$/feature define clothes api" />
+            <option value="$PROJECT_DIR$/feature define clothes impl" />
             <option value="$PROJECT_DIR$/feature define gender api" />
             <option value="$PROJECT_DIR$/feature define gender impl" />
             <option value="$PROJECT_DIR$/feature preferences api" />
