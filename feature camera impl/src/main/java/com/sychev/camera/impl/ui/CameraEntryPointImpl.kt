@@ -18,7 +18,6 @@ import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -28,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -43,6 +43,7 @@ import com.sychev.common.di.injectedViewModel
 import com.sychev.feature.define.clothes.impl.di.DaggerDefineClothesComponent
 import com.sychev.feature.define.gender.impl.di.DaggerDefineGenderComponent
 import com.sychev.feature.preferences.api.LocalPreferencesProvider
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -97,25 +98,47 @@ class CameraEntryPointImpl @Inject constructor(
             } else {
                 Content(navController = navController, previewView)
                 DetectedBoxes(viewModel = viewModel)
-                SideEffect {
-                    previewView.previewStreamState.observe(lifecycleOwner) {
-                        if (it == PreviewView.StreamState.STREAMING) {
-                            scope.launch {
-                                viewModel.needStartJob.emit(Unit)
-                            }
-                        }
-                    }
-                    scope.launch {
-                        viewModel.needStartJob.collect {
-                            previewView.bitmap?.let {
-                                viewModel.startProcessingJob(bitmap = it)
-                            }
-                        }
-                    }
+
+                //initializing methods
+                initFlowCollectors(
+                    scope, viewModel
+                )
+
+                initObservers(
+                    lifecycleOwner, scope, viewModel
+                )
+
+            }
+        }
+    }
+
+    private fun initFlowCollectors(
+        scope: CoroutineScope,
+        viewModel: CameraViewModel,
+    ) {
+        scope.launch {
+            viewModel.needStartJob.collect {
+                previewView.bitmap?.let {
+                    viewModel.startProcessingJob(bitmap = it)
                 }
             }
         }
     }
+
+    private fun initObservers(
+        lifecycleOwner: LifecycleOwner,
+        scope: CoroutineScope,
+        viewModel: CameraViewModel,
+    ) {
+        previewView.previewStreamState.observe(lifecycleOwner) {
+            if (it == PreviewView.StreamState.STREAMING) {
+                scope.launch {
+                    viewModel.needStartJob.emit(Unit)
+                }
+            }
+        }
+    }
+
 }
 
 @Composable

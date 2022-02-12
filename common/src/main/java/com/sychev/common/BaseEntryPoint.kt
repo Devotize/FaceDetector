@@ -38,5 +38,4 @@ abstract class BaseEntryPoint: EntryPoint {
     )
 
     open fun onInit(context: Context) {}
-
 }
