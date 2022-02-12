@@ -54,6 +54,7 @@ import com.sychev.facedetector.presentation.ui.theme.AppTheme
 import com.sychev.facedetector.service.FaceDetectorService
 import com.sychev.facedetector.utils.MessageDialog
 import com.sychev.facedetector.utils.TAG
+import com.sychev.feature.gallery.api.GalleryEntryPoint
 import com.sychev.feature.preferences.api.LocalPreferencesProvider
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -127,6 +128,7 @@ class MainActivity: AppCompatActivity() {
                     var hasNavBottomBar by remember { mutableStateOf(false) }
                     val destinations: Destinations = LocalAppProvider.current.destinations
                     val cameraScreen = destinations.find<CameraEntryPoint>()
+                    val galleryScreen = destinations.find<GalleryEntryPoint>()
 
                     Scaffold(
                         scaffoldState = scaffoldState,
@@ -154,12 +156,17 @@ class MainActivity: AppCompatActivity() {
                         ) {
                             NavHost(
                                 navController,
-                                startDestination = Screen.OwnImage.route,
+                                startDestination = galleryScreen.entryRoute,
                                 Modifier.padding(it)
                             ) {
                                 with(cameraScreen) {
                                     composable(navController, destinations) {
                                         hasNavBottomBar = false
+                                    }
+                                }
+                                with(galleryScreen) {
+                                    composable(navController, destinations) {
+                                        hasNavBottomBar = true
                                     }
                                 }
                                 composable(Screen.OwnImage.route) {

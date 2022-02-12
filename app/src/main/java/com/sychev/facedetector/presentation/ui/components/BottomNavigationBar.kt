@@ -12,6 +12,7 @@ import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Panorama
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -19,6 +20,7 @@ import com.sychev.camera.api.CameraEntryPoint
 import com.sychev.common.Destinations
 import com.sychev.common.find
 import com.sychev.facedetector.presentation.ui.navigation.Screen
+import com.sychev.feature.gallery.api.GalleryEntryPoint
 
 @Composable
 fun BottomNavigationBar(
@@ -55,9 +57,10 @@ fun BottomNavigationBar(
             unselectedContentColor = MaterialTheme.colors.onBackground
         )
         //own image screen
+        val galleryRoute = remember { destinations.find<GalleryEntryPoint>().entryRoute }
         BottomNavigationItem(
             icon = {
-                if (Screen.OwnImage.route != backStackEntry.value?.destination?.route)
+                if (galleryRoute != backStackEntry.value?.destination?.route)
                     Icon(
                         imageVector = Icons.Outlined.Panorama,
                         contentDescription = null
@@ -68,21 +71,18 @@ fun BottomNavigationBar(
                         contentDescription = null
                     )
             },
-            selected = Screen.OwnImage.route == backStackEntry.value?.destination?.route,
+            selected = galleryRoute == backStackEntry.value?.destination?.route,
             onClick = {
-                    navController.navigate(Screen.OwnImage.route) {
-                        popUpTo(navController.graph.findStartDestination().id)
-                        launchSingleTop = true
-                    }
-
+                navController.navigate(galleryRoute)
             },
             selectedContentColor = MaterialTheme.colors.secondary,
             unselectedContentColor = MaterialTheme.colors.onBackground
         )
         //camera screen
+        val cameraRoute = remember { destinations.find<CameraEntryPoint>().entryRoute }
         BottomNavigationItem(
             icon = {
-                if (Screen.CameraScreen.route != backStackEntry.value?.destination?.route)
+                if (cameraRoute != backStackEntry.value?.destination?.route)
                     Icon(
                         imageVector = Icons.Outlined.CameraAlt,
                         contentDescription = null
@@ -93,14 +93,9 @@ fun BottomNavigationBar(
                         contentDescription = null
                     )
             },
-            selected = Screen.CameraScreen.route == backStackEntry.value?.destination?.route,
+            selected = cameraRoute == backStackEntry.value?.destination?.route,
             onClick = {
-//                navController.navigate(Screen.CameraScreen.route) {
-//                    popUpTo(navController.graph.findStartDestination().id)
-//                    launchSingleTop = true
-//                }
-                val route = destinations.find<CameraEntryPoint>().destination()
-                navController.navigate(route)
+                navController.navigate(cameraRoute)
 
             },
             selectedContentColor = MaterialTheme.colors.secondary,

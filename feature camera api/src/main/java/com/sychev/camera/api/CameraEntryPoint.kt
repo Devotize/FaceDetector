@@ -6,6 +6,4 @@ abstract class CameraEntryPoint: BaseEntryPoint() {
 
     final override val entryRoute: String
         get() = "camera"
-
-    fun destination() = entryRoute
 }
