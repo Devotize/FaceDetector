@@ -1,6 +1,8 @@
 package com.sychev.common
 
+import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
@@ -23,6 +25,7 @@ abstract class BaseEntryPoint: EntryPoint {
     fun NavGraphBuilder.composable(navController: NavHostController, destinations: Destinations, onEnterScreen: () -> Unit = {}) {
         composable(entryRoute, arguments, deepLinks) { backStackEntry ->
             onEnterScreen.invoke()
+            onInit(LocalContext.current)
             Composable(navController, destinations, backStackEntry)
         }
     }
@@ -33,5 +36,7 @@ abstract class BaseEntryPoint: EntryPoint {
         destinations: Destinations,
         backStackEntry: NavBackStackEntry,
     )
+
+    open fun onInit(context: Context) {}
 
 }

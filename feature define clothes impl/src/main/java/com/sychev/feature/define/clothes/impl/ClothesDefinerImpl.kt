@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.RectF
-import android.util.Log
 import com.sychev.feature.define.clothes.api.ClothesDefiner
 import com.sychev.feature.define.clothes.api.CommonDetectedClothes
 import com.sychev.feature.define.clothes.api.DetectedClothes
@@ -22,29 +21,21 @@ class ClothesDefinerImpl @Inject constructor(
     private val context: Context
 ) : ClothesDefiner {
 
+    private val model = loadDetectorModel()
+
+    private val labels = loadLabels()
+
     override fun defineClothes(bitmap: Bitmap): DetectedClothes {
         val detections: ArrayList<CommonDetectedClothes> = arrayListOf()
-        //initializin labels
-        val labels = Vector<String>()
-        val labelFilename = "file:///android_asset/cloths.txt"
-        val actualFilename = labelFilename.split("file:///android_asset/").toTypedArray()[1]
-        val labelsInput = context.assets.open(actualFilename)
-        val br = BufferedReader(InputStreamReader(labelsInput))
-        var line: String? = br.readLine()
-        while (line != null) {
-            labels.add(line)
-            line = br.readLine()
-        }
-        br.close()
+
         val transformedBitmap = processBitmap(bitmap)
 
         val OUTPUT_WIDTH = 2535
-        val tfliteModel = FileUtil.loadMappedFile(context, "yolov4-tiny_clothes_416_weights.tflite")
 
-        val tfliteInterpreter = Interpreter(tfliteModel, Interpreter.Options())
+        val interpreter = Interpreter(model, Interpreter.Options())
         val byteBuffer = convertBitmapToByteBuffer(transformedBitmap)
 
-        val outputMap: MutableMap<Int, Any> = java.util.HashMap()
+        val outputMap: MutableMap<Int, Any> = HashMap()
         outputMap[0] = Array(1) {
             Array(OUTPUT_WIDTH) {
                 FloatArray(
@@ -61,10 +52,10 @@ class ClothesDefinerImpl @Inject constructor(
         }
         val inputArray = arrayOf<Any>(byteBuffer)
 
-        tfliteInterpreter.runForMultipleInputsOutputs(inputArray, outputMap)
+        interpreter.runForMultipleInputsOutputs(inputArray, outputMap)
 
-        val bboxes = outputMap[0] as Array<Array<FloatArray>>?
-        val outScores = outputMap[1] as Array<Array<FloatArray>>?
+        val bboxes = outputMap[0] as Array<Array<FloatArray>>
+        val outScores = outputMap[1] as Array<Array<FloatArray>>
 
         val scaleX: Float = (bitmap.width.toFloat() / transformedBitmap.width.toFloat())
         val scaleY: Float = (bitmap.height.toFloat() / transformedBitmap.height.toFloat())
@@ -74,7 +65,7 @@ class ClothesDefinerImpl @Inject constructor(
             var detectedClass = -1
             val classes = FloatArray(labels.size)
             for (c in labels.indices) {
-                classes[c] = outScores!![0][i][c]
+                classes[c] = outScores[0][i][c]
             }
             for (c in labels.indices) {
                 if (classes[c] > maxClass) {
@@ -85,7 +76,7 @@ class ClothesDefinerImpl @Inject constructor(
             val score = maxClass
 
             if (score > MIN_SCORE) {
-                val xPos = bboxes!![0][i][0]
+                val xPos = bboxes[0][i][0]
                 val yPos = bboxes[0][i][1]
                 val w = bboxes[0][i][2]
                 val h = bboxes[0][i][3]
@@ -94,13 +85,6 @@ class ClothesDefinerImpl @Inject constructor(
                     Math.max(0f, yPos - h / 2) * (scaleY),
                     Math.min((transformedBitmap.width - 1).toFloat(), xPos + w / 2) * (scaleX),
                     Math.min((transformedBitmap.height - 1).toFloat(), yPos + h / 2) * (scaleY)
-                )
-                val croppedBitmap = Bitmap.createBitmap(
-                    bitmap,
-                    rectF.left.toInt(),
-                    rectF.top.toInt(),
-                    rectF.width().toInt(),
-                    rectF.height().toInt()
                 )
                 var addToDetections = true
                 detections.forEach {
@@ -120,18 +104,32 @@ class ClothesDefinerImpl @Inject constructor(
                             confidence = score,
                             location = rectF,
                             detectedClass = detectedClass,
-                            sourceBitmap = bitmap,
-                            croppedBitmap = croppedBitmap,
                         )
                     )
                 }
-            } else {
-                Log.d(TAG, "detectClothes: sclore lower than min")
             }
         }
         return DetectedClothes(
             list = detections
         )
+    }
+
+    private fun loadDetectorModel() =
+        FileUtil.loadMappedFile(context, "yolov4-tiny_clothes_416_weights.tflite")
+
+    private fun loadLabels(): Vector<String> {
+        val labels = Vector<String>()
+        val labelFilename = "file:///android_asset/cloths.txt"
+        val actualFilename = labelFilename.split("file:///android_asset/").toTypedArray()[1]
+        val labelsInput = context.assets.open(actualFilename)
+        val br = BufferedReader(InputStreamReader(labelsInput))
+        var line: String? = br.readLine()
+        while (line != null) {
+            labels.add(line)
+            line = br.readLine()
+        }
+        br.close()
+        return labels
     }
 
     private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {

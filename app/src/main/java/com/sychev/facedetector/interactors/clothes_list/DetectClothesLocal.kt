@@ -139,7 +139,6 @@ class DetectClothesLocal {
                     ))
                 }
             } else {
-                Log.d(TAG, "detectClothes: sclore lower than min")
             }
         }
         return detections

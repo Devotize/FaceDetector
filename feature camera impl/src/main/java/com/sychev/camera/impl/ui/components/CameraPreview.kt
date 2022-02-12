@@ -1,7 +1,5 @@
 package com.sychev.camera.impl.ui.components
 
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.widget.LinearLayout
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -19,27 +17,26 @@ import androidx.lifecycle.LifecycleOwner
 fun CameraPreview(
     modifier: Modifier = Modifier,
     previewView: PreviewView,
-){
+) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
-    val cameraProviderFuture = remember {ProcessCameraProvider.getInstance(context)}
+    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+    val cameraProvider = remember { cameraProviderFuture.get() }
+    val cameraListener = remember {
+        Runnable {
+            bindPreview(
+                lifecycleOwner,
+                previewView,
+                cameraProvider
+            )
+        }
+    }
     AndroidView(
         modifier = modifier,
         factory = {
-            previewView.apply {
-                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                scaleType = PreviewView.ScaleType.FILL_CENTER
-                implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-            }
+            previewView
         }) {
-        cameraProviderFuture.addListener(Runnable {
-            val cameraProvider = cameraProviderFuture.get()
-            bindPreview(
-                lifecycleOwner,
-                it,
-                cameraProvider
-            )
-        }, ContextCompat.getMainExecutor(context))
+        cameraProviderFuture.addListener(cameraListener, ContextCompat.getMainExecutor(context))
     }
 }
 

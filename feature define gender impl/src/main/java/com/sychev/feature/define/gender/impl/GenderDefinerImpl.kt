@@ -10,17 +10,22 @@ import com.sychev.utils.getAssetFilePath
 import org.pytorch.IValue
 import org.pytorch.LiteModuleLoader
 import org.pytorch.MemoryFormat
+import org.pytorch.Module
 import org.pytorch.torchvision.TensorImageUtils
 import javax.inject.Inject
 import kotlin.math.exp
 
 internal class GenderDefinerImpl @Inject constructor(private val context: Context): GenderDefiner {
 
+    private val model = loadDefinerModel()
+
     override fun defineGender(bitmap: Bitmap): CommonGender {
-        val model = loadDefinerModel()
-        Log.d(TAG, "Model loaded: $GENDER_DEFINER_MODEL_NAME")
-        val tensorInput = TensorImageUtils.bitmapToFloat32Tensor(bitmap,
-            TensorImageUtils.TORCHVISION_NORM_MEAN_RGB, TensorImageUtils.TORCHVISION_NORM_STD_RGB, MemoryFormat.CHANNELS_LAST)
+        val tensorInput = TensorImageUtils.bitmapToFloat32Tensor(
+            bitmap,
+            TensorImageUtils.TORCHVISION_NORM_MEAN_RGB,
+            TensorImageUtils.TORCHVISION_NORM_STD_RGB,
+            MemoryFormat.CHANNELS_LAST
+        )
         val tensorOutput = model.forward(IValue.from(tensorInput)).toTensor()
 
         val scores: FloatArray = tensorOutput.dataAsFloatArray
@@ -40,8 +45,10 @@ internal class GenderDefinerImpl @Inject constructor(private val context: Contex
         )
     }
 
-    private fun loadDefinerModel() = LiteModuleLoader
-        .load(getAssetFilePath(context, GENDER_DEFINER_MODEL_NAME))
+    private fun loadDefinerModel(): Module =
+        LiteModuleLoader
+            .load(getAssetFilePath(context, GENDER_DEFINER_MODEL_NAME))
+
 
     private fun softmax(input: Double, neuronValues: FloatArray): Double {
         val total = neuronValues.map { a: Float ->

@@ -7,7 +7,6 @@ import com.sychev.camera.impl.model.DetectedClothesWithGender
 import com.sychev.feature.define.clothes.impl.DefineClothesUseCase
 import com.sychev.feature.define.gender.impl.DefineGenderUseCase
 import com.sychev.feature.preferences.api.PreferencesManagerProviderApi
-import com.sychev.utils.logXertz
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -34,7 +33,6 @@ class CameraViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             _detectedClothesWithGender.collect {
-                logXertz("detectedClothes with gender: $it")
                 needStartJob.emit(Unit)
             }
         }
@@ -57,10 +55,10 @@ class CameraViewModel @Inject constructor(
                     gender = gender,
                 )
             }.collect {
-                logXertz("combined detections: $it")
                 _detectedClothesWithGender.emit(
                     it
                 )
+                needStartJob.emit(Unit)
             }
         }
 
